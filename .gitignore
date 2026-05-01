@@ -119,3 +119,8 @@ reports/
 *.map
 *.min.js.map
 *.css.map
+
+# External repositories
+scp-api/
+../scp-api/
+../scp/
