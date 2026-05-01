@@ -6,6 +6,31 @@
 
 import type { IEventBus } from '../events/event-bus'
 
+interface LargestContentfulPaintEntry extends PerformanceEntry {
+  startTime: number
+  size: number
+  element: Element | null
+}
+
+interface LayoutShiftEntry extends PerformanceEntry {
+  value: number
+  hadRecentInput: boolean
+}
+
+interface NetworkConnection {
+  effectiveType?: string
+  downlink?: number
+  rtt?: number
+  saveData?: boolean
+  type?: string
+}
+
+interface NavigatorWithConnection extends Navigator {
+  connection?: NetworkConnection
+  mozConnection?: NetworkConnection
+  webkitConnection?: NetworkConnection
+}
+
 /**
  * Performance Metric
  */
@@ -124,7 +149,7 @@ export class PerformanceMonitorService {
       const observer = new PerformanceObserver((list) => {
         const entries = list.getEntries()
         if (entries.length > 0) {
-          const lastEntry = entries[entries.length - 1] as any
+          const lastEntry = entries[entries.length - 1] as LargestContentfulPaintEntry
           this.webVitals.lcp = lastEntry.startTime
           this.recordMetric('web-vitals-lcp', lastEntry.startTime, 'ms')
         }
@@ -137,8 +162,9 @@ export class PerformanceMonitorService {
       let clsValue = 0
       const observer = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
-          if (!(entry as any).hadRecentInput) {
-            clsValue += (entry as any).value
+          const lsEntry = entry as LayoutShiftEntry
+          if (!lsEntry.hadRecentInput) {
+            clsValue += lsEntry.value
           }
         }
         this.webVitals.cls = clsValue
@@ -316,7 +342,7 @@ export class PerformanceMonitorService {
     this.recordMetric('dom-nodes', document.querySelectorAll('*').length, 'count', now)
 
     // Network info
-    const conn = (navigator as any).connection
+    const conn = (navigator as NavigatorWithConnection).connection
     if (conn) {
       this.recordMetric('network-downlink', conn.downlink || 0, 'Mbps', now)
       this.recordMetric('network-rtt', conn.rtt || 0, 'ms', now)
@@ -397,7 +423,7 @@ export class PerformanceMonitorService {
    * Get Network info
    */
   getNetworkInfo(): NetworkInfo | null {
-    const conn = (navigator as any).connection
+    const conn = (navigator as NavigatorWithConnection).connection
     if (!conn) return null
 
     return {

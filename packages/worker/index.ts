@@ -4,7 +4,7 @@
  */
 
 import { getConfig } from './shared/config'
-import type { Env, ScraperResult, SCPWikiData, RequestContext, ChatMessage, ChatApiResponse, ChatRoom, ChatRoomInput, ObjectClass } from './shared/types'
+import type { Env, ScraperResult, SCPWikiData, RequestContext, ChatMessage, ChatApiResponse, ChatRoom, ChatRoomInput, ObjectClass, ChatSendMessageBody, CreateChatRoomBody, SetNicknameBody, SubmitFeedbackBody, LikeFeedbackBody, SubmitCommentBody, VoteFeedbackBody, RegisterUserBody, PerformanceMetricsBody, D1StatRow, D1ClearanceRow } from './shared/types'
 import * as feedbackAPI from './api/feedback'
 import * as userAPI from './api/user'
 
@@ -29,6 +29,11 @@ import { CORSManager } from './security/cors'
 // 错误处理
 import { ScraperError } from './errors/scraperError'
 import { RetryStrategy } from './errors/retryStrategy'
+
+// Durable Objects
+import { ChatRoomDO } from './durableObjects/ChatRoomDO'
+
+export { ChatRoomDO }
 
 /**
  * SCP Scraper 类
@@ -1002,7 +1007,7 @@ class SCPScraper {
 
       const byClass: Record<string, number> = {}
 
-      for (const row of classResult.results as any[]) {
+      for (const row of classResult.results as unknown as D1StatRow[]) {
         byClass[row.object_class] = row.count
       }
 
@@ -1013,7 +1018,7 @@ class SCPScraper {
 
       const byClearance: Record<number, number> = {}
 
-      for (const row of clearanceResult.results as any[]) {
+      for (const row of clearanceResult.results as unknown as D1ClearanceRow[]) {
         byClearance[row.clearance_level] = row.count
       }
 
@@ -1126,18 +1131,17 @@ export default {
         }
 
         try {
-          const body = await request.json() as any
-          const { user_id, nickname, content, room_id } = body
+          const body = await request.json() as ChatSendMessageBody
 
-          if (!user_id || !content) {
+          if (!body.user_id || !body.content) {
             return corsManager.createErrorResponse('Missing user_id or content', 400, context)
           }
 
           const result = await scraper.sendChatMessageWithRateLimit(
-            user_id,
-            nickname,
-            content,
-            room_id || 1
+            body.user_id,
+            body.nickname,
+            body.content,
+            body.room_id || 1
           )
           return corsManager.createResponse(result, result.success ? 200 : 429, context)
         } catch (error) {
@@ -1161,7 +1165,7 @@ export default {
         } else if (request.method === 'POST') {
           // 创建聊天室
           try {
-            const body = await request.json() as any
+            const body = await request.json() as CreateChatRoomBody
             const { name, description, created_by, is_public } = body
 
             if (!name || !created_by) {
@@ -1184,7 +1188,7 @@ export default {
         }
 
         try {
-          const body = await request.json() as any
+          const body = await request.json() as SetNicknameBody
           const { user_id, nickname } = body
 
           if (!user_id || !nickname) {
@@ -1204,7 +1208,7 @@ export default {
         }
 
         try {
-          const body = await request.json() as any
+          const body = await request.json() as SubmitFeedbackBody
           const { user_id, nickname, title, content, category } = body
 
           if (!user_id || !title || !content) {
@@ -1236,7 +1240,7 @@ export default {
         }
 
         try {
-          const body = await request.json() as any
+          const body = await request.json() as LikeFeedbackBody
           const { id } = body
 
           if (!id) {
@@ -1260,7 +1264,7 @@ export default {
         }
 
         try {
-          const body = await request.json() as any
+          const body = await request.json() as SubmitCommentBody
           const { feedback_id, user_id, nickname, content } = body
 
           if (!feedback_id || !user_id || !content) {
@@ -1292,7 +1296,7 @@ export default {
         }
 
         try {
-          const body = await request.json() as any
+          const body = await request.json() as VoteFeedbackBody
           const { id, user_id, vote } = body
 
           if (!id || !user_id || !vote || (vote !== 'up' && vote !== 'down')) {
@@ -1325,7 +1329,7 @@ export default {
         }
 
         try {
-          const body = await request.json() as any
+          const body = await request.json() as RegisterUserBody
           const { userId, nickname } = body
 
           if (!userId || !nickname) {
@@ -1392,7 +1396,7 @@ export default {
         if (request.method === 'POST') {
           // 接收性能指标数据
           try {
-            const body = await request.json() as any
+            const body = await request.json() as PerformanceMetricsBody
             logger.info('Received performance metrics', { ip, metrics: body })
             
             // 存储性能指标到KV

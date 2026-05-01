@@ -122,10 +122,7 @@ export class CommandAutocompleteService {
       }))
       .sort((a, b) => b._score - a._score)
       .slice(0, this.maxSuggestions)
-      .map(s => {
-        const { _score, ...rest } = s as any
-        return rest
-      })
+      .map(({ _score: _, ...rest }) => rest)
   }
 
   /**

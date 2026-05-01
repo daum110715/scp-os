@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
-    "tail": "wrangler tail"
+    "tail": "wrangler tail",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@flicknote/defuddle": "^1.0.1",
@@ -15,6 +18,8 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260411.1",
+    "@vitest/coverage-v8": "^4.1.2",
+    "vitest": "^4.1.2",
     "wrangler": "^4.69.0"
   }
 }

@@ -25,7 +25,7 @@
           class="pc-notification__close flex-shrink-0 p-1 rounded-full hover:bg-white/[0.1] transition-colors duration-200"
           @click="removeNotification(notification.id)"
         >
-          <GUIIcon name="xmark" :size="16" />
+          <GUIIcon name="x" :size="16" />
         </button>
       </div>
     </div>

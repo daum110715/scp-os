@@ -1,5 +1,24 @@
 export {}
 
+interface TerminalInstance {
+  cols: number
+  rows: number
+  terminal?: {
+    options: Record<string, unknown>
+    refresh(start: number, end: number): void
+    rows: number
+  }
+}
+
+interface TerminalController {
+  clear(): void
+  displayBootLog(): Promise<void>
+  markBootLogShown(): void
+  displayWelcomeMessage(): void
+  displayShutdownLog(): Promise<void>
+  displayStartupPrompt(): void
+}
+
 declare global {
   interface Window {
     scpTerminalActions?: {
@@ -11,8 +30,8 @@ declare global {
       scrollToBottom: () => void
     }
     openPerformanceDashboard?: () => void
-    __terminalController?: any
-    __terminalInstance?: { cols: number; rows: number }
+    __terminalController?: TerminalController
+    __terminalInstance?: TerminalInstance
     __USER_ID__?: string
   }
 

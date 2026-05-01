@@ -352,8 +352,8 @@ function normalizeFeedback(raw: Record<string, unknown>): FeedbackItem {
     updated_at: raw.updated_at as string,
     upvotes: (raw.upvotes as number) || 0,
     downvotes: (raw.downvotes as number) || 0,
-    commentsCount: (raw.commentsCount as number) || 0,
-    userVote: (raw.userVote as 'up' | 'down') || null,
+    commentsCount: (raw.commentsCount as number) ?? (raw.comments_count as number) ?? 0,
+    userVote: (raw.userVote as 'up' | 'down') ?? null,
     showComments: false,
     comments: [],
   }

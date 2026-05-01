@@ -4,6 +4,7 @@
  */
 
 import { getConfig } from '../shared/config'
+import type { D1StatRow, D1ClearanceRow } from '../shared/types'
 import { HTMLParser } from '../parsers/htmlParser'
 import { logger } from '../utils/logger'
 
@@ -252,7 +253,7 @@ class D1DatabaseManager {
 
     const byClass: Record<string, number> = {}
 
-    for (const row of classResult.results as any[]) {
+    for (const row of classResult.results as unknown as D1StatRow[]) {
       byClass[row.object_class] = row.count
     }
 
@@ -263,7 +264,7 @@ class D1DatabaseManager {
 
     const byClearance: Record<number, number> = {}
 
-    for (const row of clearanceResult.results as any[]) {
+    for (const row of clearanceResult.results as unknown as D1ClearanceRow[]) {
       byClearance[row.clearance_level] = row.count
     }
 

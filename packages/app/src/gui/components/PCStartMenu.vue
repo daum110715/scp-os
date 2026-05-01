@@ -121,14 +121,14 @@ export interface SystemOption {
   id: string
   label: string
   action: string
-  iconName: string
+  iconName: IconName
 }
 
 export interface PowerOption {
   id: string
   label: string
   action: string
-  iconName: string
+  iconName: IconName
 }
 
 interface Props {

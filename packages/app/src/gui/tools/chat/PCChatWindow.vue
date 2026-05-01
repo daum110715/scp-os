@@ -139,6 +139,11 @@
             {{ rateLimitWarning }}
           </div>
 
+          <div class="pc-chat__ws-status" :class="`pc-chat__ws-status--${ws.connectionState.value}`">
+            <span class="pc-chat__ws-dot" />
+            <span class="pc-chat__ws-text">{{ wsStatusLabel }}</span>
+          </div>
+
           <div class="pc-chat__input-bar">
             <textarea
               ref="inputRef"
@@ -276,6 +281,7 @@ import { ref, reactive, computed, onMounted, onUnmounted, nextTick, watch } from
 import PCWindow from '../../components/PCWindow.vue'
 import { useThemeStore } from '../../stores/themeStore'
 import { useI18n } from '../../composables/useI18n'
+import { useChatWebSocket, type WSChatMessage } from '../../composables/useChatWebSocket'
 import { useAuthStore } from '../../../stores/authStore'
 import { config } from '../../../config'
 import indexedDBService from '../../../utils/indexedDB'
@@ -321,8 +327,6 @@ const authStore = useAuthStore()
 const { t } = useI18n()
 
 const API_BASE = config.api.workerUrl
-const POLL_INTERVAL = 30000
-const MAX_MESSAGES = 100
 const MAX_RETRY = 3
 
 const messagesRef = ref<HTMLElement>()
@@ -345,7 +349,6 @@ const savingNickname = ref(false)
 const nicknameCheckStatus = ref<'idle' | 'checking' | 'available' | 'taken'>('idle')
 const nicknameSaveError = ref('')
 let nicknameCheckTimer: number | null = null
-let pollTimer: number | null = null
 let userId = ''
 const roomSearchQuery = ref('')
 
@@ -361,6 +364,68 @@ const editRoomPublic = ref(true)
 
 const unreadCounts = ref<Record<number, number>>({})
 
+const ws = useChatWebSocket({
+  apiUrl: API_BASE,
+  userId: '',
+  username: '',
+  roomId: 1,
+  onMessage: (msg: WSChatMessage) => {
+    const chatMsg: ChatMessage = {
+      ...msg,
+      isSelf: msg.user_id === userId,
+    }
+    const existingIdx = messages.findIndex(
+      (m) => m.sending && m.content === msg.content && m.user_id === msg.user_id
+    )
+    if (existingIdx !== -1) {
+      messages[existingIdx] = chatMsg
+    } else {
+      const alreadyExists = messages.some(
+        (m) => m.id === msg.id && !m.tempId
+      )
+      if (!alreadyExists) {
+        messages.push(chatMsg)
+      }
+    }
+    nextTick(() => scrollToBottom())
+  },
+  onHistory: (msgs: WSChatMessage[]) => {
+    messages.length = 0
+    for (const msg of msgs) {
+      messages.push({
+        ...msg,
+        isSelf: msg.user_id === userId,
+      })
+    }
+    nextTick(() => scrollToBottom())
+  },
+  onUsersUpdate: (_users: any, count: any) => {
+    if (currentRoom.value) {
+      currentRoom.value.member_count = count
+    }
+  },
+  onUserJoined: (data: any) => {
+    if (currentRoom.value) {
+      currentRoom.value.member_count = data.count
+    }
+  },
+  onUserLeft: (data: any) => {
+    if (currentRoom.value) {
+      currentRoom.value.member_count = data.count
+    }
+  },
+  onError: (error: any) => {
+    if (error === 'RATE_LIMIT') {
+      rateLimitWarning.value = 'Rate limit exceeded. Please wait.'
+      rateLimited.value = true
+      setTimeout(() => {
+        rateLimited.value = false
+        rateLimitWarning.value = ''
+      }, 60000)
+    }
+  },
+})
+
 const displayMessages = computed(() => messages)
 
 const filteredRooms = computed(() => {
@@ -370,6 +435,14 @@ const filteredRooms = computed(() => {
 })
 
 const currentRoom = computed(() => rooms.find(r => r.id === currentRoomId.value) || null)
+
+const wsStatusLabel = computed(() => {
+  const state = ws.connectionState.value
+  if (state === 'connected') return 'Connected'
+  if (state === 'connecting') return 'Connecting...'
+  if (state === 'reconnecting') return 'Reconnecting...'
+  return 'Disconnected'
+})
 
 function getUnreadCount(roomId: number): number {
   return unreadCounts.value[roomId] || 0
@@ -402,13 +475,13 @@ onMounted(async () => {
   await loadUnreadCounts()
   if (rooms.length > 0) {
     currentRoomId.value = rooms[0].id
-    await loadMessages()
   }
-  startPolling()
+  ws.setCredentials(userId, authStore.nickname || 'Anonymous')
+  ws.connect()
 })
 
 onUnmounted(() => {
-  stopPolling()
+  ws.disconnect()
 })
 
 watch(() => authStore.userId, (newUserId) => {
@@ -488,40 +561,7 @@ function switchRoom(roomId: number) {
   currentRoomId.value = roomId
   messages.length = 0
   markRoomAsRead(roomId)
-  loadMessages()
-}
-
-async function loadMessages() {
-  loading.value = true
-  try {
-    const response = await fetch(`${API_BASE}/chat/messages?limit=${MAX_MESSAGES}&room_id=${currentRoomId.value}`)
-    const data = await response.json()
-    if (data.success && data.data) {
-      const serverMessages = (data.data as ChatMessage[]).map(msg => ({
-        ...msg,
-        isSelf: msg.user_id === userId,
-      }))
-      const localPending = messages.filter(m => m.tempId && !m.error)
-      const merged = mergeMessages(serverMessages, localPending)
-      messages.length = 0
-      messages.push(...merged)
-      await nextTick()
-      scrollToBottom()
-    }
-  } catch (error) {
-    console.error('[Chat] Failed to load messages:', error)
-  } finally {
-    loading.value = false
-  }
-}
-
-function mergeMessages(server: ChatMessage[], local: ChatMessage[]): ChatMessage[] {
-  const serverIds = new Set(server.map(m => m.id))
-  const localTempIds = new Set(local.map(m => m.tempId))
-  const nonDuplicateLocal = local.filter(m => !serverIds.has(m.id))
-  const nonDuplicateServer = server.filter(m => !localTempIds.has(m.tempId))
-  const all = [...nonDuplicateServer, ...nonDuplicateLocal]
-  return all.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+  ws.switchRoom(roomId)
 }
 
 async function sendMessage() {
@@ -552,53 +592,20 @@ async function sendMessage() {
   scrollToBottom()
   autoResizeInput()
 
-  try {
-    const response = await fetch(`${API_BASE}/chat/send`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        user_id: userId,
-        nickname: authStore.nickname || undefined,
-        content,
-        room_id: currentRoomId.value,
-      }),
-    })
-
-    const data = await response.json()
-
-    if (data.success && data.data) {
-      const idx = messages.findIndex(m => m.tempId === tempId)
-      if (idx !== -1) {
-        messages[idx] = {
-          ...data.data,
-          isSelf: true,
-        }
-      }
-    } else {
-      const idx = messages.findIndex(m => m.tempId === tempId)
-      if (idx !== -1) {
-        messages[idx].sending = false
-        messages[idx].error = data.error || t('chat.failedSend')
-        if (data.error && data.error.includes('Rate limit')) {
-          rateLimitWarning.value = data.error
-          rateLimited.value = true
-          setTimeout(() => {
-            rateLimited.value = false
-            rateLimitWarning.value = ''
-          }, 60000)
-        }
-      }
-    }
-  } catch (error) {
-    console.error('[Chat] Failed to send message:', error)
+  const sent = ws.sendMessage(content)
+  if (!sent) {
     const idx = messages.findIndex(m => m.tempId === tempId)
     if (idx !== -1) {
       messages[idx].sending = false
-      messages[idx].error = t('chat.networkError')
+      messages[idx].error = 'Failed to send (not connected)'
     }
-  } finally {
-    sending.value = false
+  } else {
+    const idx = messages.findIndex(m => m.tempId === tempId)
+    if (idx !== -1) {
+      messages[idx].sending = false
+    }
   }
+  sending.value = false
 }
 
 async function retryMessage(msg: ChatMessage) {
@@ -612,28 +619,12 @@ async function retryMessage(msg: ChatMessage) {
   messages[idx].error = undefined
   messages[idx].retryCount = (msg.retryCount || 0) + 1
 
-  try {
-    const response = await fetch(`${API_BASE}/chat/send`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        user_id: userId,
-        nickname: authStore.nickname || undefined,
-        content: msg.content,
-        room_id: currentRoomId.value,
-      }),
-    })
-
-    const data = await response.json()
-    if (data.success && data.data) {
-      messages[idx] = { ...data.data, isSelf: true }
-    } else {
-      messages[idx].sending = false
-      messages[idx].error = data.error || t('chat.failedSend')
-    }
-  } catch {
+  const sent = ws.sendMessage(msg.content)
+  if (!sent) {
     messages[idx].sending = false
     messages[idx].error = t('chat.networkError')
+  } else {
+    messages[idx].sending = false
   }
 }
 
@@ -641,21 +632,6 @@ function autoResizeInput() {
   if (inputRef.value) {
     inputRef.value.style.height = 'auto'
     inputRef.value.style.height = Math.min(inputRef.value.scrollHeight, 120) + 'px'
-  }
-}
-
-function startPolling() {
-  stopPolling()
-  pollTimer = window.setInterval(() => {
-    loadMessages()
-    loadRooms()
-  }, POLL_INTERVAL)
-}
-
-function stopPolling() {
-  if (pollTimer !== null) {
-    clearInterval(pollTimer)
-    pollTimer = null
   }
 }
 
@@ -728,7 +704,7 @@ async function deleteRoom() {
       if (currentRoomId.value === currentRoom.value?.id && rooms.length > 0) {
         currentRoomId.value = rooms[0].id
         messages.length = 0
-        loadMessages()
+        ws.switchRoom(rooms[0]?.id || 1)
       }
     }
     showRoomSettings.value = false
@@ -1209,6 +1185,42 @@ async function saveNickname() {
   color: #FFFFFF;
   font-size: 12px;
   text-align: center;
+}
+
+.pc-chat__ws-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 4px 12px;
+  font-size: 11px;
+  background: rgba(255,255,255,0.03);
+  border-top: 1px solid rgba(255,255,255,0.04);
+}
+
+.pc-chat__ws-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.pc-chat__ws-status--connected .pc-chat__ws-dot { background: #34C759; box-shadow: 0 0 6px rgba(52,199,89,0.5); }
+.pc-chat__ws-status--connecting .pc-chat__ws-dot { background: #FF9500; animation: wsPulse 1s ease-in-out infinite; }
+.pc-chat__ws-status--reconnecting .pc-chat__ws-dot { background: #FF9500; animation: wsPulse 1s ease-in-out infinite; }
+.pc-chat__ws-status--disconnected .pc-chat__ws-dot { background: #FF3B30; }
+
+.pc-chat__ws-text {
+  color: rgba(255,255,255,0.4);
+  font-family: 'SF Mono', 'JetBrains Mono', monospace;
+}
+
+.pc-chat__ws-status--connected .pc-chat__ws-text { color: rgba(52,199,89,0.7); }
+.pc-chat__ws-status--disconnected .pc-chat__ws-text { color: rgba(255,59,48,0.7); }
+
+@keyframes wsPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
 }
 
 /* ── Loading ──────────────────────────────────────────────────────── */

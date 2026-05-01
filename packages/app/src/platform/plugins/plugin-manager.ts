@@ -9,6 +9,7 @@ import type {
   ThemePlugin,
   DataSourcePlugin,
   UIPlugin,
+  TypedPlugin,
   PluginStatus,
   PluginLoadResult,
   PluginValidationResult
@@ -416,8 +417,8 @@ export class PluginManager {
    */
   getPluginsByType<T extends Plugin>(type: string): T[] {
     return this.getAllPlugins()
-      .filter((p) => (p as any).type === type)
-      .map((p) => p as T)
+      .filter((p): p is TypedPlugin => 'type' in p && (p as TypedPlugin).type === type)
+      .map((p) => p as unknown as T)
   }
 
   /**
@@ -454,7 +455,7 @@ export class PluginManager {
     }
 
     // Validate plugin type
-    const pluginType = (plugin as any).type
+    const pluginType = (plugin as TypedPlugin).type
     if (
       !['command', 'theme', 'datasource', 'ui'].includes(pluginType)
     ) {
@@ -509,7 +510,7 @@ export class PluginManager {
    * @private
    */
   private async registerExtensions(plugin: Plugin): Promise<void> {
-    const pluginType = (plugin as any).type
+    const pluginType = (plugin as TypedPlugin).type
 
     if (pluginType === 'command') {
       const cmdPlugin = plugin as CommandPlugin
@@ -535,7 +536,7 @@ export class PluginManager {
    * @private
    */
   private async unregisterExtensions(plugin: Plugin): Promise<void> {
-    const pluginType = (plugin as any).type
+    const pluginType = (plugin as TypedPlugin).type
 
     if (pluginType === 'command') {
       const cmdPlugin = plugin as CommandPlugin

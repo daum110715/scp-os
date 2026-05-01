@@ -204,8 +204,8 @@ export const useFileManagerStore = defineStore('fileManager', () => {
   interface FileContextAction {
     id: string
     label: string
-    icon: ContextMenuIcon
-    action: () => void
+    icon?: ContextMenuIcon
+    action?: () => void
   }
 
   function showContextMenu(x: number, y: number, fileName?: string): void {
@@ -213,7 +213,7 @@ export const useFileManagerStore = defineStore('fileManager', () => {
       ? getFileContextItems(fileName)
       : getDirectoryContextItems()
 
-    contextMenu.value = { visible: true, x, y, items: items as any }
+    contextMenu.value = { visible: true, x, y, items }
   }
 
   function hideContextMenu(): void {

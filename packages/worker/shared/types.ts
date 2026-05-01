@@ -111,6 +111,7 @@ export interface ParsedSections {
 export interface Env {
   SCP_CACHE: KVNamespace
   SCP_DB: D1Database
+  CHAT_ROOM_DO: DurableObjectNamespace
 }
 
 /**
@@ -177,4 +178,75 @@ export interface ChatRoomInput {
   description?: string
   created_by: string
   is_public?: number
+}
+
+/**
+ * WebSocket用户
+ */
+export interface WSUser {
+  user_id: string
+  username: string
+}
+
+export interface ChatSendMessageBody {
+  user_id: string
+  nickname?: string
+  content: string
+  room_id?: number
+}
+
+export interface CreateChatRoomBody {
+  name: string
+  description?: string
+  created_by: string
+  is_public?: number
+}
+
+export interface SetNicknameBody {
+  user_id: string
+  nickname: string
+}
+
+export interface SubmitFeedbackBody {
+  user_id: string
+  nickname?: string
+  title: string
+  content: string
+  category?: string
+}
+
+export interface LikeFeedbackBody {
+  id: number
+}
+
+export interface SubmitCommentBody {
+  feedback_id: number
+  user_id: string
+  nickname?: string
+  content: string
+}
+
+export interface VoteFeedbackBody {
+  id: number
+  user_id: string
+  vote: 'up' | 'down'
+}
+
+export interface RegisterUserBody {
+  userId: string
+  nickname: string
+}
+
+export interface PerformanceMetricsBody {
+  [key: string]: unknown
+}
+
+export interface D1StatRow {
+  object_class: string
+  count: number
+}
+
+export interface D1ClearanceRow {
+  clearance_level: number
+  count: number
 }

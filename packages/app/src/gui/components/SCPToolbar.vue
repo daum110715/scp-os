@@ -5,7 +5,7 @@ export interface DockItemDef {
   id: string
   tool: ToolType
   label: string
-  iconName: string
+  iconName: IconName
   badge?: number
   disabled?: boolean
 }
@@ -18,6 +18,7 @@ export const defaultDockItems: DockItemDef[] = [
 </script>
 
 <script setup lang="ts">
+import type { IconName } from '../icons'
 import GUIIcon from './ui/GUIIcon.vue'
 
 interface Props {
@@ -61,7 +62,7 @@ function onTap(_item: DockItemDef) {
           @click="$emit('launch', item)"
           @touchstart="onTap(item)"
         >
-          <GUIIcon :name="item.iconName as any" :size="24" class="scp-dock__icon" />
+          <GUIIcon :name="item.iconName" :size="24" class="scp-dock__icon" />
           <span class="scp-dock__label">{{ item.label }}</span>
           <span v-if="item.badge && item.badge > 0" class="scp-dock__badge">{{ item.badge }}</span>
           <span v-if="activeTools.includes(item.tool)" class="scp-dock__dot" />

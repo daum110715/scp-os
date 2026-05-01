@@ -18,7 +18,7 @@ function detectLocale(): Locale {
 
   // 2. Check browser language
   if (typeof navigator !== 'undefined') {
-    const lang = navigator.language || (navigator as any).userLanguage || ''
+    const lang = navigator.language || (navigator as Navigator & { userLanguage?: string }).userLanguage || ''
     if (lang.toLowerCase().startsWith('zh')) return 'zh-CN'
   }
 

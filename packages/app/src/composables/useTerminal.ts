@@ -7,6 +7,7 @@ import { createTerminalConfig, sleep, isPrintableCharacter, isMobileDevice } fro
 import { AVAILABLE_COMMANDS } from '../constants/commands'
 import { ANSICode } from '../constants/theme'
 import { getCommandHandler } from '../commands'
+import type { CommandType } from '../types/command'
 import { autocompleteService } from '../utils/commandAutocomplete'
 import { useCommandHistory } from './useCommandHistory'
 import { errorHandler, ErrorType, ErrorSeverity } from '../utils/errorHandler'
@@ -700,7 +701,7 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
         return
       }
 
-      const handler = getCommandHandler(cmd as any)
+      const handler = getCommandHandler(cmd as CommandType)
 
       if (handler) {
         executeCommandHandler(handler, args, cmd)

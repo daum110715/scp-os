@@ -104,7 +104,7 @@ globalThis.ResizeObserver = class ResizeObserver {
   observe() {}
   unobserve() {}
   disconnect() {}
-} as any
+} as typeof globalThis.ResizeObserver
 
 // Mock window properties for responsive tests
 Object.defineProperty(window, 'innerWidth', {

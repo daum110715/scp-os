@@ -122,6 +122,11 @@
           {{ rateLimitWarning }}
         </div>
 
+        <div class="mobile-chat__ws-status" :class="`mobile-chat__ws-status--${ws.connectionState.value}`">
+          <span class="mobile-chat__ws-dot" />
+          <span class="mobile-chat__ws-text">{{ ws.connectionState.value === 'connected' ? 'Connected' : ws.connectionState.value === 'connecting' ? 'Connecting...' : ws.connectionState.value === 'reconnecting' ? 'Reconnecting...' : 'Disconnected' }}</span>
+        </div>
+
         <div class="mobile-chat__input-bar">
           <textarea
             ref="inputRef"
@@ -196,6 +201,7 @@ import { useI18n } from '../../composables/useI18n'
 import { useAuthStore } from '../../../stores/authStore'
 import { config } from '../../../config'
 import indexedDBService from '../../../utils/indexedDB'
+import { useChatWebSocket, type WSChatMessage } from '../../composables/useChatWebSocket'
 
 interface Props {
   visible: boolean
@@ -238,8 +244,6 @@ const authStore = useAuthStore()
 const { t } = useI18n()
 
 const API_BASE = config.api.workerUrl
-const POLL_INTERVAL = 30000
-const MAX_MESSAGES = 100
 const MAX_RETRY = 3
 
 const view = ref<'rooms' | 'chat'>('rooms')
@@ -261,7 +265,6 @@ const savingNickname = ref(false)
 const nicknameCheckStatus = ref<'idle' | 'checking' | 'available' | 'taken'>('idle')
 const nicknameSaveError = ref('')
 let nicknameCheckTimer: number | null = null
-let pollTimer: number | null = null
 let userId = ''
 const roomSearchQuery = ref('')
 
@@ -270,6 +273,68 @@ const newRoomName = ref('')
 const newRoomDescription = ref('')
 
 const unreadCounts = ref<Record<number, number>>({})
+
+const ws = useChatWebSocket({
+  apiUrl: API_BASE,
+  userId: '',
+  username: '',
+  roomId: 1,
+  onMessage: (msg: WSChatMessage) => {
+    const chatMsg: ChatMessage = {
+      ...msg,
+      isSelf: msg.user_id === userId,
+    }
+    const existingIdx = messages.findIndex(
+      (m) => m.sending && m.content === msg.content && m.user_id === msg.user_id
+    )
+    if (existingIdx !== -1) {
+      messages[existingIdx] = chatMsg
+    } else {
+      const alreadyExists = messages.some(
+        (m) => m.id === msg.id && !m.tempId
+      )
+      if (!alreadyExists) {
+        messages.push(chatMsg)
+      }
+    }
+    nextTick(() => scrollToBottom())
+  },
+  onHistory: (msgs: WSChatMessage[]) => {
+    messages.length = 0
+    for (const msg of msgs) {
+      messages.push({
+        ...msg,
+        isSelf: msg.user_id === userId,
+      })
+    }
+    nextTick(() => scrollToBottom())
+  },
+  onUsersUpdate: (_users: any, count: any) => {
+    if (currentRoom.value) {
+      currentRoom.value.member_count = count
+    }
+  },
+  onUserJoined: (data: any) => {
+    if (currentRoom.value) {
+      currentRoom.value.member_count = data.count
+    }
+  },
+  onUserLeft: (data: any) => {
+    if (currentRoom.value) {
+      currentRoom.value.member_count = data.count
+    }
+  },
+  onError: (error: any) => {
+    if (error === 'RATE_LIMIT') {
+      rateLimitWarning.value = 'Rate limit exceeded. Please wait.'
+      rateLimited.value = true
+      setTimeout(() => {
+        rateLimited.value = false
+        rateLimitWarning.value = ''
+      }, 60000)
+    }
+  },
+})
 
 const filteredRooms = computed(() => {
   const query = roomSearchQuery.value.trim().toLowerCase()
@@ -308,11 +373,10 @@ onMounted(async () => {
   userId = authStore.userId || await indexedDBService.getUserId()
   await loadRooms()
   await loadUnreadCounts()
-  startPolling()
 })
 
 onUnmounted(() => {
-  stopPolling()
+  ws.disconnect()
 })
 
 watch(() => authStore.userId, (newUserId) => {
@@ -390,40 +454,15 @@ function enterRoom(roomId: number) {
   messages.length = 0
   markRoomAsRead(roomId)
   view.value = 'chat'
-  loadMessages()
+  ws.setCredentials(userId, authStore.nickname || 'Anonymous')
+  ws.switchRoom(roomId)
 }
 
-async function loadMessages() {
-  loading.value = true
-  try {
-    const response = await fetch(`${API_BASE}/chat/messages?limit=${MAX_MESSAGES}&room_id=${currentRoomId.value}`)
-    const data = await response.json()
-    if (data.success && data.data) {
-      const serverMessages = (data.data as ChatMessage[]).map(msg => ({
-        ...msg,
-        isSelf: msg.user_id === userId,
-      }))
-      const localPending = messages.filter(m => m.tempId && !m.error)
-      const merged = mergeMessages(serverMessages, localPending)
-      messages.length = 0
-      messages.push(...merged)
-      await nextTick()
-      scrollToBottom()
-    }
-  } catch (error) {
-    console.error('[Chat] Failed to load messages:', error)
-  } finally {
-    loading.value = false
+function autoResizeInput() {
+  if (inputRef.value) {
+    inputRef.value.style.height = 'auto'
+    inputRef.value.style.height = Math.min(inputRef.value.scrollHeight, 100) + 'px'
   }
-}
-
-function mergeMessages(server: ChatMessage[], local: ChatMessage[]): ChatMessage[] {
-  const serverIds = new Set(server.map(m => m.id))
-  const localTempIds = new Set(local.map(m => m.tempId))
-  const nonDuplicateLocal = local.filter(m => !serverIds.has(m.id))
-  const nonDuplicateServer = server.filter(m => !localTempIds.has(m.tempId))
-  const all = [...nonDuplicateServer, ...nonDuplicateLocal]
-  return all.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
 }
 
 async function sendMessage() {
@@ -454,50 +493,20 @@ async function sendMessage() {
   scrollToBottom()
   autoResizeInput()
 
-  try {
-    const response = await fetch(`${API_BASE}/chat/send`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        user_id: userId,
-        nickname: authStore.nickname || undefined,
-        content,
-        room_id: currentRoomId.value,
-      }),
-    })
-
-    const data = await response.json()
-
-    if (data.success && data.data) {
-      const idx = messages.findIndex(m => m.tempId === tempId)
-      if (idx !== -1) {
-        messages[idx] = { ...data.data, isSelf: true }
-      }
-    } else {
-      const idx = messages.findIndex(m => m.tempId === tempId)
-      if (idx !== -1) {
-        messages[idx].sending = false
-        messages[idx].error = data.error || t('chat.failedSend')
-        if (data.error && data.error.includes('Rate limit')) {
-          rateLimitWarning.value = data.error
-          rateLimited.value = true
-          setTimeout(() => {
-            rateLimited.value = false
-            rateLimitWarning.value = ''
-          }, 60000)
-        }
-      }
-    }
-  } catch (error) {
-    console.error('[Chat] Failed to send message:', error)
+  const sent = ws.sendMessage(content)
+  if (!sent) {
     const idx = messages.findIndex(m => m.tempId === tempId)
     if (idx !== -1) {
       messages[idx].sending = false
-      messages[idx].error = t('chat.networkError')
+      messages[idx].error = 'Failed to send (not connected)'
     }
-  } finally {
-    sending.value = false
+  } else {
+    const idx = messages.findIndex(m => m.tempId === tempId)
+    if (idx !== -1) {
+      messages[idx].sending = false
+    }
   }
+  sending.value = false
 }
 
 async function retryMessage(msg: ChatMessage) {
@@ -511,50 +520,12 @@ async function retryMessage(msg: ChatMessage) {
   messages[idx].error = undefined
   messages[idx].retryCount = (msg.retryCount || 0) + 1
 
-  try {
-    const response = await fetch(`${API_BASE}/chat/send`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        user_id: userId,
-        nickname: authStore.nickname || undefined,
-        content: msg.content,
-        room_id: currentRoomId.value,
-      }),
-    })
-
-    const data = await response.json()
-    if (data.success && data.data) {
-      messages[idx] = { ...data.data, isSelf: true }
-    } else {
-      messages[idx].sending = false
-      messages[idx].error = data.error || t('chat.failedSend')
-    }
-  } catch (error) {
+  const sent = ws.sendMessage(msg.content)
+  if (!sent) {
     messages[idx].sending = false
     messages[idx].error = t('chat.networkError')
-  }
-}
-
-function autoResizeInput() {
-  if (inputRef.value) {
-    inputRef.value.style.height = 'auto'
-    inputRef.value.style.height = Math.min(inputRef.value.scrollHeight, 100) + 'px'
-  }
-}
-
-function startPolling() {
-  stopPolling()
-  pollTimer = window.setInterval(() => {
-    if (view.value === 'chat') loadMessages()
-    loadRooms()
-  }, POLL_INTERVAL)
-}
-
-function stopPolling() {
-  if (pollTimer !== null) {
-    clearInterval(pollTimer)
-    pollTimer = null
+  } else {
+    messages[idx].sending = false
   }
 }
 
@@ -953,6 +924,42 @@ async function saveNickname() {
   color: #FFFFFF;
   font-size: 13px;
   text-align: center;
+}
+
+.mobile-chat__ws-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 3px 10px;
+  font-size: 10px;
+  background: rgba(255,255,255,0.02);
+  border-top: 0.5px solid rgba(255,255,255,0.04);
+}
+
+.mobile-chat__ws-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.mobile-chat__ws-status--connected .mobile-chat__ws-dot { background: #34C759; box-shadow: 0 0 5px rgba(52,199,89,0.5); }
+.mobile-chat__ws-status--connecting .mobile-chat__ws-dot { background: #FF9500; animation: mwsPulse 1s ease-in-out infinite; }
+.mobile-chat__ws-status--reconnecting .mobile-chat__ws-dot { background: #FF9500; animation: mwsPulse 1s ease-in-out infinite; }
+.mobile-chat__ws-status--disconnected .mobile-chat__ws-dot { background: #FF3B30; }
+
+.mobile-chat__ws-text {
+  color: rgba(255,255,255,0.35);
+  font-family: 'SF Mono', 'JetBrains Mono', monospace;
+}
+
+.mobile-chat__ws-status--connected .mobile-chat__ws-text { color: rgba(52,199,89,0.6); }
+.mobile-chat__ws-status--disconnected .mobile-chat__ws-text { color: rgba(255,59,48,0.6); }
+
+@keyframes mwsPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
 }
 
 /* ── Loading ───────────────────────────────────────────────────────── */

@@ -333,6 +333,10 @@ export interface UIPlugin extends Plugin {
   components: UIComponentDefinition[]
 }
 
+export type TypedPlugin = CommandPlugin | ThemePlugin | DataSourcePlugin | UIPlugin
+
+export type PluginType = TypedPlugin['type']
+
 /**
  * Plugin manifest
  */

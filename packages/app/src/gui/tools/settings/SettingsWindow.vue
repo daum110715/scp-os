@@ -387,7 +387,7 @@ watch(
 let prevFontSize = settings.fontSize
 
 function getActiveTerminal() {
-  return (window as any).__terminalInstance?.terminal || null
+  return window.__terminalInstance?.terminal || null
 }
 
 function applySettings(): void {

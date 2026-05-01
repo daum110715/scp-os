@@ -84,7 +84,8 @@ export abstract class BaseApplicationTemplate implements IApplicationTemplate {
    * Clone template
    */
   clone(): IApplicationTemplate {
-    const cloned = new (this.constructor as any)()
+    const Cls = this.constructor as new () => BaseApplicationTemplate
+    const cloned = new Cls()
     cloned.metadata = { ...this.metadata }
     cloned.config = JSON.parse(JSON.stringify(this.config))
     return cloned

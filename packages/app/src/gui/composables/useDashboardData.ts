@@ -1,5 +1,29 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 
+interface PerformanceMemory {
+  usedJSHeapSize: number
+  jsHeapSizeLimit: number
+  totalJSHeapSize: number
+}
+
+interface PerformanceWithMemory extends Performance {
+  memory?: PerformanceMemory
+}
+
+interface NetworkConnection {
+  effectiveType?: string
+  downlink?: number
+  rtt?: number
+  saveData?: boolean
+  type?: string
+}
+
+interface NavigatorWithConnection extends Navigator {
+  connection?: NetworkConnection
+  mozConnection?: NetworkConnection
+  webkitConnection?: NetworkConnection
+}
+
 export interface MemoryInfo {
   used: number
   limit: number
@@ -133,7 +157,7 @@ export function useDashboardData(refreshIntervalMs: number = 3000) {
   async function refreshMetrics() {
     isRefreshing.value = true
 
-    const mem = (window.performance as any)?.memory
+    const mem = (window.performance as PerformanceWithMemory)?.memory
 
     if (mem) {
       const usedMB = Math.round(mem.usedJSHeapSize / 1024 / 1024)
@@ -166,7 +190,7 @@ export function useDashboardData(refreshIntervalMs: number = 3000) {
     addHistoryPoint(latencyHistory, latency.value)
 
     networkStatus.value = navigator.onLine ? (latency.value > 100 ? 'Slow' : 'Online') : 'Offline'
-    const conn = (navigator as any).connection
+const conn = (navigator as NavigatorWithConnection).connection
     connectionType.value = conn?.effectiveType?.toUpperCase() || 'Unknown'
 
     jsListeners.value = '~' + Math.floor(parseInt(domNodes.value) * 0.3)

@@ -89,7 +89,9 @@ function insertText(text: string): void {
   const value = ta.value
   ta.value = value.substring(0, start) + text + value.substring(ta.selectionEnd)
   ta.selectionStart = ta.selectionEnd = start + text.length
-  onInput({ target: ta } as any)
+  if (editorStore.activeFileId) {
+    editorStore.updateContent(editorStore.activeFileId, ta.value)
+  }
   ta.focus()
 }
 

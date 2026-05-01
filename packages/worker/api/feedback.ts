@@ -1,8 +1,3 @@
-/**
- * Feedback API Handlers
- * Submit, list, like, and manage user feedback
- */
-
 import type { ChatApiResponse } from '../shared/types'
 
 export interface Feedback {
@@ -17,7 +12,7 @@ export interface Feedback {
   updated_at: string
   upvotes: number
   downvotes: number
-  commentsCount: number
+  comments_count: number
   userVote?: 'up' | 'down'
 }
 
@@ -52,17 +47,21 @@ export interface VoteInput {
   vote: 'up' | 'down'
 }
 
-async function executeInTransaction(
-  db: D1Database,
-  operations: () => Promise<void>
-): Promise<void> {
-  await db.exec('BEGIN TRANSACTION')
-  try {
-    await operations()
-    await db.exec('COMMIT')
-  } catch (error) {
-    await db.exec('ROLLBACK')
-    throw error
+function normalizeFeedbackRow(row: Record<string, unknown>): Feedback {
+  return {
+    id: row.id as number,
+    user_id: row.user_id as string,
+    nickname: (row.nickname as string) || 'Anonymous',
+    title: row.title as string,
+    content: row.content as string,
+    category: (row.category as string) || 'general',
+    status: (row.status as string) || 'published',
+    created_at: row.created_at as string,
+    updated_at: row.updated_at as string,
+    upvotes: (row.upvotes as number) || 0,
+    downvotes: (row.downvotes as number) || 0,
+    comments_count: (row.commentsCount as number) ?? (row.comments_count as number) ?? 0,
+    userVote: (row.userVote as 'up' | 'down') || undefined,
   }
 }
 
@@ -110,11 +109,11 @@ export async function submitFeedback(
       return { success: false, error: 'Failed to submit feedback' }
     }
 
-    const feedback = await db.prepare(
+    const row = await db.prepare(
       'SELECT * FROM feedbacks WHERE id = ?'
-    ).bind(result.meta?.last_row_id).first<Feedback>()
+    ).bind(result.meta?.last_row_id).first()
 
-    return { success: true, data: feedback }
+    return { success: true, data: row ? normalizeFeedbackRow(row as Record<string, unknown>) : null }
   } catch (error) {
     return {
       success: false,
@@ -137,7 +136,7 @@ export async function getFeedbackList(
 
     const feedbacks = await db.prepare(
       `${query} ORDER BY created_at DESC LIMIT ? OFFSET ?`
-    ).bind(...params, limit, offset).all<Feedback>()
+    ).bind(...params, limit, offset).all()
 
     const { query: countQuery, params: countParams } = buildFeedbackQuery(
       'SELECT COUNT(*) as total FROM feedbacks WHERE status = ?',
@@ -148,9 +147,11 @@ export async function getFeedbackList(
       .bind(...countParams)
       .first<{ total: number }>()
 
+    const normalized = (feedbacks.results || []).map(row => normalizeFeedbackRow(row as Record<string, unknown>))
+
     return {
       success: true,
-      data: feedbacks.results || [],
+      data: normalized,
       count: countResult?.total || 0,
     }
   } catch (error) {
@@ -227,26 +228,27 @@ export async function submitComment(
       return { success: false, error: 'Feedback not found' }
     }
 
-    const result = await db.prepare(
-      `INSERT INTO feedback_comments (feedback_id, user_id, nickname, content) VALUES (?, ?, ?, ?)`
-    ).bind(
-      input.feedback_id,
-      input.user_id,
-      input.nickname || 'Anonymous',
-      input.content
-    ).run()
+    const [insertResult] = await db.batch([
+      db.prepare(
+        `INSERT INTO feedback_comments (feedback_id, user_id, nickname, content) VALUES (?, ?, ?, ?)`
+      ).bind(
+        input.feedback_id,
+        input.user_id,
+        input.nickname || 'Anonymous',
+        input.content
+      ),
+      db.prepare(
+        'UPDATE feedbacks SET commentsCount = commentsCount + 1 WHERE id = ?'
+      ).bind(input.feedback_id),
+    ])
 
-    if (!result.success) {
+    if (!insertResult.success) {
       return { success: false, error: 'Failed to submit comment' }
     }
 
-    await db.prepare(
-      'UPDATE feedbacks SET commentsCount = commentsCount + 1 WHERE id = ?'
-    ).bind(input.feedback_id).run()
-
     const comment = await db.prepare(
       'SELECT * FROM feedback_comments WHERE id = ?'
-    ).bind(result.meta?.last_row_id).first<Comment>()
+    ).bind(insertResult.meta?.last_row_id).first<Comment>()
 
     return { success: true, data: comment }
   } catch (error) {
@@ -305,43 +307,28 @@ export async function voteFeedback(
 
     if (existingVote) {
       if (existingVote.vote === input.vote) {
-        await executeInTransaction(db, async () => {
-          await db.prepare(
-            'DELETE FROM feedback_votes WHERE id = ?'
-          ).bind(existingVote.id).run()
-
-          const column = input.vote === 'up' ? 'upvotes' : 'downvotes'
-          await db.prepare(
-            `UPDATE feedbacks SET ${column} = MAX(0, ${column} - 1) WHERE id = ?`
-          ).bind(input.id).run()
-        })
+        const column = input.vote === 'up' ? 'upvotes' : 'downvotes'
+        await db.batch([
+          db.prepare('DELETE FROM feedback_votes WHERE id = ?').bind(existingVote.id),
+          db.prepare(`UPDATE feedbacks SET ${column} = MAX(0, ${column} - 1) WHERE id = ?`).bind(input.id),
+        ])
         return { success: true, data: { id: input.id, vote: null, action: 'removed' } }
       } else {
-        await executeInTransaction(db, async () => {
-          await db.prepare(
-            'UPDATE feedback_votes SET vote = ? WHERE id = ?'
-          ).bind(input.vote, existingVote.id).run()
-
-          const incrementCol = input.vote === 'up' ? 'upvotes' : 'downvotes'
-          const decrementCol = input.vote === 'up' ? 'downvotes' : 'upvotes'
-          await db.prepare(
-            `UPDATE feedbacks SET ${incrementCol} = ${incrementCol} + 1, ${decrementCol} = MAX(0, ${decrementCol} - 1) WHERE id = ?`
-          ).bind(input.id).run()
-        })
+        const incrementCol = input.vote === 'up' ? 'upvotes' : 'downvotes'
+        const decrementCol = input.vote === 'up' ? 'downvotes' : 'upvotes'
+        await db.batch([
+          db.prepare('UPDATE feedback_votes SET vote = ? WHERE id = ?').bind(input.vote, existingVote.id),
+          db.prepare(`UPDATE feedbacks SET ${incrementCol} = ${incrementCol} + 1, ${decrementCol} = MAX(0, ${decrementCol} - 1) WHERE id = ?`).bind(input.id),
+        ])
         return { success: true, data: { id: input.id, vote: input.vote, action: 'changed' } }
       }
     }
 
-    await executeInTransaction(db, async () => {
-      await db.prepare(
-        `INSERT INTO feedback_votes (feedback_id, user_id, vote) VALUES (?, ?, ?)`
-      ).bind(input.id, input.user_id, input.vote).run()
-
-      const column = input.vote === 'up' ? 'upvotes' : 'downvotes'
-      await db.prepare(
-        `UPDATE feedbacks SET ${column} = ${column} + 1 WHERE id = ?`
-      ).bind(input.id).run()
-    })
+    const column = input.vote === 'up' ? 'upvotes' : 'downvotes'
+    await db.batch([
+      db.prepare('INSERT INTO feedback_votes (feedback_id, user_id, vote) VALUES (?, ?, ?)').bind(input.id, input.user_id, input.vote),
+      db.prepare(`UPDATE feedbacks SET ${column} = ${column} + 1 WHERE id = ?`).bind(input.id),
+    ])
     return { success: true, data: { id: input.id, vote: input.vote, action: 'added' } }
   } catch (error) {
     return {
@@ -382,7 +369,7 @@ export async function getFeedbackListWithVotes(
 
     const feedbacks = await db.prepare(
       `${query} ORDER BY created_at DESC LIMIT ? OFFSET ?`
-    ).bind(...params, limit, offset).all<Feedback>()
+    ).bind(...params, limit, offset).all()
 
     const { query: countQuery, params: countParams } = buildFeedbackQuery(
       'SELECT COUNT(*) as total FROM feedbacks WHERE status = ?',
@@ -393,8 +380,10 @@ export async function getFeedbackListWithVotes(
       .bind(...countParams)
       .first<{ total: number }>()
 
-    if (userId && feedbacks.results && feedbacks.results.length > 0) {
-      const feedbackIds = feedbacks.results.map(f => f.id)
+    const normalized = (feedbacks.results || []).map(row => normalizeFeedbackRow(row as Record<string, unknown>))
+
+    if (userId && normalized.length > 0) {
+      const feedbackIds = normalized.map(f => f.id)
       const placeholders = feedbackIds.map(() => '?').join(',')
       const votes = await db.prepare(
         `SELECT feedback_id, vote FROM feedback_votes WHERE user_id = ? AND feedback_id IN (${placeholders})`
@@ -405,14 +394,14 @@ export async function getFeedbackListWithVotes(
         voteMap.set(v.feedback_id, v.vote)
       }
 
-      for (const feedback of feedbacks.results) {
+      for (const feedback of normalized) {
         feedback.userVote = voteMap.get(feedback.id)
       }
     }
 
     return {
       success: true,
-      data: feedbacks.results || [],
+      data: normalized,
       count: countResult?.total || 0,
     }
   } catch (error) {
