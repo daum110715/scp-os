@@ -57,6 +57,14 @@ export class CORSManager {
           regex = new RegExp(`^${pattern}$`)
           this.originRegexCache.set(allowed, regex)
         }
+        // 通配符模式必须匹配完整域名：*.example.com 不应匹配 xexample.com
+        const wildcardIndex = allowed.indexOf('*')
+        if (wildcardIndex >= 0 && allowed[wildcardIndex + 1] === '.') {
+          const domain = allowed.slice(wildcardIndex + 2)
+          if (!origin.endsWith('.' + domain) && origin !== domain) {
+            continue
+          }
+        }
         if (regex.test(origin)) {
           return true
         }
