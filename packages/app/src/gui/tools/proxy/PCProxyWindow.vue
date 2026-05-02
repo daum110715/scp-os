@@ -87,13 +87,14 @@
               >
                 <div class="proxy-window__progress-bar-shimmer" />
               </div>
-              <div
-                v-if="store.downloadProgress.totalBytes > 0"
-                class="proxy-window__progress-milestone"
-                v-for="milestone in milestones"
-                :key="milestone"
-                :style="{ left: `${milestone}%` }"
-              />
+              <template v-if="store.downloadProgress.totalBytes > 0">
+                <div
+                  class="proxy-window__progress-milestone"
+                  v-for="milestone in milestones"
+                  :key="milestone"
+                  :style="{ left: `${milestone}%` }"
+                />
+              </template>
             </div>
 
             <div class="proxy-window__progress-stats-grid">
@@ -336,7 +337,7 @@ interface Props {
   windowInstance: WindowInstance
 }
 
-const props = defineProps<Props>()
+defineProps<Props>()
 const emit = defineEmits<{ close: [] }>()
 
 const { t } = useI18n()
