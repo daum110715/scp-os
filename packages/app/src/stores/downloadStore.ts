@@ -190,7 +190,7 @@ export const useDownloadStore = defineStore('download', () => {
 
         if (done) {
           const endTime = Date.now()
-          const blob = new Blob(chunks, { type: contentType })
+          const blob = new Blob(chunks as unknown as BlobPart[], { type: contentType })
           triggerDownload(blob, filename)
 
           downloadProgress.value = {
