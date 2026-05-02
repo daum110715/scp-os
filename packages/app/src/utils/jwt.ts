@@ -1,4 +1,4 @@
-const JWT_SECRET = 'scp-os-default-secret-change-in-production'
+import { config } from '../config'
 
 function base64UrlEncode(bytes: Uint8Array): string {
   let binary = ''
@@ -33,7 +33,7 @@ export async function generateToken(userId: string): Promise<string> {
   const payloadEncoded = base64UrlEncode(encoder.encode(JSON.stringify(payload)))
 
   const data = `${headerEncoded}.${payloadEncoded}`
-  const sig = await createHmacSignature(data, JWT_SECRET)
+  const sig = await createHmacSignature(data, config.jwtSecret)
   const sigEncoded = base64UrlEncode(sig)
 
   return `${data}.${sigEncoded}`

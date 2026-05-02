@@ -38,7 +38,7 @@
       </header>
 
       <!-- Content Body -->
-      <div class="doc-reader__body" v-html="content" />
+      <div class="doc-reader__body" v-html="sanitizedContent" />
 
       <!-- Empty State -->
       <div v-if="!content" class="doc-reader__empty">
@@ -54,6 +54,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import DOMPurify from 'dompurify'
 
 // ── Props ────────────────────────────────────────────────────────────
 
@@ -81,6 +82,21 @@ const formattedWordCount = computed(() => {
     return `${(props.wordCount / 1000).toFixed(1)}k words`
   }
   return `${props.wordCount} words`
+})
+
+const sanitizedContent = computed(() => {
+  if (!props.content) return ''
+  return DOMPurify.sanitize(props.content, {
+    ALLOWED_TAGS: [
+      'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+      'p', 'br', 'hr', 'blockquote', 'pre', 'code',
+      'ul', 'ol', 'li',
+      'a', 'img', 'table', 'thead', 'tbody', 'tr', 'th', 'td',
+      'strong', 'b', 'em', 'i', 'u', 's', 'del', 'ins',
+      'span', 'div', 'sup', 'sub',
+    ],
+    ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'id', 'target', 'rel'],
+  })
 })
 </script>
 

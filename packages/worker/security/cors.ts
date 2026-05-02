@@ -17,7 +17,7 @@ export class CORSManager {
   private precompilePatterns(): void {
     for (const allowed of this.config.cors.allowedOrigins) {
       if (allowed.includes('*')) {
-        const escaped = allowed.replace(/[.+?^${}()|[\]\\]/g, '\\$&')
+        const escaped = allowed.replace(/[+?^${}()|[\]\\]/g, '\\$&')
         const pattern = escaped.replace(/\*/g, '.*')
         this.originRegexCache.set(allowed, new RegExp(`^${pattern}$`))
       }
@@ -52,7 +52,7 @@ export class CORSManager {
       if (allowed.includes('*')) {
         let regex = this.originRegexCache.get(allowed)
         if (!regex) {
-          const escaped = allowed.replace(/[.+?^${}()|[\]\\]/g, '\\$&')
+          const escaped = allowed.replace(/[+?^${}()|[\]\\]/g, '\\$&')
           const pattern = escaped.replace(/\*/g, '.*')
           regex = new RegExp(`^${pattern}$`)
           this.originRegexCache.set(allowed, regex)

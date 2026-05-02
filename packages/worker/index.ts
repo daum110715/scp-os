@@ -1,4 +1,4 @@
-﻿/**
+/**
  * SCP Scraper Worker
  * 重构版本 - 使用模块化架构
  */
@@ -38,6 +38,10 @@ import { validationError, notFoundError, rateLimitedError, unauthorizedError, in
 // Durable Objects
 import { ChatRoomDO } from './durableObjects/ChatRoomDO'
 
+// 下载代理
+import { DownloadProxy } from './download/downloadProxy'
+import type { DownloadRequest } from './download/types'
+
 export { ChatRoomDO }
 
 /**
@@ -56,6 +60,13 @@ class SCPScraper {
   constructor(private kv?: KVNamespace, private db?: D1Database) {}
 
   getDatabase(): D1Database | undefined {
+    return this.db
+  }
+
+  requireDB(): D1Database {
+    if (!this.db) {
+      throw new Error('Database not available. Ensure SCP_DB binding is configured.')
+    }
     return this.db
   }
 
@@ -1080,13 +1091,6 @@ export default {
       const url = new URL(request.url)
       const path = url.pathname
 
-      if (path === '/chat/ws' && request.headers.get('Upgrade') === 'websocket') {
-        const roomId = url.searchParams.get('room_id') || '1'
-        const id = env.CHAT_ROOM_DO.idFromName(`room-${roomId}`)
-        const stub = env.CHAT_ROOM_DO.get(id)
-        return stub.fetch(request)
-      }
-
       // 速率限制
       const ip = context.ip
       if (!await rateLimiter.checkLimit(ip)) {
@@ -1101,18 +1105,38 @@ export default {
         '/feedback/submit', '/feedback/vote', '/feedback/comment',
         '/feedback/like',
         '/chat/rooms', '/chat/nickname', '/chat/send',
+        '/chat/broadcast',
         '/api/user/register',
         '/performance'
       ]
+      let authenticatedUserId: string | undefined
       if (request.method === 'POST' && authRequiredPaths.includes(path)) {
         const authResult = await requireAuth(request, env, corsManager)
         if (authResult instanceof Response) {
           return authResult
         }
+        authenticatedUserId = authResult.userId
+      }
+      if (path === '/chat/ws' && request.headers.get('Upgrade') === 'websocket') {
+        const authResult = await requireAuth(request, env, corsManager)
+        if (authResult instanceof Response) {
+          return authResult
+        }
+        authenticatedUserId = authResult.userId
       }
 
       // 路由处理
-      if (path === '/scrape') {
+      if (path === '/chat/ws' && request.headers.get('Upgrade') === 'websocket' && authenticatedUserId) {
+        const roomId = url.searchParams.get('room_id') || '1'
+        const username = url.searchParams.get('username') || 'User'
+        const newUrl = new URL(request.url)
+        newUrl.searchParams.set('user_id', authenticatedUserId)
+        newUrl.searchParams.set('username', username)
+        const authRequest = new Request(newUrl.toString(), request)
+        const id = env.CHAT_ROOM_DO.idFromName(`room-${roomId}`)
+        const stub = env.CHAT_ROOM_DO.get(id)
+        return stub.fetch(authRequest)
+      } else if (path === '/scrape') {
         const scpNumber = url.searchParams.get('number')
         const branch = url.searchParams.get('branch') || 'en' // 默认英文分部
         
@@ -1161,13 +1185,13 @@ export default {
         try {
           const body = await request.json() as ChatSendMessageBody
 
-          if (!body.user_id || !body.content) {
-            return corsManager.createErrorResponse(validationError('Missing user_id or content'), 400, context)
+          if (!body.content) {
+            return corsManager.createErrorResponse(validationError('Missing content'), 400, context)
           }
 
           const result = await scraper.sendChatMessageWithRateLimit(
-            body.user_id,
-            body.nickname,
+            authenticatedUserId!,
+            undefined,
             body.content,
             body.room_id || 1
           )
@@ -1183,6 +1207,10 @@ export default {
         const roomIdParam = url.searchParams.get('room_id')
         const roomId = roomIdParam ? safeParseInt(roomIdParam, 0) : undefined
 
+        if (roomId !== undefined && roomId <= 0) {
+          return corsManager.createResponse({ success: true, data: [], count: 0 }, 200, context)
+        }
+
         const result = await scraper.getChatMessages(limit, after, roomId)
         return corsManager.createResponse(result, result.success ? 200 : 500, context)
       } else if (path === '/chat/rooms') {
@@ -1194,13 +1222,13 @@ export default {
           // 创建聊天室
           try {
             const body = await request.json() as CreateChatRoomBody
-            const { name, description, created_by, is_public } = body
+            const { name, description, is_public } = body
 
-            if (!name || !created_by) {
-              return corsManager.createErrorResponse(validationError('Missing name or created_by'), 400, context)
+            if (!name) {
+              return corsManager.createErrorResponse(validationError('Missing name'), 400, context)
             }
 
-            const result = await scraper.createChatRoom({ name, description, created_by, is_public })
+            const result = await scraper.createChatRoom({ name, description, created_by: authenticatedUserId!, is_public })
             return corsManager.createResponse(result, result.success ? 201 : 500, context)
           } catch (error) {
             logger.error('Failed to parse room creation', error as Error)
@@ -1217,13 +1245,13 @@ export default {
 
         try {
           const body = await request.json() as SetNicknameBody
-          const { user_id, nickname } = body
+          const { nickname } = body
 
-          if (!user_id || !nickname) {
-            return corsManager.createErrorResponse(validationError('Missing user_id or nickname'), 400, context)
+          if (!nickname) {
+            return corsManager.createErrorResponse(validationError('Missing nickname'), 400, context)
           }
 
-          const result = await scraper.setUserNickname(user_id, nickname)
+          const result = await scraper.setUserNickname(authenticatedUserId!, nickname)
           return corsManager.createResponse(result, result.success ? 200 : 500, context)
         } catch (error) {
           logger.error('Failed to parse nickname', error as Error)
@@ -1237,14 +1265,14 @@ export default {
 
         try {
           const body = await request.json() as SubmitFeedbackBody
-          const { user_id, nickname, title, content, category } = body
+          const { nickname, title, content, category } = body
 
-          if (!user_id || !title || !content) {
+          if (!title || !content) {
             return corsManager.createErrorResponse(validationError('Missing required fields'), 400, context)
           }
 
-          const result = await feedbackAPI.submitFeedback(scraper.getDatabase()!, {
-            user_id, nickname, title, content, category
+          const result = await feedbackAPI.submitFeedback(scraper.requireDB(), {
+            user_id: authenticatedUserId!, nickname, title, content, category
           })
           return corsManager.createResponse(result, result.success ? 201 : 500, context)
         } catch (error) {
@@ -1258,7 +1286,7 @@ export default {
         const category = url.searchParams.get('category') || undefined
 
         const result = await feedbackAPI.getFeedbackList(
-          scraper.getDatabase()!, limit, offset, category
+          scraper.requireDB(), limit, offset, category
         )
         return corsManager.createResponse(result, result.success ? 200 : 500, context)
       } else if (path === '/feedback/like') {
@@ -1275,7 +1303,7 @@ export default {
             return corsManager.createErrorResponse(validationError('Missing feedback id'), 400, context)
           }
 
-          const result = await feedbackAPI.likeFeedback(scraper.getDatabase()!, id)
+          const result = await feedbackAPI.likeFeedback(scraper.requireDB(), id)
           return corsManager.createResponse(result, result.success ? 200 : 500, context)
         } catch (error) {
           logger.error('Failed to like feedback', error as Error)
@@ -1283,7 +1311,7 @@ export default {
         }
       } else if (path === '/feedback/categories') {
         // 获取反馈分类统计
-        const result = await feedbackAPI.getFeedbackCategories(scraper.getDatabase()!)
+        const result = await feedbackAPI.getFeedbackCategories(scraper.requireDB())
         return corsManager.createResponse(result, result.success ? 200 : 500, context)
       } else if (path === '/feedback/comment') {
         // 提交反馈评论
@@ -1293,14 +1321,14 @@ export default {
 
         try {
           const body = await request.json() as SubmitCommentBody
-          const { feedback_id, user_id, nickname, content } = body
+          const { feedback_id, nickname, content } = body
 
-          if (!feedback_id || !user_id || !content) {
+          if (!feedback_id || !content) {
             return corsManager.createErrorResponse(validationError('Missing required fields'), 400, context)
           }
 
-          const result = await feedbackAPI.submitComment(scraper.getDatabase()!, {
-            feedback_id, user_id, nickname, content
+          const result = await feedbackAPI.submitComment(scraper.requireDB(), {
+            feedback_id, user_id: authenticatedUserId!, nickname, content
           })
           return corsManager.createResponse(result, result.success ? 201 : 500, context)
         } catch (error) {
@@ -1315,7 +1343,7 @@ export default {
           return corsManager.createErrorResponse(validationError('Missing feedback_id parameter'), 400, context)
         }
 
-        const result = await feedbackAPI.getComments(scraper.getDatabase()!, feedbackId)
+        const result = await feedbackAPI.getComments(scraper.requireDB(), feedbackId, safeParseInt(url.searchParams.get('limit'), 50), safeParseInt(url.searchParams.get('offset'), 0))
         return corsManager.createResponse(result, result.success ? 200 : 500, context)
       } else if (path === '/feedback/vote') {
         // 投票反馈
@@ -1325,14 +1353,14 @@ export default {
 
         try {
           const body = await request.json() as VoteFeedbackBody
-          const { id, user_id, vote } = body
+          const { id, vote } = body
 
-          if (!id || !user_id || !vote || (vote !== 'up' && vote !== 'down')) {
+          if (!id || !vote || (vote !== 'up' && vote !== 'down')) {
             return corsManager.createErrorResponse(validationError('Missing or invalid required fields'), 400, context)
           }
 
-          const result = await feedbackAPI.voteFeedback(scraper.getDatabase()!, {
-            id, user_id, vote
+          const result = await feedbackAPI.voteFeedback(scraper.requireDB(), {
+            id, user_id: authenticatedUserId!, vote
           })
           return corsManager.createResponse(result, result.success ? 200 : 500, context)
         } catch (error) {
@@ -1347,7 +1375,7 @@ export default {
         const userId = url.searchParams.get('user_id') || undefined
 
         const result = await feedbackAPI.getFeedbackListWithVotes(
-          scraper.getDatabase()!, limit, offset, category, userId
+          scraper.requireDB(), limit, offset, category, userId
         )
         return corsManager.createResponse(result, result.success ? 200 : 500, context)
       } else if (path === '/api/user/register') {
@@ -1358,13 +1386,13 @@ export default {
 
         try {
           const body = await request.json() as RegisterUserBody
-          const { userId, nickname } = body
+          const { nickname } = body
 
-          if (!userId || !nickname) {
-            return corsManager.createErrorResponse('Missing userId or nickname', 400, context)
+          if (!nickname) {
+            return corsManager.createErrorResponse(validationError('Missing nickname'), 400, context)
           }
 
-          const result = await userAPI.registerUser(scraper.getDatabase()!, { userId, nickname })
+          const result = await userAPI.registerUser(scraper.requireDB(), { userId: authenticatedUserId!, nickname })
           return corsManager.createResponse(result, result.success ? 200 : 500, context)
         } catch (error) {
           logger.error('Failed to register user', error as Error)
@@ -1382,7 +1410,7 @@ export default {
           return corsManager.createErrorResponse('Missing nickname parameter', 400, context)
         }
 
-        const result = await userAPI.checkNicknameAvailability(scraper.getDatabase()!, nicknameParam, excludeUserId)
+        const result = await userAPI.checkNicknameAvailability(scraper.requireDB(), nicknameParam, excludeUserId)
         return corsManager.createResponse(result, result.success ? 200 : 500, context)
       } else if (path.startsWith('/api/user/') && path !== '/api/user/register' && path !== '/api/user/check-nickname') {
         // 获取用户信息（根据 UUID）
@@ -1395,10 +1423,12 @@ export default {
           return corsManager.createErrorResponse('Missing userId', 400, context)
         }
 
-        const result = await userAPI.getUserByUserId(scraper.getDatabase()!, userId)
+        const result = await userAPI.getUserByUserId(scraper.requireDB(), userId)
         return corsManager.createResponse(result, result.success ? 200 : 404, context)
       } else if (path === '/chat/broadcast') {
-        // 定时任务：广播新消息
+        if (request.method !== 'POST') {
+          return corsManager.createErrorResponse(validationError('Method not allowed'), 405, context)
+        }
         const result = await scraper.broadcastNewMessages()
         return corsManager.createResponse(result, result.success ? 200 : 500, context)
       } else if (path === '/debug') {
@@ -1496,6 +1526,62 @@ export default {
       } else if (path === '/docs/hubs') {
         const result = await docsAPI.handleDocsHubs(request, env)
         return corsManager.createResponse(await result.json(), result.status, context)
+      } else if (path === '/download/init') {
+        if (request.method !== 'POST') {
+          return corsManager.createErrorResponse(validationError('Method not allowed'), 405, context)
+        }
+        try {
+          const body = await request.json() as DownloadRequest
+          const downloadProxy = new DownloadProxy(env.SCP_CACHE)
+          return downloadProxy.handleInit(body, context.origin)
+        } catch {
+          return corsManager.createErrorResponse(validationError('Invalid request body'), 400, context)
+        }
+      } else if (path === '/download/stream') {
+        if (request.method !== 'GET') {
+          return corsManager.createErrorResponse(validationError('Method not allowed'), 405, context)
+        }
+        const downloadId = url.searchParams.get('id')
+        const downloadUrl = url.searchParams.get('url')
+        const rateLimitStr = url.searchParams.get('rateLimit')
+        if (!downloadId || !downloadUrl) {
+          return corsManager.createErrorResponse(validationError('Missing id or url parameter'), 400, context)
+        }
+        const downloadProxy = new DownloadProxy(env.SCP_CACHE)
+        return downloadProxy.handleStream(
+          downloadId,
+          decodeURIComponent(downloadUrl),
+          parseInt(rateLimitStr || '0', 10) || 0,
+          context.origin,
+        )
+      } else if (path === '/download/progress') {
+        if (request.method !== 'GET') {
+          return corsManager.createErrorResponse(validationError('Method not allowed'), 405, context)
+        }
+        const downloadId = url.searchParams.get('id')
+        if (!downloadId) {
+          return corsManager.createErrorResponse(validationError('Missing id parameter'), 400, context)
+        }
+        const downloadProxy = new DownloadProxy(env.SCP_CACHE)
+        return downloadProxy.handleProgress(downloadId, context.origin)
+      } else if (path === '/download/history') {
+        if (request.method === 'GET') {
+          const downloadProxy = new DownloadProxy(env.SCP_CACHE)
+          return downloadProxy.handleHistory(
+            url.searchParams.get('limit'),
+            url.searchParams.get('offset'),
+            context.origin,
+          )
+        } else if (request.method === 'DELETE') {
+          const downloadId = url.searchParams.get('id')
+          if (!downloadId) {
+            return corsManager.createErrorResponse(validationError('Missing id parameter'), 400, context)
+          }
+          const downloadProxy = new DownloadProxy(env.SCP_CACHE)
+          return downloadProxy.handleDeleteHistory(downloadId, context.origin)
+        } else {
+          return corsManager.createErrorResponse(validationError('Method not allowed'), 405, context)
+        }
       } else if (path === '/') {
         return corsManager.createResponse(
           {
@@ -1519,6 +1605,10 @@ export default {
               '/docs/content/{scpNumber}': '获取条目完整内容 (KV优先, GitHub Raw回退)',
               '/docs/tales': '查询故事列表 (year/search/limit/offset)',
               '/docs/hubs': '获取 Hub 列表',
+              '/download/init': '初始化下载 (POST, body: {url, filename?, rateLimit?})',
+              '/download/stream?id={id}&url={url}': '流式下载 (GET, SSE stream)',
+              '/download/progress?id={id}': '查询下载进度 (GET)',
+              '/download/history?limit={n}&offset={n}': '下载历史记录 (GET/DELETE)',
             },
             features: {
               modular: true,
@@ -1527,6 +1617,7 @@ export default {
               rateLimit: `${config.rateLimit.maxRequests} requests / ${config.rateLimit.windowMs / 1000}s`,
               database: 'D1 database enabled with tags and clearance_level filtering',
               performance: 'Performance monitoring with metrics collection',
+              downloadProxy: 'Streaming download proxy with rate control',
             },
           },
           200,
@@ -1548,6 +1639,6 @@ export default {
   async scheduled(event: ScheduledEvent, env: Env): Promise<void> {
     const scraper = new SCPScraper(env.SCP_CACHE, env.SCP_DB)
     const result = await scraper.broadcastNewMessages()
-    console.log(`[Scheduled] Broadcast result:`, result)
+    logger.info('[Scheduled] Broadcast result:', result)
   },
 }

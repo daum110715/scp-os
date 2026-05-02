@@ -14,6 +14,7 @@ import { useThemeStore } from './gui/stores/themeStore'
 import { useNotification } from './gui/composables/useNotification'
 import { useMobile } from './gui/composables/useMobile'
 import { useI18n } from './gui/composables/useI18n'
+import logger from './utils/logger'
 
 const tabsStore = useTabsStore()
 const wmStore = useWindowManagerStore()
@@ -95,8 +96,8 @@ onMounted(async () => {
               height: config.height,
             })
           })
-        }).catch(() => {
-          // Silently handle import errors
+        }).catch((err) => {
+          logger.warn('[App] Failed to import ToolRegistry:', err)
         })
       }
     },
@@ -125,9 +126,13 @@ onMounted(async () => {
     category: 'global',
     handler: () => {
       if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(() => {})
+        document.documentElement.requestFullscreen().catch((err) => {
+          logger.warn('[App] Failed to request fullscreen:', err)
+        })
       } else {
-        document.exitFullscreen().catch(() => {})
+        document.exitFullscreen().catch((err) => {
+          logger.warn('[App] Failed to exit fullscreen:', err)
+        })
       }
     },
   })
@@ -163,9 +168,7 @@ onUnmounted(() => {
  * Called when user completes login from LoginScreen or PCLoginScreen
  */
 function handleLoginSuccess(): void {
-  // The authStore.isLoggedIn is already set to true by the login action
-  // This function can be extended for additional post-login logic
-  console.log('[App] User logged in successfully, transitioning to main interface')
+  logger.info('[App] User logged in successfully, transitioning to main interface')
 }
 </script>
 

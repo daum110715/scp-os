@@ -15,7 +15,6 @@
           type="text"
           class="tales-panel__search-input"
           placeholder="Search tales by title..."
-          @input="onSearchInput"
         />
         <button
           v-if="searchQuery"
@@ -129,6 +128,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { config } from '../config'
+import { getAuthToken } from '../utils/authFetch'
 import DocReaderPanel from './DocReaderPanel.vue'
 
 // ── Types ──────────────────────────────────────────────────────────────
@@ -142,14 +142,9 @@ interface TaleSummary {
   url: string
 }
 
-interface TaleDetail extends TaleSummary {
-  content: string
-  wordCount: number | null
-}
-
 // ── Constants ──────────────────────────────────────────────────────────
 
-const API_BASE = config.api.workerUrl
+const API_BASE = config?.api?.workerUrl || 'https://api.scpos.site'
 const FETCH_TIMEOUT_MS = 15000
 
 // ── State ──────────────────────────────────────────────────────────────
@@ -188,8 +183,16 @@ async function fetchWithTimeout(
 ): Promise<Response> {
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
+
+  // Build headers: include Authorization if token is available
+  const headers: Record<string, string> = {}
+  const token = getAuthToken()
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
+  }
+
   try {
-    return await fetch(url, { signal: controller.signal })
+    return await fetch(url, { signal: controller.signal, headers })
   } finally {
     clearTimeout(timeoutId)
   }
@@ -236,9 +239,11 @@ async function fetchTaleDetail(tale: TaleSummary): Promise<void> {
     const id = encodeURIComponent(tale.id)
 
     // Fetch content from API
+    // - /docs/content/{id} : fetch tale HTML content
+    // - /docs/item/{id}    : fetch tale metadata (author, year, rating, word count)
     const [contentResponse, metaResponse] = await Promise.allSettled([
-      fetchWithTimeout(`${API_BASE}/docs/tales/${id}`),
-      fetchWithTimeout(`${API_BASE}/docs/tales/${id}/meta`),
+      fetchWithTimeout(`${API_BASE}/docs/content/${id}`),
+      fetchWithTimeout(`${API_BASE}/docs/item/${id}`),
     ])
 
     let contentData: any = null
@@ -267,7 +272,9 @@ async function fetchTaleDetail(tale: TaleSummary): Promise<void> {
       metaData?.wordCount ??
       contentData.data?.word_count ??
       contentData.wordCount ??
-      (rawContent ? rawContent.replace(/<[^>]*>/g, '').length : null)
+      (rawContent
+        ? rawContent.replace(/<[^>]*>/g, '').split(/\s+/).filter(Boolean).length
+        : null)
 
     taleContent.value = rawContent
     taleWordCount.value = wordCountValue
@@ -304,10 +311,6 @@ function normalizeTaleSummary(raw: any): TaleSummary {
 }
 
 // ── Event Handlers ─────────────────────────────────────────────────────
-
-function onSearchInput(): void {
-  // Frontend filtering is handled reactively via computed
-}
 
 function clearSearch(): void {
   searchQuery.value = ''

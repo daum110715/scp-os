@@ -261,7 +261,9 @@ export async function submitComment(
 
 export async function getComments(
   db: D1Database,
-  feedbackId: number
+  feedbackId: number,
+  limit: number = 50,
+  offset: number = 0
 ): Promise<ChatApiResponse<Comment[]>> {
   try {
     const feedback = await db.prepare(
@@ -273,8 +275,8 @@ export async function getComments(
     }
 
     const comments = await db.prepare(
-      'SELECT * FROM feedback_comments WHERE feedback_id = ? ORDER BY created_at ASC'
-    ).bind(feedbackId).all<Comment>()
+      'SELECT * FROM feedback_comments WHERE feedback_id = ? ORDER BY created_at ASC LIMIT ? OFFSET ?'
+    ).bind(feedbackId, limit, offset).all<Comment>()
 
     return {
       success: true,

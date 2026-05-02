@@ -5,7 +5,7 @@
 
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { indexedDBService } from '../utils/indexedDB'
+import indexedDBService from '../utils/indexedDB'
 import { config } from '../config'
 import { authenticatedFetch } from '../utils/authFetch'
 import logger from '../utils/logger'
