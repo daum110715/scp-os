@@ -22,6 +22,7 @@ import { logger } from './utils/logger'
 import { performanceMonitor } from './utils/performanceMonitor'
 import Defuddle from '@flicknote/defuddle'
 import { parseHTML } from 'linkedom'
+import * as cheerio from 'cheerio'
 
 // 安全
 import { RateLimiter } from './security/rateLimiter'
@@ -302,8 +303,7 @@ class SCPScraper {
    * 解析英文页面（直接使用 HTML 结构）
    */
   private async parseEnglishPage(html: string, scpNumber: string, branch: string): Promise<SCPWikiData> {
-    const cheerioModule = await import('cheerio')
-    const $ = cheerioModule.load(html)
+    const $ = cheerio.load(html)
 
     // 找到主内容区域
     const $content = $('#page-content')
@@ -313,7 +313,7 @@ class SCPScraper {
 
     // 获取所有段落和块级元素（包括嵌套的）
     const elements: string[] = []
-    $content.find('p, div, blockquote, h1, h2, h3, h4, h5, h6').each((_, el) => {
+    $content.find('p, div, blockquote, h1, h2, h3, h4, h5, h6').each((_: number, el: cheerio.Element) => {
       // 只处理最内层的元素，避免重复
       const $el = $(el)
       if ($el.children('p, div, blockquote, h1, h2, h3, h4, h5, h6').length === 0) {

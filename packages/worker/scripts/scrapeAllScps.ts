@@ -7,6 +7,8 @@ import { getConfig } from '../shared/config'
 import type { D1StatRow, D1ClearanceRow } from '../shared/types'
 import { HTMLParser } from '../parsers/htmlParser'
 import { logger } from '../utils/logger'
+import { RetryStrategy } from '../errors/retryStrategy'
+import { ScraperError } from '../errors/scraperError'
 
 /**
  * SCP 索引爬虫类
@@ -14,6 +16,7 @@ import { logger } from '../utils/logger'
 class SCPIndexScraper {
   private config = getConfig()
   private htmlParser = new HTMLParser()
+  private retryStrategy = new RetryStrategy()
 
   /**
    * 从 SCP Wiki 系列页面爬取所有 SCP 编号
@@ -113,37 +116,42 @@ class SCPIndexScraper {
    * 获取 URL 内容（复用现有逻辑）
    */
   private async fetchURL(url: string): Promise<string> {
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), this.config.timeout)
+    return this.retryStrategy.executeWithRetry(async () => {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), this.config.timeout)
 
-    try {
-      const response = await fetch(url, {
-        headers: {
-          'User-Agent': this.config.userAgent,
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-          'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
-          'Cache-Control': 'no-cache',
-        },
-        signal: controller.signal,
-        redirect: 'follow',
-      })
+      try {
+        const response = await fetch(url, {
+          headers: {
+            'User-Agent': this.config.userAgent,
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+            'Cache-Control': 'no-cache',
+          },
+          signal: controller.signal,
+          redirect: 'follow',
+        })
 
-      clearTimeout(timeoutId)
+        clearTimeout(timeoutId)
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+        if (!response.ok) {
+          if (response.status === 429) {
+            throw ScraperError.rateLimitError()
+          }
+          throw ScraperError.networkError(`HTTP ${response.status}`, response.status)
+        }
+
+        return await response.text()
+      } catch (error) {
+        clearTimeout(timeoutId)
+
+        if (error instanceof Error && error.name === 'AbortError') {
+          throw ScraperError.timeoutError()
+        }
+
+        throw ScraperError.fromError(error as Error)
       }
-
-      return await response.text()
-    } catch (error) {
-      clearTimeout(timeoutId)
-
-      if (error instanceof Error && error.name === 'AbortError') {
-        throw new Error('请求超时')
-      }
-
-      throw error
-    }
+    }, 3)
   }
 
   /**
@@ -235,7 +243,7 @@ class D1DatabaseManager {
       'UPDATE scp_index SET name = ?, object_class = ?, tags = ?, clearance_level = ?, updated_at = CURRENT_TIMESTAMP WHERE scp_id = ?'
     )
       .bind(name, objectClass, tags || '', clearanceLevel || 1, scpId)
-      .execute()
+      .run()
   }
 
   /**

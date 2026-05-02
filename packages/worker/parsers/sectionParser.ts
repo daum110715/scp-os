@@ -209,12 +209,12 @@ export class SectionParser {
 
     // 移除 Markdown 语法（保留文本）
     cleanText = cleanText.replace(/\*\*/g, '') // 移除加粗
-    cleanText = cleanText.replace(/\*/g, '')  // 移除斜体
+    cleanText = cleanText.replace(/\*([^*]+)\*/g, '$1')  // 移除斜体
     cleanText = cleanText.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // 移除链接，保留文本
     cleanText = cleanText.replace(/!\[([^\]]*)\]\([^)]+\)/g, '') // 移除图片标记
 
     // 移除 JavaScript 代码和广告相关内容
-    cleanText = cleanText.replace(/window\[['"]nitroAds['"]\]\.createAd\([^)]+\)/g, '')
+    cleanText = cleanText.replace(/window\['nitroAds'\]\.createAd\([^)]+\)/g, '')
     cleanText = cleanText.replace(/window\['nitroAds'\]=window\['nitroAds'\]\|\|\{[^}]+\}/g, '')
     cleanText = cleanText.replace(/nitroAds\.(queue|createAd|addUserToken)\([^)]*\)/g, '')
 

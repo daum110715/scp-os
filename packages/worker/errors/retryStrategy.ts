@@ -25,6 +25,48 @@ export class RetryStrategy {
       )
     }
 
+    // 对于非 ScraperError 的普通错误，检查是否可能是网络/超时错误
+    const retryableErrorMessages = [
+      'timeout',
+      'timeouted',
+      'network',
+      'networking',
+      'connection',
+      'aborted',
+      '5xx',
+      '429',
+      'too many requests',
+      '408',
+      'request timeout',
+      'fetch failed',
+    ]
+
+    const nonRetryableErrorMessages = [
+      'not found',
+      '404',
+      'invalid',
+      'parse',
+      'validation',
+      'not allowed',
+      'forbidden',
+      '403',
+      'unauthorized',
+      '401',
+    ]
+
+    const errorMsg = error.message.toLowerCase()
+
+    // 如果明确匹配到不可重试的关键词，就不重试
+    if (nonRetryableErrorMessages.some(msg => errorMsg.includes(msg))) {
+      return false
+    }
+
+    // 如果匹配到可重试的关键词，就重试
+    if (retryableErrorMessages.some(msg => errorMsg.includes(msg))) {
+      return true
+    }
+
+    // 默认返回 true，保持向后兼容性（谨慎策略）
     return true
   }
 
