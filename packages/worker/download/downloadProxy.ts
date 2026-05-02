@@ -52,15 +52,23 @@ function validateUrl(url: string): { valid: boolean; error?: string } {
   try {
     const urlObj = new URL(url)
 
-    if (!DOWNLOAD_CONFIG.allowedProtocols.includes(urlObj.protocol)) {
+    if (!(DOWNLOAD_CONFIG.allowedProtocols as readonly string[]).includes(urlObj.protocol)) {
       return { valid: false, error: `不支持的协议: ${urlObj.protocol}，仅支持 HTTP/HTTPS` }
     }
 
     const hostname = urlObj.hostname.toLowerCase()
+
     for (const blocked of DOWNLOAD_CONFIG.blockedHosts) {
       if (hostname === blocked || hostname.startsWith(blocked)) {
         return { valid: false, error: '不允许访问内部/私有网络地址' }
       }
+    }
+
+    const isAllowed = DOWNLOAD_CONFIG.allowedHosts.some((allowed) => {
+      return hostname === allowed || hostname.endsWith('.' + allowed)
+    })
+    if (!isAllowed) {
+      return { valid: false, error: `域名 ${hostname} 不在允许列表中，拒绝下载` }
     }
 
     return { valid: true }
