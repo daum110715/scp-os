@@ -261,6 +261,7 @@ onMounted(() => {
 
 <style scoped>
 .mobile-proxy {
+}
 
 .mobile-proxy__alert {
   display: flex;
