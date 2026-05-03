@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, shallowRef, computed } from 'vue'
 import axios from 'axios'
 import { config } from '../config'
 import type {
@@ -26,7 +26,7 @@ interface DownloadStats {
 }
 
 export const useDownloadStore = defineStore('download', () => {
-  const downloadProgress = ref<DownloadProgress | null>(null)
+  const downloadProgress = shallowRef<DownloadProgress | null>(null)
   const history = ref<DownloadHistoryItem[]>([])
   const historyTotal = ref(0)
   const isLoadingHistory = ref(false)
@@ -111,6 +111,12 @@ export const useDownloadStore = defineStore('download', () => {
     }
   }
 
+  function updateProgress(patch: Partial<DownloadProgress>) {
+    const current = downloadProgress.value
+    if (!current) return
+    downloadProgress.value = Object.assign({}, current, patch)
+  }
+
   async function initDownload(url: string, filename?: string, rateLimit?: number): Promise<DownloadInitResponse | null> {
     clearError()
     try {
@@ -121,7 +127,7 @@ export const useDownloadStore = defineStore('download', () => {
       )
       return response.data
     } catch (e: any) {
-      const msg = e?.response?.data?.error?.message || e?.message || '初始化下载失败'
+      const msg = e?.response?.data?.error?.message || e?.message || '\u521d\u59cb\u5316\u4e0b\u8f7d\u5931\u8d25'
       error.value = msg
       return null
     }
@@ -173,17 +179,30 @@ export const useDownloadStore = defineStore('download', () => {
         }
       }
 
-      const reader = response.body?.getReader()
-      if (!reader) {
-        throw new Error('浏览器不支持流式读取')
+      if (!response.body) {
+        const arrayBuffer = await response.arrayBuffer()
+        const blob = new Blob([arrayBuffer], { type: contentType })
+        triggerDownload(blob, filename)
+        updateProgress({
+          status: 'completed',
+          downloadedBytes: arrayBuffer.byteLength,
+          progress: 100,
+          speed: 0,
+          endTime: Date.now(),
+        })
+        isDownloading.value = false
+        stopSpeedTracking()
+        await fetchHistory(20, 0)
+        return
       }
 
+      const reader = response.body.getReader()
       const chunks: Uint8Array[] = []
-      let downloadedBytes = 0
+      let totalChunkBytes = 0
       let lastProgressTime = Date.now()
       let lastBytesCount = 0
-      let avgSpeedSum = 0
-      let avgSpeedCount = 0
+
+      const PROGRESS_INTERVAL = 300
 
       while (true) {
         const { done, value } = await reader.read()
@@ -193,14 +212,13 @@ export const useDownloadStore = defineStore('download', () => {
           const blob = new Blob(chunks as unknown as BlobPart[], { type: contentType })
           triggerDownload(blob, filename)
 
-          downloadProgress.value = {
-            ...downloadProgress.value!,
+          updateProgress({
             status: 'completed',
-            downloadedBytes,
+            downloadedBytes: totalChunkBytes,
             progress: 100,
             speed: 0,
             endTime,
-          }
+          })
           isDownloading.value = false
           stopSpeedTracking()
           await fetchHistory(20, 0)
@@ -208,44 +226,40 @@ export const useDownloadStore = defineStore('download', () => {
         }
 
         chunks.push(value)
-        downloadedBytes += value.length
+        totalChunkBytes += value.length
 
         const now = Date.now()
-        if (now - lastProgressTime >= 200) {
+        if (now - lastProgressTime >= PROGRESS_INTERVAL) {
           const elapsed = now - lastProgressTime
-          const chunkBytes = downloadedBytes - lastBytesCount
+          const chunkBytes = totalChunkBytes - lastBytesCount
           const speed = elapsed > 0 ? (chunkBytes / elapsed) * 1000 : 0
-          avgSpeedSum += speed
-          avgSpeedCount++
 
-          downloadProgress.value = {
-            ...downloadProgress.value!,
+          const currentTotal = downloadProgress.value?.totalBytes ?? 0
+          updateProgress({
             status: 'downloading',
-            downloadedBytes,
+            downloadedBytes: totalChunkBytes,
             speed: Math.round(speed),
-            progress: downloadProgress.value!.totalBytes > 0
-              ? Math.min(99, Math.round((downloadedBytes / downloadProgress.value!.totalBytes) * 100))
-              : Math.min(99, Math.round(downloadedBytes / 1024)),
-          }
+            progress: currentTotal > 0
+              ? Math.min(99, Math.round((totalChunkBytes / currentTotal) * 100))
+              : Math.min(99, Math.round(totalChunkBytes / 1024)),
+          })
           lastProgressTime = now
-          lastBytesCount = downloadedBytes
+          lastBytesCount = totalChunkBytes
         }
       }
     } catch (e: any) {
       if (e.name === 'AbortError') {
-        downloadProgress.value = {
-          ...downloadProgress.value!,
+        updateProgress({
           status: 'cancelled',
           endTime: Date.now(),
-        }
+        })
       } else {
-        downloadProgress.value = {
-          ...downloadProgress.value!,
+        updateProgress({
           status: 'failed',
-          error: e.message || '下载失败',
+          error: e.message || '\u4e0b\u8f7d\u5931\u8d25',
           endTime: Date.now(),
-        }
-        error.value = e.message || '下载失败'
+        })
+        error.value = e.message || '\u4e0b\u8f7d\u5931\u8d25'
       }
       isDownloading.value = false
       stopSpeedTracking()
@@ -305,7 +319,7 @@ export const useDownloadStore = defineStore('download', () => {
       history.value = history.value.filter(item => item.id !== downloadId)
       historyTotal.value = Math.max(0, historyTotal.value - 1)
     } catch (e: any) {
-      error.value = e?.response?.data?.error?.message || '删除失败'
+      error.value = e?.response?.data?.error?.message || '\u5220\u9664\u5931\u8d25'
     }
   }
 

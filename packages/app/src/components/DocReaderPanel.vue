@@ -55,29 +55,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import DOMPurify from 'dompurify'
-import { config } from '../config'
-
-const ALLOWED_IMAGE_HOSTS = [
-  'scp-wiki.wdfiles.com',
-  'scp-wiki-cn.wdfiles.com',
-  'wikidot.com',
-  'scpfoundation.ru',
-  'scp-wiki.wikidot.com',
-  'scp-wiki-cn.wikidot.com',
-]
-
-function proxyImageUrl(src: string): string {
-  if (!src) return src
-  try {
-    const url = new URL(src, window.location.origin)
-    if (ALLOWED_IMAGE_HOSTS.some(host => url.hostname.endsWith(host))) {
-      return `${config.api.workerUrl}/image-proxy?url=${encodeURIComponent(src)}`
-    }
-  } catch {
-    // invalid URL, return as-is
-  }
-  return src
-}
+import { applyImageProxyHook } from '../utils/imageProxy'
 
 // ── Props ────────────────────────────────────────────────────────────
 
@@ -109,11 +87,7 @@ const formattedWordCount = computed(() => {
 
 const sanitizedContent = computed(() => {
   if (!props.content) return ''
-  DOMPurify.addHook('uponSanitizeAttribute', (node, data) => {
-    if (data.attrName === 'src' && data.attrValue && node.nodeName === 'IMG') {
-      data.attrValue = proxyImageUrl(data.attrValue)
-    }
-  })
+  applyImageProxyHook()
   try {
     return DOMPurify.sanitize(props.content, {
       ALLOWED_TAGS: [

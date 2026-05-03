@@ -42,25 +42,25 @@ function sanitizeFilename(url: string, contentDisposition?: string | null): stri
 
 function validateUrl(url: string): { valid: boolean; error?: string } {
   if (!url || typeof url !== 'string') {
-    return { valid: false, error: '下载链接不能为空' }
+    return { valid: false, error: '\u4e0b\u8f7d\u94fe\u63a5\u4e0d\u80fd\u4e3a\u7a7a' }
   }
 
   if (url.length > DOWNLOAD_CONFIG.maxUrlLength) {
-    return { valid: false, error: `链接长度不能超过 ${DOWNLOAD_CONFIG.maxUrlLength} 个字符` }
+    return { valid: false, error: `\u94fe\u63a5\u957f\u5ea6\u4e0d\u80fd\u8d85\u8fc7 ${DOWNLOAD_CONFIG.maxUrlLength} \u4e2a\u5b57\u7b26` }
   }
 
   try {
     const urlObj = new URL(url)
 
     if (!(DOWNLOAD_CONFIG.allowedProtocols as readonly string[]).includes(urlObj.protocol)) {
-      return { valid: false, error: `不支持的协议: ${urlObj.protocol}，仅支持 HTTP/HTTPS` }
+      return { valid: false, error: `\u4e0d\u652f\u6301\u7684\u534f\u8bae: ${urlObj.protocol}\uff0c\u4ec5\u652f\u6301 HTTP/HTTPS` }
     }
 
     const hostname = urlObj.hostname.toLowerCase()
 
     for (const blocked of DOWNLOAD_CONFIG.blockedHosts) {
       if (hostname === blocked || hostname.startsWith(blocked)) {
-        return { valid: false, error: '不允许访问内部/私有网络地址' }
+        return { valid: false, error: '\u4e0d\u5141\u8bb8\u8bbf\u95ee\u5185\u90e8/\u79c1\u6709\u7f51\u7edc\u5730\u5740' }
       }
     }
 
@@ -68,12 +68,12 @@ function validateUrl(url: string): { valid: boolean; error?: string } {
       return hostname === allowed || hostname.endsWith('.' + allowed)
     })
     if (!isAllowed) {
-      return { valid: false, error: `域名 ${hostname} 不在允许列表中，拒绝下载` }
+      return { valid: false, error: `\u57df\u540d ${hostname} \u4e0d\u5728\u5141\u8bb8\u5217\u8868\u4e2d\uff0c\u62d2\u7edd\u4e0b\u8f7d` }
     }
 
     return { valid: true }
   } catch {
-    return { valid: false, error: '无效的 URL 格式' }
+    return { valid: false, error: '\u65e0\u6548\u7684 URL \u683c\u5f0f' }
   }
 }
 
@@ -82,25 +82,23 @@ function corsHeaders(origin: string): Record<string, string> {
     'Access-Control-Allow-Origin': origin || '*',
     'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Range',
-    'Access-Control-Expose-Headers': 'Content-Disposition, Content-Length, Content-Type, X-Download-ID, X-Download-Speed, X-Progress',
+    'Access-Control-Expose-Headers': 'Content-Disposition, Content-Length, Content-Type, X-Download-ID, X-Download-Speed, X-Progress, Content-Range, Accept-Ranges',
     'Vary': 'Origin',
   }
 }
 
-async function storeProgress(
+function storeProgressFireAndForget(
   kv: KVNamespace,
   downloadId: string,
   progress: DownloadProgress,
-): Promise<void> {
-  try {
-    await kv.put(
-      `dl-progress:${downloadId}`,
-      JSON.stringify(progress),
-      { expirationTtl: 3600 },
-    )
-  } catch (e) {
+): void {
+  kv.put(
+    `dl-progress:${downloadId}`,
+    JSON.stringify(progress),
+    { expirationTtl: 3600 },
+  ).catch((e) => {
     logger.error('Failed to store progress', e as Error, { downloadId })
-  }
+  })
 }
 
 async function getProgress(
@@ -135,6 +133,8 @@ async function addHistory(
     logger.error('Failed to add history', e as Error, { downloadId: item.id })
   }
 }
+
+const PROGRESS_INTERVAL_MS = 2000
 
 export class DownloadProxy {
   constructor(private kv: KVNamespace) {}
@@ -172,6 +172,7 @@ export class DownloadProxy {
         headers: {
           'User-Agent': 'SCP-Download-Proxy/1.0',
           'Accept': '*/*',
+          'Accept-Encoding': 'identity',
         },
       })
 
@@ -181,6 +182,7 @@ export class DownloadProxy {
       const totalBytes = contentLength ? parseInt(contentLength, 10) : 0
       const contentType = headResponse.headers.get('Content-Type') || 'application/octet-stream'
       const contentDisposition = headResponse.headers.get('Content-Disposition')
+      const acceptRanges = headResponse.headers.get('Accept-Ranges')
       const filename = body.filename || sanitizeFilename(body.url, contentDisposition)
 
       if (totalBytes > DOWNLOAD_CONFIG.maxFileSize) {
@@ -188,7 +190,7 @@ export class DownloadProxy {
           JSON.stringify({
             success: false,
             error: validationError(
-              `文件大小 (${(totalBytes / 1024 / 1024).toFixed(1)} MB) 超出限制 (${DOWNLOAD_CONFIG.maxFileSize / 1024 / 1024} MB)`,
+              `\u6587\u4ef6\u5927\u5c0f (${(totalBytes / 1024 / 1024).toFixed(1)} MB) \u8d85\u51fa\u9650\u5236 (${DOWNLOAD_CONFIG.maxFileSize / 1024 / 1024} MB)`,
             ),
           }),
           { status: 400, headers },
@@ -209,7 +211,7 @@ export class DownloadProxy {
         contentType,
       }
 
-      await storeProgress(this.kv, downloadId, progress)
+      storeProgressFireAndForget(this.kv, downloadId, progress)
 
       const response: DownloadInitResponse = {
         success: true,
@@ -225,6 +227,7 @@ export class DownloadProxy {
         url: body.url,
         filename,
         totalBytes,
+        acceptRanges: acceptRanges || 'none',
       })
 
       return new Response(JSON.stringify(response), { status: 200, headers })
@@ -234,7 +237,7 @@ export class DownloadProxy {
 
       if (err.name === 'AbortError') {
         return new Response(
-          JSON.stringify({ success: false, error: validationError('连接目标服务器超时') }),
+          JSON.stringify({ success: false, error: validationError('\u8fde\u63a5\u76ee\u6807\u670d\u52a1\u5668\u8d85\u65f6') }),
           { status: 504, headers },
         )
       }
@@ -242,7 +245,7 @@ export class DownloadProxy {
       return new Response(
         JSON.stringify({
           success: false,
-          error: internalError(`无法连接到目标服务器: ${err.message}`),
+          error: internalError(`\u65e0\u6cd5\u8fde\u63a5\u5230\u76ee\u6807\u670d\u52a1\u5668: ${err.message}`),
         }),
         { status: 502, headers },
       )
@@ -257,18 +260,22 @@ export class DownloadProxy {
   ): Promise<Response> {
     const headers = new Headers(corsHeaders(origin))
 
-    const rateLimitBps = Math.max(
-      DOWNLOAD_CONFIG.rateLimit.min,
-      Math.min(rateLimit || DOWNLOAD_CONFIG.rateLimit.default, DOWNLOAD_CONFIG.rateLimit.max),
-    )
+    const hasRateLimit = rateLimit > 0
+    const rateLimitBps = hasRateLimit
+      ? Math.max(DOWNLOAD_CONFIG.rateLimit.min, Math.min(rateLimit, DOWNLOAD_CONFIG.rateLimit.max))
+      : 0
 
     try {
+      const upstreamHeaders: Record<string, string> = {
+        'User-Agent': 'SCP-Download-Proxy/1.0',
+        'Accept': '*/*',
+      }
+
+      const requestHeaders = new Headers(upstreamHeaders)
+
       const response = await fetch(url, {
         redirect: 'follow',
-        headers: {
-          'User-Agent': 'SCP-Download-Proxy/1.0',
-          'Accept': '*/*',
-        },
+        headers: requestHeaders,
       })
 
       if (!response.ok) {
@@ -287,10 +294,10 @@ export class DownloadProxy {
           endTime: Date.now(),
           error: `HTTP ${response.status}: ${response.statusText}`,
         }
-        await storeProgress(this.kv, downloadId, progress)
+        storeProgressFireAndForget(this.kv, downloadId, progress)
 
         return new Response(
-          JSON.stringify({ success: false, error: notFoundError(`目标服务器返回错误: HTTP ${response.status}`) }),
+          JSON.stringify({ success: false, error: notFoundError(`\u76ee\u6807\u670d\u52a1\u5668\u8fd4\u56de\u9519\u8bef: HTTP ${response.status}`) }),
           { status: response.status, headers },
         )
       }
@@ -304,7 +311,7 @@ export class DownloadProxy {
       if (!response.body) {
         headers.set('Content-Type', 'application/json')
         return new Response(
-          JSON.stringify({ success: false, error: internalError('目标服务器不支持流式传输') }),
+          JSON.stringify({ success: false, error: internalError('\u76ee\u6807\u670d\u52a1\u5668\u4e0d\u652f\u6301\u6d41\u5f0f\u4f20\u8f93') }),
           { status: 500, headers },
         )
       }
@@ -319,7 +326,8 @@ export class DownloadProxy {
       let downloadedBytes = 0
       let lastProgressUpdate = Date.now()
       let lastBytesCount = 0
-      let speedHistory: number[] = []
+      let rateLimitBucket = 0
+      let lastRateLimitCheck = Date.now()
       const streamStartTime = Date.now()
 
       const reader = response.body.getReader()
@@ -331,7 +339,7 @@ export class DownloadProxy {
 
             if (done) {
               const endTime = Date.now()
-              const progress: DownloadProgress = {
+              const finalProgress: DownloadProgress = {
                 downloadId,
                 status: 'completed',
                 url,
@@ -344,7 +352,7 @@ export class DownloadProxy {
                 endTime,
                 contentType,
               }
-              await storeProgress(this.kv, downloadId, progress)
+              storeProgressFireAndForget(this.kv, downloadId, finalProgress)
 
               await addHistory(this.kv, {
                 id: downloadId,
@@ -371,29 +379,28 @@ export class DownloadProxy {
 
             downloadedBytes += value.length
 
-            if (rateLimitBps > 0) {
+            if (hasRateLimit && rateLimitBps > 0) {
               const now = Date.now()
-              speedHistory.push(value.length)
-              speedHistory = speedHistory.filter(
-                (_, i) => now - streamStartTime - (i * 1000) < 2000,
-              )
+              const elapsed = now - lastRateLimitCheck
+              rateLimitBucket += value.length
 
-              const recentSpeed = speedHistory.length > 0
-                ? speedHistory.reduce((a, b) => a + b, 0) / (speedHistory.length * 1000) * 1000
-                : 0
-
-              if (recentSpeed > rateLimitBps) {
-                const waitMs = Math.ceil((value.length / rateLimitBps) * 1000)
-                if (waitMs > 0 && waitMs < 5000) {
-                  await new Promise(resolve => setTimeout(resolve, waitMs))
+              if (elapsed >= 200) {
+                const expectedMax = (rateLimitBps * elapsed) / 1000
+                if (rateLimitBucket > expectedMax) {
+                  const excessMs = Math.ceil(((rateLimitBucket - expectedMax) / rateLimitBps) * 1000)
+                  if (excessMs > 0 && excessMs < 3000) {
+                    await new Promise(resolve => setTimeout(resolve, excessMs))
+                  }
                 }
+                rateLimitBucket = 0
+                lastRateLimitCheck = Date.now()
               }
             }
 
             controller.enqueue(value)
 
             const now = Date.now()
-            if (now - lastProgressUpdate >= DOWNLOAD_CONFIG.progressUpdateInterval) {
+            if (now - lastProgressUpdate >= PROGRESS_INTERVAL_MS) {
               const elapsed = now - lastProgressUpdate
               const chunkBytes = downloadedBytes - lastBytesCount
               const currentSpeed = elapsed > 0 ? (chunkBytes / elapsed) * 1000 : 0
@@ -410,7 +417,7 @@ export class DownloadProxy {
                 startTime: streamStartTime,
                 contentType,
               }
-              await storeProgress(this.kv, downloadId, progress)
+              storeProgressFireAndForget(this.kv, downloadId, progress)
 
               lastProgressUpdate = now
               lastBytesCount = downloadedBytes
@@ -432,7 +439,7 @@ export class DownloadProxy {
                 error: err.message,
                 contentType,
               }
-              await storeProgress(this.kv, downloadId, progress)
+              storeProgressFireAndForget(this.kv, downloadId, progress)
 
               await addHistory(this.kv, {
                 id: downloadId,
@@ -470,7 +477,7 @@ export class DownloadProxy {
             endTime: Date.now(),
             contentType,
           }
-          await storeProgress(this.kv, downloadId, progress)
+          storeProgressFireAndForget(this.kv, downloadId, progress)
 
           await addHistory(this.kv, {
             id: downloadId,
@@ -498,7 +505,7 @@ export class DownloadProxy {
 
       headers.set('Content-Type', 'application/json')
       return new Response(
-        JSON.stringify({ success: false, error: internalError('流式传输建立失败: ' + err.message) }),
+        JSON.stringify({ success: false, error: internalError('\u6d41\u5f0f\u4f20\u8f93\u5efa\u7acb\u5931\u8d25: ' + err.message) }),
         { status: 500, headers },
       )
     }
@@ -516,7 +523,7 @@ export class DownloadProxy {
 
       if (!progress) {
         return new Response(
-          JSON.stringify({ success: false, error: notFoundError('未找到该下载记录') }),
+          JSON.stringify({ success: false, error: notFoundError('\u672a\u627e\u5230\u8be5\u4e0b\u8f7d\u8bb0\u5f55') }),
           { status: 404, headers },
         )
       }
@@ -529,7 +536,7 @@ export class DownloadProxy {
       const err = e as Error
       logger.error('Failed to get progress', err, { downloadId })
       return new Response(
-        JSON.stringify({ success: false, error: internalError('获取进度失败') }),
+        JSON.stringify({ success: false, error: internalError('\u83b7\u53d6\u8fdb\u5ea6\u5931\u8d25') }),
         { status: 500, headers },
       )
     }
@@ -572,7 +579,7 @@ export class DownloadProxy {
       const err = e as Error
       logger.error('Failed to get history', err)
       return new Response(
-        JSON.stringify({ success: false, error: internalError('获取历史记录失败') }),
+        JSON.stringify({ success: false, error: internalError('\u83b7\u53d6\u5386\u53f2\u8bb0\u5f55\u5931\u8d25') }),
         { status: 500, headers },
       )
     }
@@ -598,14 +605,14 @@ export class DownloadProxy {
       }
 
       return new Response(
-        JSON.stringify({ success: true, message: '已删除' }),
+        JSON.stringify({ success: true, message: '\u5df2\u5220\u9664' }),
         { status: 200, headers },
       )
     } catch (e) {
       const err = e as Error
       logger.error('Failed to delete history', err, { downloadId })
       return new Response(
-        JSON.stringify({ success: false, error: internalError('删除失败') }),
+        JSON.stringify({ success: false, error: internalError('\u5220\u9664\u5931\u8d25') }),
         { status: 500, headers },
       )
     }

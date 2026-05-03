@@ -247,6 +247,7 @@ import { ref, onMounted, onBeforeUnmount, nextTick, watch, computed } from 'vue'
 import DOMPurify from 'dompurify'
 import SCPWindow from '../../components/SCPWindow.vue'
 import { useDocsReader } from '../../composables/useDocsReader'
+import { applyImageProxyHook } from '../../../utils/imageProxy'
 import type { WindowInstance } from '../../types'
 import type { SCPObjectClass } from '../../composables/useDocsReader'
 
@@ -260,10 +261,15 @@ const reader = useDocsReader()
 const sanitizedContent = computed(() => {
   const content = reader.currentArticle.value?.content
   if (!content) return ''
-  return DOMPurify.sanitize(content, {
-    ALLOWED_TAGS: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'hr', 'blockquote', 'pre', 'code', 'ul', 'ol', 'li', 'a', 'img', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'strong', 'b', 'em', 'i', 'u', 's', 'del', 'ins', 'span', 'div', 'sup', 'sub'],
-    ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'id', 'target', 'rel'],
-  })
+  applyImageProxyHook()
+  try {
+    return DOMPurify.sanitize(content, {
+      ALLOWED_TAGS: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'hr', 'blockquote', 'pre', 'code', 'ul', 'ol', 'li', 'a', 'img', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'strong', 'b', 'em', 'i', 'u', 's', 'del', 'ins', 'span', 'div', 'sup', 'sub'],
+      ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'id', 'target', 'rel'],
+    })
+  } finally {
+    DOMPurify.removeAllHooks()
+  }
 })
 
 const listRef = ref<HTMLElement>()

@@ -6,6 +6,22 @@ compatibility_flags = ["nodejs_compat"]
 [vars]
 API_DOMAIN = "api.scpos.site"
 
+[[d1_databases]]
+binding = "SCP_DB"
+database_name = "scp-database"
+database_id = "77dff909-beb0-4870-bb52-90e810b2e5c1"
+migrations_dir = "migrations"
+
+[[d1_databases]]
+binding = "SCP_READER_DB"
+database_name = "scp-reader-db"
+database_id = "7454655f-d3a5-49b6-9832-b5a146c192de"
+migrations_dir = "migrations"
+
+[[kv_namespaces]]
+binding = "SCP_CACHE"
+id = "40f0d23a05e14f7484232bc1960e217f"
+
 [[durable_objects.bindings]]
 name = "CHAT_ROOM_DO"
 class_name = "ChatRoomDO"
@@ -38,25 +54,3 @@ migrations_dir = "migrations"
 [[env.development.kv_namespaces]]
 binding = "SCP_CACHE"
 id = "local-dev-cache"
-
-# ─── 生产环境 ─────────────────────────────────────────
-# wrangler deploy --env production
-# 密钥配置：wrangler secret put JWT_SECRET --env production
-[env.production]
-vars = { ENVIRONMENT = "production" }
-
-[[env.production.d1_databases]]
-binding = "SCP_DB"
-database_name = "scp-database"
-database_id = "77dff909-beb0-4870-bb52-90e810b2e5c1"
-migrations_dir = "migrations"
-
-[[env.production.d1_databases]]
-binding = "SCP_READER_DB"
-database_name = "scp-reader-db"
-database_id = "7454655f-d3a5-49b6-9832-b5a146c192de"
-migrations_dir = "migrations"
-
-[[env.production.kv_namespaces]]
-binding = "SCP_CACHE"
-id = "40f0d23a05e14f7484232bc1960e217f"

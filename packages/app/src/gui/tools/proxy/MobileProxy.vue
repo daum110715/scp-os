@@ -1,6 +1,6 @@
 <template>
   <MobileWindow :visible="visible" :title="t('app.proxy')" :show-back="true" @close="$emit('close')">
-    <div class="mobile-proxy" :style="store.isDownloading ? `--dl-speed-color: ${speedColor}` : {}">
+    <div class="mobile-proxy" :style="speedStyle">
 
       <div class="mobile-proxy__body">
       <div v-if="store.error && !store.isDownloading" class="mobile-proxy__alert mobile-proxy__alert--error">
@@ -147,6 +147,7 @@
         </div>
       </div>
     </div>
+    </div>
   </MobileWindow>
 </template>
 
@@ -187,6 +188,13 @@ const speedColor = computed(() => {
   if (speed < 500) return '#58a6ff'
   if (speed < 2000) return '#3fb950'
   return '#f85149'
+})
+
+const speedStyle = computed(() => {
+  if (store.isDownloading) {
+    return { '--dl-speed-color': speedColor.value }
+  }
+  return {}
 })
 
 const history = computed(() => store.history)

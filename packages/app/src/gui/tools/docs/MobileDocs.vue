@@ -286,6 +286,7 @@ import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
 import DOMPurify from 'dompurify'
 import MobileWindow from '../../components/MobileWindow.vue'
 import { useDocsReader, type TOCItem } from '../../composables/useDocsReader'
+import { applyImageProxyHook } from '../../../utils/imageProxy'
 
 interface Props {
   visible: boolean
@@ -299,10 +300,15 @@ const reader = useDocsReader()
 const sanitizedContent = computed(() => {
   const content = reader.currentArticle.value?.content
   if (!content) return ''
-  return DOMPurify.sanitize(content, {
-    ALLOWED_TAGS: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'hr', 'blockquote', 'pre', 'code', 'ul', 'ol', 'li', 'a', 'img', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'strong', 'b', 'em', 'i', 'u', 's', 'del', 'ins', 'span', 'div', 'sup', 'sub'],
-    ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'id', 'target', 'rel'],
-  })
+  applyImageProxyHook()
+  try {
+    return DOMPurify.sanitize(content, {
+      ALLOWED_TAGS: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'hr', 'blockquote', 'pre', 'code', 'ul', 'ol', 'li', 'a', 'img', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'strong', 'b', 'em', 'i', 'u', 's', 'del', 'ins', 'span', 'div', 'sup', 'sub'],
+      ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'id', 'target', 'rel'],
+    })
+  } finally {
+    DOMPurify.removeAllHooks()
+  }
 })
 
 const view = ref<'list' | 'detail'>('list')

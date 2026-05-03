@@ -8,6 +8,7 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { config } from '../../config'
 import indexedDBService from '../../utils/indexedDB'
 import logger from '../../utils/logger'
+import { proxyImageUrl } from '../../utils/imageProxy'
 import type { FavoriteRecord } from '../../utils/indexedDB'
 
 // ── Types ────────────────────────────────────────────────────────────
@@ -127,25 +128,34 @@ function basicSanitize(html: string): string {
 async function sanitizeHtml(html: string): Promise<string> {
   const purify = await loadDOMPurify()
   if (purify) {
-    return purify.sanitize(html, {
-      ALLOWED_TAGS: [
-        'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-        'p', 'br', 'hr', 'blockquote', 'pre', 'code',
-        'ul', 'ol', 'li', 'dl', 'dt', 'dd',
-        'table', 'thead', 'tbody', 'tr', 'th', 'td',
-        'a', 'strong', 'em', 'b', 'i', 'u', 's', 'del', 'ins',
-        'sub', 'sup', 'abbr', 'mark', 'span', 'div',
-        'img', 'figure', 'figcaption', 'details', 'summary',
-        'sup', 'sub', 'ruby', 'rt', 'rp',
-      ],
-      ALLOWED_ATTR: [
-        'href', 'src', 'alt', 'title', 'class', 'id',
-        'colspan', 'rowspan', 'width', 'height',
-        'style', 'target', 'rel', 'loading',
-      ],
-      ALLOW_DATA_ATTR: false,
-      ADD_ATTR: ['target'],
+    purify.addHook('uponSanitizeAttribute', (node: Element, data: { attrName: string; attrValue: string | null }) => {
+      if (data.attrName === 'src' && data.attrValue && node.nodeName === 'IMG') {
+        data.attrValue = proxyImageUrl(data.attrValue)
+      }
     })
+    try {
+      return purify.sanitize(html, {
+        ALLOWED_TAGS: [
+          'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+          'p', 'br', 'hr', 'blockquote', 'pre', 'code',
+          'ul', 'ol', 'li', 'dl', 'dt', 'dd',
+          'table', 'thead', 'tbody', 'tr', 'th', 'td',
+          'a', 'strong', 'em', 'b', 'i', 'u', 's', 'del', 'ins',
+          'sub', 'sup', 'abbr', 'mark', 'span', 'div',
+          'img', 'figure', 'figcaption', 'details', 'summary',
+          'sup', 'sub', 'ruby', 'rt', 'rp',
+        ],
+        ALLOWED_ATTR: [
+          'href', 'src', 'alt', 'title', 'class', 'id',
+          'colspan', 'rowspan', 'width', 'height',
+          'style', 'target', 'rel', 'loading',
+        ],
+        ALLOW_DATA_ATTR: false,
+        ADD_ATTR: ['target'],
+      })
+    } finally {
+      purify.removeAllHooks()
+    }
   }
   return basicSanitize(html)
 }
