@@ -9,6 +9,7 @@ import { createBorderLine, createBorderedTitle, isNarrowTerminal } from '../util
 import { generateInfoQueryLogs } from '../utils/infoQueryLogs'
 import { generateSecurityCheckLogs } from '../utils/securityCheckLogs'
 import { generateNetworkTestLogs } from '../utils/networkTestLogs'
+import { penetrationHandler } from './penetration'
 
 // 响应式边框辅助函数
 function border(color: string = ANSICode.red, char: string = '═'): string {
@@ -1158,6 +1159,8 @@ export const commandHandlers: CommandMap = {
       writeln(`${ANSICode.red}chmod: error changing permissions of '${filePath}': ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
     }
   },
+
+  penetration: penetrationHandler,
 
   chown: (_args, _write, writeln) => {
     const ownerGroup = _args[0]

@@ -98,6 +98,7 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
 
   // 标记：防止重复绑定事件监听器
   let commandHandlerSetup = false
+  let resizeHandler: (() => void) | null = null
 
   const initTerminal = () => {
     try {
@@ -121,7 +122,7 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
         throw new Error('容器元素未找到')
       }
 
-      window.addEventListener('resize', () => {
+      resizeHandler = () => {
         try {
           if (terminalInstance.value.fitAddon && terminalInstance.value.terminal) {
             terminalInstance.value.fitAddon.fit()
@@ -139,7 +140,8 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
             details: error instanceof Error ? error.message : String(error),
           })
         }
-      })
+      }
+      window.addEventListener('resize', resizeHandler)
 
       // 设置终端写入器到错误处理器
       errorHandler.setTerminalWriter((data: string) => {
@@ -181,6 +183,10 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
 
   const destroyTerminal = () => {
     try {
+      if (resizeHandler) {
+        window.removeEventListener('resize', resizeHandler)
+        resizeHandler = null
+      }
       if (terminalInstance.value.terminal) {
         terminalInstance.value.terminal.dispose()
         terminalInstance.value.terminal = null

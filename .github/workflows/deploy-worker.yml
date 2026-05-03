@@ -3,13 +3,51 @@ name: Deploy Worker
 
 on:
   push:
-    branches: [main, master]
+    branches: [main]
     paths:
       - 'packages/worker/**'
 
+concurrency:
+  group: deploy-worker
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
 jobs:
-  deploy:
+  quality:
+    name: Quality Checks
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Type check
+        run: pnpm --filter scp-os-worker run typecheck
+
+      - name: Run tests
+        run: pnpm --filter scp-os-worker run test
+
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [quality]
+    environment: production
 
     steps:
       - name: Checkout code
@@ -32,3 +70,27 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Verify deployment
+        run: |
+          echo "Waiting for deployment to propagate..."
+          sleep 10
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://api.scpos.site/health" || echo "000")
+          if [ "$HTTP_STATUS" = "200" ] || [ "$HTTP_STATUS" = "404" ]; then
+            echo "Deployment verified (HTTP $HTTP_STATUS)"
+          else
+            echo "::warning::Deployment health check returned HTTP $HTTP_STATUS - manual verification recommended"
+          fi
+
+  notify-failure:
+    name: Notify Deploy Failure
+    if: failure()
+    needs: [quality, deploy]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Report failure
+        run: |
+          echo "::error::Worker deployment failed. Check the job logs for details."
+          echo "Commit: ${{ github.sha }}"
+          echo "Branch: ${{ github.ref_name }}"

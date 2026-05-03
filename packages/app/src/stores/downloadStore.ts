@@ -43,33 +43,40 @@ export const useDownloadStore = defineStore('download', () => {
 
   const downloadStats = computed<DownloadStats>(() => {
     const items = history.value
-    const completed = items.filter(i => i.status === 'completed')
-    const failed = items.filter(i => i.status === 'failed')
-    const cancelled = items.filter(i => i.status === 'cancelled')
-    const totalBytes = items.reduce((sum, i) => sum + (i.totalBytes || i.downloadedBytes), 0)
+    let completed = 0, failed = 0, cancelled = 0
+    let totalBytes = 0, totalDuration = 0, completedBytes = 0
 
-    const completedWithDuration = completed.filter(i => i.completedAt && i.createdAt)
-    const totalDuration = completedWithDuration.reduce((sum, i) => {
-      const dur = new Date(i.completedAt!).getTime() - new Date(i.createdAt).getTime()
-      return sum + dur
-    }, 0)
-    const avgSpeed = totalDuration > 0
-      ? completed.reduce((sum, i) => sum + (i.totalBytes || i.downloadedBytes), 0) / (totalDuration / 1000)
-      : 0
+    for (const item of items) {
+      const bytes = item.totalBytes || item.downloadedBytes
+      if (item.status === 'completed') {
+        completed++
+        totalBytes += bytes
+        completedBytes += bytes
+        if (item.completedAt && item.createdAt) {
+          totalDuration += new Date(item.completedAt).getTime() - new Date(item.createdAt).getTime()
+        }
+      } else if (item.status === 'failed') {
+        failed++
+        totalBytes += bytes
+      } else if (item.status === 'cancelled') {
+        cancelled++
+        totalBytes += bytes
+      } else {
+        totalBytes += bytes
+      }
+    }
 
-    const peakFromHistory = completed.reduce((peak, _i) => {
-      return peak
-    }, 0)
+    const avgSpeed = totalDuration > 0 ? completedBytes / (totalDuration / 1000) : 0
 
     return {
       totalDownloads: items.length,
-      completedDownloads: completed.length,
-      failedDownloads: failed.length,
-      cancelledDownloads: cancelled.length,
+      completedDownloads: completed,
+      failedDownloads: failed,
+      cancelledDownloads: cancelled,
       totalBytesDownloaded: totalBytes,
       averageSpeed: Math.round(avgSpeed),
-      peakSpeed: peakFromHistory,
-      successRate: items.length > 0 ? Math.round((completed.length / items.length) * 100) : 0,
+      peakSpeed: 0,
+      successRate: items.length > 0 ? Math.round((completed / items.length) * 100) : 0,
     }
   })
 

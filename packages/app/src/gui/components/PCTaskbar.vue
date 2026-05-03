@@ -31,6 +31,10 @@
 
       <!-- System Tray -->
       <div class="pc-taskbar__tray">
+        <button class="pc-taskbar__tray-item pc-taskbar__notif-btn" :title="t('app.notification')" @click="openNotifications">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+          <span v-if="notifStore.hasUnread" class="pc-taskbar__notif-badge">{{ notifStore.unreadCount }}</span>
+        </button>
         <div class="pc-taskbar__tray-item">
           <GUIIcon :name="'wifi'" :size="16" />
         </div>
@@ -48,11 +52,16 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useI18n } from '../composables/useI18n'
+import { useNotificationStore } from '../../stores/notificationStore'
+import { useWindowManagerStore } from '../stores/windowManager'
+import { ToolRegistry } from '../registry/ToolRegistry'
 import type { ToolType } from '../types'
 import type { IconName } from '../icons'
 import GUIIcon from './ui/GUIIcon.vue'
 
 const { t } = useI18n()
+const notifStore = useNotificationStore()
+const windowManager = useWindowManagerStore()
 
 const taskbarRef = ref<HTMLElement | null>(null)
 
@@ -101,15 +110,31 @@ function onClick(item: PCTaskbarItem) {
   emit('launch', item)
 }
 
+function openNotifications() {
+  const tool = ToolRegistry.get('notification' as ToolType)
+  if (!tool) return
+  const label = typeof tool.label === 'function' ? tool.label() : tool.label
+  windowManager.openWindow({
+    id: `notification-${Date.now()}`,
+    tool: 'notification' as ToolType,
+    title: label,
+    iconName: tool.icon,
+    width: tool.windowConfig.width ?? 380,
+    height: tool.windowConfig.height ?? 520,
+  })
+}
+
 onMounted(() => {
   updateTime()
-  timeInterval = window.setInterval(updateTime, 60000) // Update every minute
+  timeInterval = window.setInterval(updateTime, 60000)
+  notifStore.startPolling()
 })
 
 onUnmounted(() => {
   if (timeInterval) {
     clearInterval(timeInterval)
   }
+  notifStore.stopPolling()
 })
 </script>
 
@@ -296,6 +321,29 @@ onUnmounted(() => {
 .pc-taskbar__time {
   padding-left: var(--gui-spacing-sm, 8px);
   border-left: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
+}
+
+.pc-taskbar__notif-btn {
+  position: relative;
+  background: none;
+  border: none;
+  font-size: inherit;
+}
+
+.pc-taskbar__notif-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 3px;
+  border-radius: 7px;
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 14px;
+  text-align: center;
+  background: rgba(248, 81, 73, 0.9);
+  color: #fff;
 }
 
 .pc-taskbar__time-text {

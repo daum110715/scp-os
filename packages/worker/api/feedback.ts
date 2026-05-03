@@ -1,5 +1,6 @@
 import type { ChatApiResponse } from '../shared/types'
 import { encodeHtmlEntities } from '../utils/htmlSanitizer'
+import { createNotification } from './notification'
 
 export interface Feedback {
   id: number
@@ -251,6 +252,24 @@ export async function submitComment(
       'SELECT * FROM feedback_comments WHERE id = ?'
     ).bind(insertResult.meta?.last_row_id).first<Comment>()
 
+    const feedbackOwner = await db.prepare(
+      'SELECT user_id, title FROM feedbacks WHERE id = ?'
+    ).bind(input.feedback_id).first<{ user_id: string; title: string }>()
+
+    if (feedbackOwner) {
+      const preview = input.content.length > 50 ? input.content.slice(0, 50) + '...' : input.content
+      await createNotification(db, {
+        recipient_user_id: feedbackOwner.user_id,
+        actor_user_id: input.user_id,
+        actor_nickname: input.nickname || 'Anonymous',
+        type: 'feedback_comment',
+        title: feedbackOwner.title,
+        body: preview,
+        reference_id: String(input.feedback_id),
+        reference_type: 'feedback',
+      })
+    }
+
     return { success: true, data: comment ?? undefined }
   } catch (error) {
     return {
@@ -332,6 +351,24 @@ export async function voteFeedback(
       db.prepare('INSERT INTO feedback_votes (feedback_id, user_id, vote) VALUES (?, ?, ?)').bind(input.id, input.user_id, input.vote),
       db.prepare(`UPDATE feedbacks SET ${column} = ${column} + 1 WHERE id = ?`).bind(input.id),
     ])
+
+    const feedbackOwner = await db.prepare(
+      'SELECT user_id, title FROM feedbacks WHERE id = ?'
+    ).bind(input.id).first<{ user_id: string; title: string }>()
+
+    if (feedbackOwner) {
+      await createNotification(db, {
+        recipient_user_id: feedbackOwner.user_id,
+        actor_user_id: input.user_id,
+        actor_nickname: 'User',
+        type: input.vote === 'up' ? 'feedback_upvote' : 'feedback_downvote',
+        title: feedbackOwner.title,
+        body: input.vote === 'up' ? '👍' : '👎',
+        reference_id: String(input.id),
+        reference_type: 'feedback',
+      })
+    }
+
     return { success: true, data: { id: input.id, vote: input.vote, action: 'added' } }
   } catch (error) {
     return {

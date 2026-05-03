@@ -216,6 +216,38 @@ export function iconPower(p: IconProps = {}) {
   return `<svg ${attrSize(p)} ${attrBase()}><path d="M18.36 6.64A9 9 0 115.64 6.64M12 2v10"/></svg>`
 }
 
+export function iconShield(p: IconProps = {}) {
+  return `<svg ${attrSize(p)} ${attrBase()}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`
+}
+
+export function iconNotification(p: IconProps = {}) {
+  return `<svg ${attrSize(p)} ${attrBase()}><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>`
+}
+
+export function iconUsers(p: IconProps = {}) {
+  return `<svg ${attrSize(p)} ${attrBase()}><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>`
+}
+
+export function iconDocument(p: IconProps = {}) {
+  return `<svg ${attrSize(p)} ${attrBase()}><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>`
+}
+
+export function iconMessage(p: IconProps = {}) {
+  return `<svg ${attrSize(p)} ${attrBase()}><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>`
+}
+
+export function iconCog(p: IconProps = {}) {
+  return `<svg ${attrSize(p)} ${attrBase()}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.32 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>`
+}
+
+export function iconClipboard(p: IconProps = {}) {
+  return `<svg ${attrSize(p)} ${attrBase()}><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>`
+}
+
+export function iconLogout(p: IconProps = {}) {
+  return `<svg ${attrSize(p)} ${attrBase()}><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>`
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────
 
 function attrSize(p: IconProps): string {
@@ -256,6 +288,7 @@ export const iconNames = [
   'empty-folder', 'empty-doc', 'chat', 'dash', 'feedback', 'docs', 'proxy',
   'eye', 'sort', 'play', 'pin', 'info', 'battery', 'wifi', 'menu', 'file-text',
   'message-square', 'bar-chart-2', 'message-circle', 'image', 'palette', 'moon', 'refresh-cw', 'power',
+  'shield', 'notification', 'users', 'document', 'message', 'cog', 'clipboard', 'logout',
 ] as const
 
 export type IconName = typeof iconNames[number]
@@ -274,6 +307,8 @@ const iconFnMap: Record<string, (p?: IconProps) => string> = {
   'battery': iconBattery, 'wifi': iconWifi, 'menu': iconMenu, 'file-text': iconFileText,
   'message-square': iconMessageSquare, 'bar-chart-2': iconBarChart2, 'message-circle': iconMessageCircle,
   'image': iconImage, 'palette': iconPalette, 'moon': iconMoon, 'refresh-cw': iconRefreshCw, 'power': iconPower,
+  'shield': iconShield, 'notification': iconNotification, 'users': iconUsers, 'document': iconDocument,
+  'message': iconMessage, 'cog': iconCog, 'clipboard': iconClipboard, 'logout': iconLogout,
 }
 
 export function icon(name: IconName, size: number = 20): string {

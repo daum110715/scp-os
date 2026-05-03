@@ -1,4 +1,4 @@
-﻿﻿﻿﻿/**
+﻿﻿/**
  * 统一类型定义
  * 前端和 Worker 共享此类型定义
  */
@@ -114,6 +114,7 @@ export interface Env {
   SCP_READER_DB: D1Database
   CHAT_ROOM_DO: DurableObjectNamespace
   JWT_SECRET?: string
+  ADMIN_JWT_SECRET?: string
 }
 
 /**
@@ -300,4 +301,29 @@ export interface ApiError {
   code: string
   message: string
   details?: unknown
+}
+
+export type AdminRole = 'super_admin' | 'admin' | 'moderator'
+
+export interface AdminUser {
+  id: number
+  username: string
+  password_hash: string
+  role: AdminRole
+  is_active: number
+  created_at: string
+  last_login_at: string | null
+}
+
+export interface AdminLoginBody {
+  username: string
+  password: string
+}
+
+export interface AdminJWTPayload {
+  adminId: number
+  username: string
+  role: AdminRole
+  iat?: number
+  exp?: number
 }

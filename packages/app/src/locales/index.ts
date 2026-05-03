@@ -56,6 +56,7 @@ export const en = {
   'app.feedback': 'Feedback',
   'app.docs': 'Docs Reader',
   'app.proxy': 'Download Proxy',
+  'app.notification': 'Notifications',
 
   // ── Home Screen ─────────────────────────────────────────────────────
   'home.apps.terminal': 'Terminal',
@@ -294,6 +295,20 @@ export const en = {
   'proxy.timeHourAgo': '{n}h ago',
   'proxy.timeDayAgo': '{n}d ago',
   'proxy.noRecords': 'No records',
+
+  // ── Notification Center ────────────────────────────────────────────
+  'notif.title': 'Notifications',
+  'notif.empty': 'No notifications yet',
+  'notif.markAllRead': 'Mark all read',
+  'notif.typeComment': 'Comment',
+  'notif.typeUpvote': 'Upvote',
+  'notif.typeDownvote': 'Downvote',
+  'notif.typeChat': 'Chat',
+  'notif.prefComment': 'Feedback comments',
+  'notif.prefUpvote': 'Feedback upvotes',
+  'notif.prefDownvote': 'Feedback downvotes',
+  'notif.prefChat': 'Chat messages',
+
   'pc.newTextFile': 'New Text File',
   'pc.gridView': 'Grid View',
   'pc.listView': 'List View',
@@ -384,6 +399,7 @@ export const zhCN: Record<string, string> = {
   'app.feedback': '反馈',
   'app.docs': '文档阅读器',
   'app.proxy': '下载代理',
+  'app.notification': '通知中心',
 
   // ── Home Screen ─────────────────────────────────────────────────────
   'home.apps.terminal': '终端',
@@ -622,6 +638,19 @@ export const zhCN: Record<string, string> = {
   'proxy.timeHourAgo': '{n} 小时前',
   'proxy.timeDayAgo': '{n} 天前',
   'proxy.noRecords': '暂无记录',
+
+  // ── Notification Center ────────────────────────────────────────────
+  'notif.title': '通知中心',
+  'notif.empty': '暂无通知',
+  'notif.markAllRead': '全部已读',
+  'notif.typeComment': '评论',
+  'notif.typeUpvote': '点赞',
+  'notif.typeDownvote': '点踩',
+  'notif.typeChat': '聊天',
+  'notif.prefComment': '反馈评论通知',
+  'notif.prefUpvote': '反馈点赞通知',
+  'notif.prefDownvote': '反馈点踩通知',
+  'notif.prefChat': '聊天消息通知',
   'pc.newTextFile': '新建文本文件',
   'pc.gridView': '网格视图',
   'pc.listView': '列表视图',

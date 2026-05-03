@@ -21,6 +21,7 @@ jobs:
   check-desktop:
     name: Verify Desktop Package
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     outputs:
       ready: ${{ steps.check.outputs.ready }}
     steps:
@@ -36,7 +37,9 @@ jobs:
             "packages/desktop/tauri.conf.json" \
             "packages/desktop/src/main.rs" \
             "packages/desktop/src/lib.rs" \
-            "packages/desktop/build.rs"; do
+            "packages/desktop/build.rs" \
+            "packages/desktop/icons/icon.png" \
+            "packages/desktop/icons/icon.ico"; do
             if [ ! -s "$f" ]; then
               echo "::warning::Required file missing or empty: $f"
               READY=false
@@ -47,6 +50,18 @@ jobs:
             echo "::error::Desktop package is not ready for build"
             exit 1
           fi
+          echo "All required desktop files present."
+
+      - name: Validate tauri.conf.json
+        run: |
+          IDENTIFIER=$(node -e "const c = require('./packages/desktop/tauri.conf.json'); console.log(c.identifier)")
+          if [ -z "$IDENTIFIER" ]; then
+            echo "::error::tauri.conf.json missing identifier"
+            exit 1
+          fi
+          echo "Bundle identifier: $IDENTIFIER"
+          TARGETS=$(node -e "const c = require('./packages/desktop/tauri.conf.json'); console.log(c.bundle.targets.join(', '))")
+          echo "Bundle targets: $TARGETS"
 
   build:
     name: Build ${{ matrix.platform.label }}
@@ -74,6 +89,7 @@ jobs:
             args: ''
 
     runs-on: ${{ matrix.platform.os }}
+    timeout-minutes: 30
 
     steps:
       - name: Checkout code
@@ -116,7 +132,8 @@ jobs:
             libssl-dev \
             libayatana-appindicator3-dev \
             librsvg2-dev \
-            patchelf
+            patchelf \
+            libgtk-3-dev
 
       - name: Determine release tag
         id: release-info
@@ -155,8 +172,8 @@ jobs:
             ### 📦 Installation
 
             - **Linux (Debian/Ubuntu)**: Download the `.deb` file → `sudo dpkg -i *.deb`
-            - **Linux (AppImage)**: Download the `.AppImage` file → `chmod +x && ./SCP-OS.AppImage`
-            - **macOS (Apple Silicon)**: Download the `.dmg` file for M1/M2/M3
+            - **Linux (Universal)**: Download the `.AppImage` file → `chmod +x *.AppImage && ./SCP-OS*.AppImage`
+            - **macOS (Apple Silicon)**: Download the `.dmg` file for M1/M2/M3/M4
             - **macOS (Intel)**: Download the `.dmg` file for Intel Macs
             - **Windows**: Download the `.msi` or `.exe` installer
 
@@ -168,13 +185,34 @@ jobs:
           args: ${{ matrix.platform.args }}
           retryAttempts: 2
 
+      - name: Report build artifacts
+        if: success()
+        shell: bash
+        run: |
+          echo "::group::Build artifacts for ${{ matrix.platform.label }}"
+          if [ -d "packages/desktop/target/release/bundle" ]; then
+            find packages/desktop/target/release/bundle -type f \( -name '*.deb' -o -name '*.AppImage' -o -name '*.dmg' -o -name '*.msi' -o -name '*.exe' -o -name '*.nsis.zip' \) -exec ls -lh {} \;
+          else
+            echo "No bundle directory found - artifacts may have been uploaded directly by tauri-action"
+          fi
+          echo "::endgroup::"
+
   notify-failure:
     name: Notify Build Failure
     if: failure() && needs.check-desktop.outputs.ready == 'true'
     needs: [check-desktop, build]
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Report failure
         run: |
-          echo "::error::Tauri build failed for one or more platforms. Check the build logs for details."
-          echo "Failed platforms may have partial artifacts uploaded to the release."
+          echo "::error::Tauri build failed for one or more platforms."
+          echo "Trigger: ${{ github.event_name }}"
+          echo "Tag: ${{ github.event.inputs.tag || github.ref_name }}"
+          echo ""
+          echo "Please check the individual platform build logs for details."
+          echo "Common failure causes:"
+          echo "  - Missing system dependencies"
+          echo "  - Rust compilation errors"
+          echo "  - Apple signing credential issues (macOS)"
+          echo "  - Frontend build failures"

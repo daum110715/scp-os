@@ -143,7 +143,6 @@ export function useChatWebSocket(options: UseChatWebSocketOptions) {
   }
 
   function switchRoom(newRoomId: number): void {
-    if (newRoomId === currentRoomId && connectionState.value === 'connected') return
     currentRoomId = newRoomId
     disconnect()
     reconnectAttempts = 0

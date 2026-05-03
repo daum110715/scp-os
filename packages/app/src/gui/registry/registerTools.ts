@@ -20,6 +20,9 @@ const AsyncPCDocsWindow = defineAsyncComponent(() => import('../tools/docs/PCDoc
 const AsyncMobileDocs = defineAsyncComponent(() => import('../tools/docs/MobileDocs.vue'))
 const AsyncPCProxyWindow = defineAsyncComponent(() => import('../tools/proxy/PCProxyWindow.vue'))
 const AsyncMobileProxy = defineAsyncComponent(() => import('../tools/proxy/MobileProxy.vue'))
+const AsyncPCNotificationCenter = defineAsyncComponent(() => import('../tools/notification/PCNotificationCenter.vue'))
+const AsyncMobileNotificationCenter = defineAsyncComponent(() => import('../tools/notification/MobileNotificationCenter.vue'))
+const AsyncAdminLayout = defineAsyncComponent(() => import('../tools/admin/AdminLayout.vue'))
 
 function lbl(key: string): () => string {
   return () => {
@@ -110,6 +113,33 @@ export function registerAllTools(): void {
     mobileComponent: {
       render() {
         return h(AsyncMobileProxy, { visible: true, onClose: () => {} })
+      },
+    },
+  })
+
+  ToolRegistry.register({
+    id: 'notification',
+    label: lbl('app.notification'),
+    icon: 'notification',
+    windowConfig: { width: 380, height: 520, minWidth: 300, minHeight: 400, resizable: true },
+    desktopComponent: AsyncPCNotificationCenter,
+    mobileComponent: {
+      render() {
+        return h(AsyncMobileNotificationCenter, { visible: true, onClose: () => {} })
+      },
+    },
+  })
+
+  ToolRegistry.register({
+    id: 'admin',
+    label: '管理后台',
+    icon: 'shield',
+    windowConfig: { width: 1200, height: 800, minWidth: 800, minHeight: 600, resizable: true },
+    desktopComponent: AsyncAdminLayout,
+    singleton: true,
+    mobileComponent: {
+      render() {
+        return h(AsyncAdminLayout)
       },
     },
   })

@@ -33,12 +33,12 @@ export const SCRAPER_CONFIG = {
       'https://scpos.woodcat.online',
       'http://localhost:5173',
       'http://127.0.0.1:5173',
-      'https://*.github.io',
+      'https://lemonstudio-hub.github.io',
       'http://localhost:*',
       'http://127.0.0.1:*',
     ],
     allowedMethods: ['GET', 'POST', 'OPTIONS'],
-    allowedHeaders: ['Content-Type'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
     maxAge: 86400, // 24小时
   },
 

@@ -3,8 +3,20 @@ name: CI
 on:
   push:
     branches: [main, develop]
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+      - '.vscode/**'
+      - 'docs/**'
+      - 'CHANGELOG.md'
   pull_request:
     branches: [main, develop]
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+      - '.vscode/**'
+      - 'docs/**'
+      - 'CHANGELOG.md'
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -18,6 +30,7 @@ jobs:
   lint:
     name: Lint & Type Check
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
       - name: Checkout code
@@ -35,15 +48,23 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Type check
+      - name: Type check (Frontend)
         run: pnpm run typecheck
+
+      - name: Type check (Worker)
+        run: pnpm --filter scp-os-worker run typecheck
 
       - name: ESLint check
         run: pnpm run lint:check
 
+      - name: Prettier format check
+        run: pnpm --filter @scp-os/app run format:check
+
   test:
     name: Test
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [lint]
 
     steps:
       - name: Checkout code
@@ -69,7 +90,8 @@ jobs:
   build:
     name: Build Web App
     runs-on: ubuntu-latest
-    needs: [lint]
+    timeout-minutes: 15
+    needs: [lint, test]
 
     steps:
       - name: Checkout code
@@ -101,14 +123,23 @@ jobs:
 
       - name: Check bundle size
         run: |
-          echo "Build output size:"
+          echo "::group::Build output size"
           du -sh dist/
-          echo "Bundle files:"
+          echo "::endgroup::"
+          echo "::group::Individual bundle files"
           find dist/assets -name '*.js' -exec ls -lh {} \; | awk '{print $5, $9}'
+          echo "::endgroup::"
+          TOTAL_SIZE=$(du -sb dist/ | awk '{print $1}')
+          MAX_SIZE=$((50 * 1024 * 1024))
+          if [ "$TOTAL_SIZE" -gt "$MAX_SIZE" ]; then
+            echo "::warning::Bundle size exceeds 50MB threshold ($(($TOTAL_SIZE / 1024 / 1024))MB)"
+          fi
 
   security:
     name: Security Scan
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [lint]
     if: github.event_name == 'push'
 
     steps:
@@ -132,7 +163,7 @@ jobs:
         continue-on-error: true
 
       - name: Run Trivy security scan
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.28.0
         with:
           scan-type: 'fs'
           scan-ref: '.'

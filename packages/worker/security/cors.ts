@@ -29,15 +29,18 @@ export class CORSManager {
    */
   getHeaders(request: RequestContext): Headers {
     const origin = request.origin
-    const allowedOrigin = this.isOriginAllowed(origin) ? origin : this.config.cors.allowedOrigins[0]
+    const allowedOrigin = this.isOriginAllowed(origin) ? origin : null
 
     const headers = new Headers({
-      'Access-Control-Allow-Origin': allowedOrigin,
       'Access-Control-Allow-Methods': this.config.cors.allowedMethods.join(', '),
       'Access-Control-Allow-Headers': this.config.cors.allowedHeaders.join(', '),
       'Access-Control-Max-Age': this.config.cors.maxAge.toString(),
       'Vary': 'Origin',
     })
+
+    if (allowedOrigin) {
+      headers.set('Access-Control-Allow-Origin', allowedOrigin)
+    }
 
     return headers
   }

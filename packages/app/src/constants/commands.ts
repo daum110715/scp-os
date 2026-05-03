@@ -37,6 +37,7 @@ export const AVAILABLE_COMMANDS: CommandType[] = [
   'find',
   'grep',
   'chmod',
+  'penetration',
   'chown'
 ]
 
@@ -77,6 +78,7 @@ export const COMMAND_DESCRIPTIONS: Record<CommandType, string> = {
   find: 'Find files',
   grep: 'Search file content',
   chmod: 'Change file permissions',
+  penetration: 'Launch virtual penetration testing session (SCP Foundation authorized)',
   chown: 'Change file owner'
 }
 
@@ -117,5 +119,6 @@ export const COMMAND_USAGE: Record<CommandType, string> = {
   find: 'find <path> -name <pattern>',
   grep: 'grep <pattern> <file>',
   chmod: 'chmod <permissions> <file>',
+  penetration: 'penetration',
   chown: 'chown <owner>:<group> <file>'
 }

@@ -397,6 +397,7 @@ const ws = useChatWebSocket({
         isSelf: msg.user_id === userId,
       })
     }
+    loading.value = false
     nextTick(() => scrollToBottom())
   },
   onUsersUpdate: (_users: any, count: any) => {
@@ -478,6 +479,9 @@ onMounted(async () => {
   }
   ws.setCredentials(userId, authStore.nickname || 'Anonymous')
   ws.connect()
+  if (currentRoomId.value) {
+    loadHistoryFromAPI(currentRoomId.value)
+  }
 })
 
 onUnmounted(() => {
@@ -562,6 +566,28 @@ function switchRoom(roomId: number) {
   messages.length = 0
   markRoomAsRead(roomId)
   ws.switchRoom(roomId)
+  loadHistoryFromAPI(roomId)
+}
+
+async function loadHistoryFromAPI(roomId: number) {
+  if (messages.length > 0) return
+  loading.value = true
+  try {
+    const response = await fetch(`${API_BASE}/chat/messages?limit=50&room_id=${roomId}`)
+    const data = await response.json()
+    if (data.success && data.data && data.data.length > 0 && messages.length === 0) {
+      for (const msg of data.data) {
+        messages.push({
+          ...msg,
+          isSelf: msg.user_id === userId,
+        })
+      }
+      nextTick(() => scrollToBottom())
+    }
+  } catch {
+  } finally {
+    loading.value = false
+  }
 }
 
 async function sendMessage() {

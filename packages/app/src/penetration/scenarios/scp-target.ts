@@ -1,0 +1,27 @@
+import type { PortInfo, VulnerabilityInfo } from '../types'
+
+export const SCP_TARGET = {
+  ip: '',
+  hostname: 'scp-server-017.foundation.local',
+  os: 'Ubuntu 22.04 LTS',
+  ports: [
+    { port: 22, protocol: 'tcp' as const, service: 'ssh', version: 'OpenSSH 8.9p1', state: 'open' as const },
+    { port: 80, protocol: 'tcp' as const, service: 'http', version: 'Apache/2.4.52', state: 'open' as const },
+    { port: 443, protocol: 'tcp' as const, service: 'https', version: 'Apache/2.4.52', state: 'open' as const },
+    { port: 3306, protocol: 'tcp' as const, service: 'mysql', version: 'MySQL 8.0.32', state: 'open' as const },
+    { port: 8080, protocol: 'tcp' as const, service: 'http-proxy', version: 'nginx/1.24.0', state: 'open' as const },
+  ] as PortInfo[],
+  vulnerabilities: [
+    { cve: 'CVE-2023-44487', severity: 'high' as const, service: 'http', port: 80, description: 'HTTP/2 Rapid Reset Attack', exploitable: true },
+    { cve: 'CVE-2023-46604', severity: 'critical' as const, service: 'http-proxy', port: 8080, description: 'Apache ActiveMQ RCE', exploitable: true },
+    { cve: 'CVE-2023-22515', severity: 'critical' as const, service: 'http', port: 80, description: 'Broken Access Control - Privilege Escalation', exploitable: true },
+    { cve: 'CVE-2022-0847', severity: 'high' as const, service: 'ssh', port: 22, description: 'Dirty Pipe - Local Privilege Escalation', exploitable: true },
+  ] as VulnerabilityInfo[],
+  webApp: 'SCP Foundation Internal Portal v3.7.2',
+  db: 'SCP Containment Database',
+  users: [
+    { username: 'admin', password: 'ScP_F0und4t10n_2024!', hash: '' },
+    { username: 'dr_bright', password: '', hash: 'e19a3c3d5b1e7e8f9a2b3c4d5e6f7a8b' },
+    { username: 'svc_backup', password: '', hash: 'a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6' },
+  ],
+}

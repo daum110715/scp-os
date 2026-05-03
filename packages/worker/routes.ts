@@ -1,10 +1,12 @@
 import type { Router } from './router'
-import type { Env, RequestContext, ChatSendMessageBody, CreateChatRoomBody, SetNicknameBody, SubmitFeedbackBody, LikeFeedbackBody, SubmitCommentBody, VoteFeedbackBody, RegisterUserBody, PerformanceMetricsBody } from './shared/types'
+import type { Env, RequestContext, ChatSendMessageBody, CreateChatRoomBody, SetNicknameBody, SubmitFeedbackBody, LikeFeedbackBody, SubmitCommentBody, VoteFeedbackBody, RegisterUserBody, PerformanceMetricsBody, AdminLoginBody } from './shared/types'
 import { SCPScraper } from './index'
 import type { CORSManager } from './security/cors'
 import * as feedbackAPI from './api/feedback'
 import * as userAPI from './api/user'
 import * as docsAPI from './api/docs'
+import * as notificationAPI from './api/notification'
+import * as adminAuthAPI from './api/admin-auth'
 import { DownloadProxy } from './download/downloadProxy'
 import type { DownloadRequest } from './download/types'
 import { logger } from './utils/logger'
@@ -117,7 +119,7 @@ export function registerRoutes(router: Router, deps: RouteDeps): void {
   })
 
   router.get('/list', async (req, _env, _ctx_, _params, url) => {
-    const limit = safeParseInt(url.searchParams.get('limit'), 100)
+    const limit = Math.min(safeParseInt(url.searchParams.get('limit'), 100), 500)
     const offset = safeParseInt(url.searchParams.get('offset'), 0)
     const clearanceLevelParam = url.searchParams.get('clearance_level')
     const clearanceLevel = clearanceLevelParam ? safeParseInt(clearanceLevelParam, 0) : undefined
@@ -149,7 +151,7 @@ export function registerRoutes(router: Router, deps: RouteDeps): void {
         'scp-wiki.wikidot.com', 'scp-wiki-cn.wikidot.com',
       ]
       const parsedUrl = new URL(imageUrl)
-      if (!allowedHosts.some(host => parsedUrl.hostname.endsWith(host))) {
+      if (!allowedHosts.some(host => parsedUrl.hostname === host || parsedUrl.hostname.endsWith('.' + host))) {
         return corsManager.createErrorResponse(validationError('Image host not allowed', { host: parsedUrl.hostname }), 403, ctx(req))
       }
       const imageResponse = await fetch(imageUrl, {
@@ -159,7 +161,15 @@ export function registerRoutes(router: Router, deps: RouteDeps): void {
         return corsManager.createErrorResponse('Failed to fetch image', imageResponse.status, ctx(req))
       }
       const contentType = imageResponse.headers.get('Content-Type') || 'image/png'
+      const contentLength = imageResponse.headers.get('Content-Length')
+      const MAX_IMAGE_SIZE = 10 * 1024 * 1024
+      if (contentLength && parseInt(contentLength, 10) > MAX_IMAGE_SIZE) {
+        return corsManager.createErrorResponse('Image too large', 413, ctx(req))
+      }
       const body = await imageResponse.arrayBuffer()
+      if (body.byteLength > MAX_IMAGE_SIZE) {
+        return corsManager.createErrorResponse('Image too large', 413, ctx(req))
+      }
       return new Response(body, {
         status: 200,
         headers: {
@@ -227,6 +237,7 @@ export function registerRoutes(router: Router, deps: RouteDeps): void {
   })
 
   router.post('/chat/broadcast', async (req, _env, _ctx_, _params, _url) => {
+    if (authFail()) return corsManager.createErrorResponse(unauthorizedError(), 401, ctx(req))
     const result = await scraper.broadcastNewMessages()
     return corsManager.createResponse(result, result.success ? 200 : 500, ctx(req))
   })
@@ -236,6 +247,9 @@ export function registerRoutes(router: Router, deps: RouteDeps): void {
     try {
       const body = await req.json() as SubmitFeedbackBody
       if (!body.title || !body.content) return corsManager.createErrorResponse(validationError('Missing required fields'), 400, ctx(req))
+      if (body.title.length > 200 || body.content.length > 5000) {
+        return corsManager.createErrorResponse(validationError('Content too long. Title max 200 chars, content max 5000 chars'), 400, ctx(req))
+      }
       const result = await feedbackAPI.submitFeedback(scraper.requireDB(), { user_id: authUserId(), title: body.title, content: body.content, category: body.category })
       return corsManager.createResponse(result, result.success ? 201 : 500, ctx(req))
     } catch {
@@ -273,6 +287,9 @@ export function registerRoutes(router: Router, deps: RouteDeps): void {
     try {
       const body = await req.json() as SubmitCommentBody
       if (!body.feedback_id || !body.content) return corsManager.createErrorResponse(validationError('Missing required fields'), 400, ctx(req))
+      if (body.content.length > 5000) {
+        return corsManager.createErrorResponse(validationError('Comment content too long. Max 5000 chars'), 400, ctx(req))
+      }
       const result = await feedbackAPI.submitComment(scraper.requireDB(), { feedback_id: body.feedback_id, user_id: authUserId(), content: body.content })
       return corsManager.createResponse(result, result.success ? 201 : 500, ctx(req))
     } catch {
@@ -429,5 +446,74 @@ export function registerRoutes(router: Router, deps: RouteDeps): void {
     if (!downloadId) return corsManager.createErrorResponse(validationError('Missing id parameter'), 400, ctx(req))
     const downloadProxy = new DownloadProxy(env.SCP_CACHE)
     return downloadProxy.handleDeleteHistory(downloadId, ctx(req).origin)
+  })
+
+  // ━━ Notification API ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  router.get('/notifications', async (req, _env, _ctx_, _params, url) => {
+    if (authFail()) return corsManager.createErrorResponse(unauthorizedError(), 401, ctx(req))
+    const limit = safeParseInt(url.searchParams.get('limit'), 20)
+    const offset = safeParseInt(url.searchParams.get('offset'), 0)
+    const unreadOnly = url.searchParams.get('unread') === 'true'
+    const result = await notificationAPI.getNotifications(scraper.requireDB(), authUserId(), { limit, offset, unreadOnly })
+    return corsManager.createResponse(result, 200, ctx(req))
+  })
+
+  router.post('/notifications/mark-read', async (req, _env, _ctx_, _params, _url) => {
+    if (authFail()) return corsManager.createErrorResponse(unauthorizedError(), 401, ctx(req))
+    try {
+      const body = await req.json() as { id?: number }
+      if (body.id) {
+        const result = await notificationAPI.markAsRead(scraper.requireDB(), body.id, authUserId())
+        return corsManager.createResponse(result, 200, ctx(req))
+      }
+      const result = await notificationAPI.markAllAsRead(scraper.requireDB(), authUserId())
+      return corsManager.createResponse(result, 200, ctx(req))
+    } catch {
+      return corsManager.createErrorResponse(validationError('Invalid request body'), 400, ctx(req))
+    }
+  })
+
+  router.delete('/notifications/:id', async (req, _env, _ctx_, params, _url) => {
+    if (authFail()) return corsManager.createErrorResponse(unauthorizedError(), 401, ctx(req))
+    const id = parseInt(params.id, 10)
+    if (!id) return corsManager.createErrorResponse(validationError('Invalid id'), 400, ctx(req))
+    const result = await notificationAPI.deleteNotification(scraper.requireDB(), id, authUserId())
+    return corsManager.createResponse(result, 200, ctx(req))
+  })
+
+  router.get('/notifications/preferences', async (req, _env, _ctx_, _params, _url) => {
+    if (authFail()) return corsManager.createErrorResponse(unauthorizedError(), 401, ctx(req))
+    const result = await notificationAPI.getNotificationPreferences(scraper.requireDB(), authUserId())
+    return corsManager.createResponse(result, 200, ctx(req))
+  })
+
+  router.post('/notifications/preferences', async (req, _env, _ctx_, _params, _url) => {
+    if (authFail()) return corsManager.createErrorResponse(unauthorizedError(), 401, ctx(req))
+    try {
+      const body = await req.json() as Partial<notificationAPI.NotificationPreferences>
+      const result = await notificationAPI.updateNotificationPreferences(scraper.requireDB(), authUserId(), body)
+      return corsManager.createResponse(result, 200, ctx(req))
+    } catch {
+      return corsManager.createErrorResponse(validationError('Invalid request body'), 400, ctx(req))
+    }
+  })
+
+  // ━━ Admin Auth API ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  router.post('/admin/auth/login', async (req, _env, _ctx_, _params, _url) => {
+    try {
+      const body = await req.json() as AdminLoginBody
+      const secret = env.ADMIN_JWT_SECRET || env.JWT_SECRET || 'admin-secret-key'
+      const result = await adminAuthAPI.handleAdminLogin(scraper.requireDB(), secret, body, ctx(req))
+      return corsManager.createResponse(result, result.success ? 200 : 401, ctx(req))
+    } catch {
+      return corsManager.createErrorResponse(validationError('Invalid request body'), 400, ctx(req))
+    }
+  })
+
+  router.get('/admin/auth/verify', async (req, _env, _ctx_, _params, _url) => {
+    const secret = env.ADMIN_JWT_SECRET || env.JWT_SECRET || 'admin-secret-key'
+    const authResult = await adminAuthAPI.requireAdminAuth(req, secret, scraper.requireDB())
+    if (authResult instanceof Response) return authResult
+    return corsManager.createResponse({ success: true, admin: authResult }, 200, ctx(req))
   })
 }

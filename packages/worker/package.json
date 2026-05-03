@@ -8,6 +8,7 @@
     "deploy": "wrangler deploy --env production",
     "deploy:dev": "wrangler deploy --env development",
     "tail": "wrangler tail",
+    "typecheck": "tsc -p tsconfig.ci.json --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"

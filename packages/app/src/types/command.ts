@@ -35,6 +35,7 @@ export type CommandType =
   | 'find'
   | 'grep'
   | 'chmod'
+  | 'penetration'
   | 'chown'
 
 import type { TerminalWrite, TerminalWriteln } from './terminal'

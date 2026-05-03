@@ -307,6 +307,7 @@ const ws = useChatWebSocket({
         isSelf: msg.user_id === userId,
       })
     }
+    loading.value = false
     nextTick(() => scrollToBottom())
   },
   onUsersUpdate: (_users: any, count: any) => {
@@ -456,6 +457,29 @@ function enterRoom(roomId: number) {
   view.value = 'chat'
   ws.setCredentials(userId, authStore.nickname || 'Anonymous')
   ws.switchRoom(roomId)
+  loadHistoryFromAPI(roomId)
+}
+
+async function loadHistoryFromAPI(roomId: number) {
+  if (messages.length > 0) return
+  loading.value = true
+  try {
+    const response = await fetch(`${API_BASE}/chat/messages?limit=50&room_id=${roomId}`)
+    const data = await response.json()
+    if (data.success && data.data && data.data.length > 0 && messages.length === 0) {
+      for (const msg of data.data) {
+        messages.push({
+          ...msg,
+          isSelf: msg.user_id === userId,
+        })
+      }
+      nextTick(() => scrollToBottom())
+    }
+  } catch {
+    // silently fail, WebSocket history will be the fallback
+  } finally {
+    loading.value = false
+  }
 }
 
 function autoResizeInput() {

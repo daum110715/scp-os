@@ -78,6 +78,350 @@ const CLASS_OPTIONS: { label: string; value: SCPObjectClass }[] = [
   { label: 'Unknown', value: 'Unknown' },
 ]
 
+const GUIDE_SCP_NUMBER = 'GUIDE-000'
+
+const GUIDE_ARTICLE: SCPArticle = {
+  scpNumber: GUIDE_SCP_NUMBER,
+  title: 'SCP-OS 使用指南',
+  objectClass: 'Safe' as SCPObjectClass,
+  series: 0,
+  rating: 9999,
+  url: '',
+}
+
+const GUIDE_HTML = `<style>
+.guide-wrap{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;line-height:1.75;max-width:760px;margin:0 auto;padding:0 20px 40px;color:#c9d1d9}
+.guide-hero{position:relative;text-align:center;padding:40px 0 36px;margin-bottom:36px;background:linear-gradient(135deg,rgba(13,17,23,0.95) 0%,rgba(22,27,34,0.9) 100%);border-radius:16px;border:1px solid rgba(48,54,61,0.6);overflow:hidden}
+.guide-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(88,166,255,0.08) 0%,transparent 60%);pointer-events:none}
+.guide-hero::after{content:'';position:absolute;top:-50%;left:50%;transform:translateX(-50%);width:300px;height:300px;background:radial-gradient(circle,rgba(88,166,255,0.06) 0%,transparent 70%);pointer-events:none}
+.guide-hero-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:rgba(88,166,255,0.1);border:1px solid rgba(88,166,255,0.25);border-radius:20px;font-size:10.5px;color:#58a6ff;font-weight:500;margin-bottom:14px;letter-spacing:0.3px}
+.guide-hero h1{font-size:28px;font-weight:700;color:#e6edf3;margin:0 0 10px;letter-spacing:-0.8px;position:relative;z-index:1}
+.guide-hero p{font-size:13.5px;color:#8b949e;margin:0;position:relative;z-index:1}
+.guide-toc{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:32px;padding:16px 20px;background:rgba(22,27,34,0.6);border:1px solid rgba(48,54,61,0.5);border-radius:12px}
+.guide-toc-item{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;background:rgba(48,54,61,0.4);border:1px solid rgba(48,54,61,0.6);border-radius:6px;font-size:11.5px;color:#8b949e;text-decoration:none;transition:all 0.15s}
+.guide-toc-item:hover{background:rgba(56,139,253,0.1);border-color:rgba(88,166,255,0.35);color:#58a6ff}
+.guide-toc-item span{color:#484f58;font-size:10px}
+.guide-section{margin-bottom:36px}
+.guide-section-title{display:flex;align-items:center;gap:10px;padding-bottom:10px;border-bottom:1px solid rgba(48,54,61,0.6);margin:0 0 18px}
+.guide-section-title h2{font-size:16px;font-weight:600;color:#e6edf3;margin:0;letter-spacing:-0.2px}
+.guide-section-title .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.guide-section p{font-size:13.5px;color:#adbac7;margin:0 0 12px;line-height:1.85}
+.guide-section ul,.guide-section ol{margin:0 0 14px;padding-left:22px}
+.guide-section li{font-size:13.5px;color:#adbac7;margin-bottom:5px;line-height:1.75}
+.guide-section li strong{color:#c9d1d9}
+.guide-section code{background:rgba(22,27,34,0.8);border:1px solid rgba(48,54,61,0.7);border-radius:4px;padding:1px 6px;font-size:12px;color:#f0883e;font-family:'SF Mono','Cascadia Code',monospace}
+.guide-section pre{background:rgba(13,17,23,0.9);border:1px solid rgba(48,54,61,0.6);border-radius:10px;padding:18px;overflow-x:auto;margin:0 0 16px;position:relative}
+.guide-section pre::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(to right,rgba(88,166,255,0.3),transparent)}
+.guide-section pre code{background:none;border:none;padding:0;color:#adbac7;font-size:12.5px;line-height:1.75;display:block;white-space:pre}
+.guide-intro-card{background:linear-gradient(135deg,rgba(22,27,34,0.8) 0%,rgba(13,17,23,0.9) 100%);border:1px solid rgba(48,54,61,0.6);border-radius:12px;padding:20px 22px;margin-bottom:8px;position:relative;overflow:hidden}
+.guide-intro-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(to right,rgba(88,166,255,0.4),rgba(63,185,80,0.3),transparent);border-radius:12px 12px 0 0}
+.guide-intro-card p{font-size:13.5px;color:#adbac7;margin:0;line-height:1.85}
+.guide-tech-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.guide-tech-tag{display:inline-flex;align-items:center;padding:3px 10px;background:rgba(48,54,61,0.35);border:1px solid rgba(48,54,61,0.5);border-radius:5px;font-size:11px;color:#8b949e}
+.guide-apps-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:10px;margin:0 0 6px}
+.guide-app-card{background:rgba(22,27,34,0.6);border:1px solid rgba(48,54,61,0.55);border-radius:10px;padding:15px 16px;transition:all 0.2s;cursor:default}
+.guide-app-card:hover{background:rgba(30,35,44,0.7);border-color:rgba(88,166,255,0.3);transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,0.3)}
+.guide-app-card h4{font-size:13px;font-weight:600;color:#c9d1d9;margin:0 0 5px;display:flex;align-items:center;gap:7px}
+.guide-app-card h4 .app-icon{width:18px;height:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.guide-app-card p{font-size:11.5px;color:#8b949e;margin:0 0 6px;line-height:1.65}
+.guide-app-card .app-tag{display:inline-block;background:rgba(88,166,255,0.08);border:1px solid rgba(88,166,255,0.15);border-radius:4px;padding:1px 6px;font-size:10px;color:#58a6ff}
+.guide-cmd-block{background:linear-gradient(135deg,rgba(13,17,23,0.95) 0%,rgba(18,22,29,0.9) 100%);border:1px solid rgba(48,54,61,0.6);border-radius:12px;padding:20px 22px;margin-bottom:6px}
+.guide-cmd-group{display:flex;gap:20px;margin-bottom:10px}
+.guide-cmd-group:last-child{margin-bottom:0}
+.guide-cmd-label{min-width:68px;padding-top:2px;font-size:10.5px;font-weight:600;color:#484f58;text-transform:uppercase;letter-spacing:0.5px;flex-shrink:0}
+.guide-cmd-cmds{font-size:12.5px;color:#adbac7;line-height:1.8}
+.guide-cmd-cmds code{background:none;border:none;padding:0;color:#c9d1d9;font-size:12.5px;margin-right:2px}
+.guide-cmd-cmds .cmd{color:#58a6ff;font-weight:500}
+.guide-cmd-cmds .val{color:#3fb950}
+.guide-killchain{display:flex;flex-direction:column;gap:8px;margin:0 0 16px;position:relative}
+.guide-killchain::before{content:'';position:absolute;left:19px;top:32px;bottom:32px;width:1px;background:linear-gradient(to bottom,rgba(88,166,255,0.3),rgba(63,185,80,0.2),transparent);z-index:0}
+.guide-step{display:flex;align-items:flex-start;gap:14px;padding:14px 16px;background:rgba(22,27,34,0.6);border:1px solid rgba(48,54,61,0.5);border-radius:10px;position:relative;transition:all 0.2s}
+.guide-step:hover{background:rgba(30,35,44,0.65);border-color:rgba(88,166,255,0.25)}
+.guide-step-num{width:26px;height:26px;background:rgba(88,166,255,0.1);color:#58a6ff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;position:relative;z-index:1;border:1px solid rgba(88,166,255,0.2)}
+.guide-step.active .guide-step-num{background:rgba(63,185,80,0.12);color:#3fb950;border-color:rgba(63,185,80,0.25)}
+.guide-step.active{background:rgba(22,27,34,0.85);border-color:rgba(63,185,80,0.2)}
+.guide-step-content h4{font-size:13px;font-weight:600;color:#c9d1d9;margin:0 0 3px;letter-spacing:-0.1px}
+.guide-step-content p{font-size:11.5px;color:#8b949e;margin:0 0 6px;line-height:1.65}
+.guide-step-tools{display:flex;flex-wrap:wrap;gap:4px}
+.guide-step-tools code{background:rgba(48,54,61,0.45);border:none;border-radius:3px;padding:1px 6px;font-size:10.5px;color:#f0883e}
+.guide-faq{display:flex;flex-direction:column;gap:8px;margin:0}
+.guide-faq-item{background:rgba(22,27,34,0.6);border:1px solid rgba(48,54,61,0.5);border-radius:10px;padding:15px 18px;transition:all 0.15s}
+.guide-faq-item:hover{border-color:rgba(88,166,255,0.2)}
+.guide-faq-item h4{font-size:13px;font-weight:600;color:#c9d1d9;margin:0 0 5px;display:flex;align-items:center;gap:6px}
+.guide-faq-item h4::before{content:'Q';width:18px;height:18px;background:rgba(88,166,255,0.1);color:#58a6ff;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+.guide-faq-item p{font-size:12.5px;color:#8b949e;margin:0;line-height:1.75;padding-left:24px}
+.guide-tip{background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.18);border-radius:10px;padding:14px 18px;margin:14px 0}
+.guide-tip h4{font-size:12.5px;font-weight:600;color:#3fb950;margin:0 0 5px;display:flex;align-items:center;gap:6px}
+.guide-tip p{font-size:12.5px;color:#8b949e;margin:0;line-height:1.75}
+.guide-note{background:rgba(210,153,34,0.07);border:1px solid rgba(210,153,34,0.2);border-radius:10px;padding:14px 18px;margin:14px 0}
+.guide-note h4{font-size:12.5px;font-weight:600;color:#d29922;margin:0 0 5px;display:flex;align-items:center;gap:6px}
+.guide-note p{font-size:12.5px;color:#adbac7;margin:0;line-height:1.75}
+.guide-warn{background:rgba(248,81,73,0.05);border:1px solid rgba(248,81,73,0.18);border-radius:10px;padding:14px 18px;margin:14px 0}
+.guide-warn h4{font-size:12.5px;font-weight:600;color:#f85149;margin:0 0 5px;display:flex;align-items:center;gap:6px}
+.guide-warn p{font-size:12.5px;color:#8b949e;margin:0;line-height:1.75}
+.guide-shortcuts{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin:6px 0}
+.guide-shortcut{display:flex;align-items:center;gap:10px;padding:10px 13px;background:rgba(22,27,34,0.6);border:1px solid rgba(48,54,61,0.5);border-radius:8px}
+.guide-shortcut-keys{display:flex;gap:3px}
+.guide-shortcut-key{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 5px;background:rgba(48,54,61,0.6);border:1px solid rgba(88,166,255,0.15);border-radius:4px;font-size:10px;font-weight:600;color:#c9d1d9;font-family:inherit}
+.guide-shortcut-desc{font-size:11.5px;color:#8b949e;line-height:1.4}
+.guide-footer{text-align:center;padding:24px 0 6px;margin-top:32px;border-top:1px solid rgba(48,54,61,0.5)}
+.guide-footer-inner{display:inline-flex;flex-direction:column;align-items:center;gap:6px}
+.guide-footer p{font-size:11px;color:#484f58;margin:0}
+.guide-footer .ver{font-size:10.5px;color:#363b42}
+.guide-divider{height:1px;background:linear-gradient(to right,transparent,rgba(48,54,61,0.6),transparent);margin:28px 0}
+</style>
+<div class="guide-wrap">
+<div class="guide-hero">
+<div class="guide-hero-badge">&#9679; 官方使用指南</div>
+<h1>SCP-OS 使用指南</h1>
+<p>基于 Cloudflare Workers 的全栈 SCP 基金会信息平台</p>
+</div>
+<nav class="guide-toc">
+<a class="guide-toc-item" href="#overview"><span>#</span> 项目概述</a>
+<a class="guide-toc-item" href="#apps"><span>#</span> 应用模块</a>
+<a class="guide-toc-item" href="#terminal"><span>#</span> 终端命令</a>
+<a class="guide-toc-item" href="#pentest"><span>#</span> 渗透会话</a>
+<a class="guide-toc-item" href="#faq"><span>#</span> 常见问题</a>
+<a class="guide-toc-item" href="#shortcuts"><span>#</span> 快捷操作</a>
+</nav>
+<div class="guide-section" id="overview">
+<div class="guide-section-title"><span class="dot" style="background:rgba(88,166,255,0.7)"></span><h2>项目概述</h2></div>
+<div class="guide-intro-card">
+<p>SCP-OS 是一个功能丰富的 SCP 基金会主题信息平台，运行于 Cloudflare 全球边缘网络。系统由 Vue 3 + Pinia 前端和 Cloudflare Workers 后端组成，支持桌面端和移动端自适应访问，提供 SCP 条目查询、文档阅读、实时聊天、下载代理、虚拟渗透测试等核心功能。</p>
+<div class="guide-tech-tags">
+<span class="guide-tech-tag">Vue 3</span>
+<span class="guide-tech-tag">Pinia</span>
+<span class="guide-tech-tag">TypeScript</span>
+<span class="guide-tech-tag">Cloudflare Workers</span>
+<span class="guide-tech-tag">D1 Database</span>
+<span class="guide-tech-tag">KV Storage</span>
+<span class="guide-tech-tag">Durable Objects</span>
+</div>
+</div>
+</div>
+<div class="guide-divider"></div>
+<div class="guide-section" id="apps">
+<div class="guide-section-title"><span class="dot" style="background:rgba(63,185,80,0.7)"></span><h2>应用模块一览</h2></div>
+<p>SCP-OS 提供 9 个核心应用模块，涵盖信息查询、文档阅读、工具集成等多个维度：</p>
+<div class="guide-apps-grid">
+<div class="guide-app-card">
+<h4><span class="app-icon">&#9654;</span> 终端 <code>Terminal</code></h4>
+<p>核心交互界面，38+ 命令。支持 SCP 查询、文件系统操作、网络诊断和渗透测试模拟。</p>
+<span class="app-tag">交互核心</span>
+</div>
+<div class="guide-app-card">
+<h4><span class="app-icon">&#128196;</span> 文档阅读器 <code>Docs</code></h4>
+<p>SCP 条目浏览器，支持系列/等级筛选、全文搜索、目录导航、收藏和离线缓存。</p>
+<span class="app-tag">信息阅读</span>
+</div>
+<div class="guide-app-card">
+<h4><span class="app-icon">&#8595;</span> 下载代理 <code>Proxy</code></h4>
+<p>Cloudflare 流式下载代理。实时速度图表、ETA 预估、速率控制和统计仪表盘。</p>
+<span class="app-tag">工具服务</span>
+</div>
+<div class="guide-app-card">
+<h4><span class="app-icon">&#128172;</span> 聊天 <code>Chat</code></h4>
+<p>基于 Durable Objects 的实时多房间聊天系统，支持昵称设置和消息广播。</p>
+<span class="app-tag">社交互动</span>
+</div>
+<div class="guide-app-card">
+<h4><span class="app-icon">&#128221;</span> 编辑器 <code>Editor</code></h4>
+<p>内置文本编辑器，支持多标签页管理和常用语法高亮。</p>
+<span class="app-tag">效率工具</span>
+</div>
+<div class="guide-app-card">
+<h4><span class="app-icon">&#128193;</span> 文件管理器 <code>Files</code></h4>
+<p>虚拟文件系统浏览器，支持目录导航和基本文件操作。</p>
+<span class="app-tag">效率工具</span>
+</div>
+<div class="guide-app-card">
+<h4><span class="app-icon">&#128202;</span> 仪表盘 <code>Dash</code></h4>
+<p>系统性能监控面板，展示关键运行指标和状态。</p>
+<span class="app-tag">系统监控</span>
+</div>
+<div class="guide-app-card">
+<h4><span class="app-icon">&#9881;</span> 设置 <code>Settings</code></h4>
+<p>系统偏好配置，支持主题、语言和显示选项的个性化调整。</p>
+<span class="app-tag">系统配置</span>
+</div>
+<div class="guide-app-card">
+<h4><span class="app-icon">&#9993;</span> 反馈 <code>Feedback</code></h4>
+<p>用户反馈通道，提交建议和问题报告给开发团队。</p>
+<span class="app-tag">用户服务</span>
+</div>
+</div>
+</div>
+<div class="guide-divider"></div>
+<div class="guide-section" id="terminal">
+<div class="guide-section-title"><span class="dot" style="background:rgba(63,185,80,0.6)"></span><h2>终端命令参考</h2></div>
+<p>终端是 SCP-OS 的核心交互工具，输入命令即可执行操作。按 <code>Enter</code> 确认，<code>Tab</code> 自动补全，<code>↑</code><code>↓</code> 浏览历史命令。</p>
+<div class="guide-cmd-block">
+<div class="guide-cmd-group">
+<span class="guide-cmd-label">系统控制</span>
+<span class="guide-cmd-cmds"><code class="cmd">start</code> <code class="cmd">restart</code> <code class="cmd">shutdown</code> <code class="cmd">logout</code> <code class="cmd">clear</code></span>
+</div>
+<div class="guide-cmd-group">
+<span class="guide-cmd-label">SCP 查询</span>
+<span class="guide-cmd-cmds"><code class="cmd">info</code> <code class="val">&lt;编号&gt;</code> <code class="cmd">search</code> <code class="val">&lt;关键词&gt;</code> <code class="cmd">scp-list</code> <code class="cmd">status</code> <code class="cmd">containment</code></span>
+</div>
+<div class="guide-cmd-group">
+<span class="guide-cmd-label">文件操作</span>
+<span class="guide-cmd-cmds"><code class="cmd">ls</code> <code class="cmd">cd</code> <code class="cmd">pwd</code> <code class="cmd">mkdir</code> <code class="cmd">rm</code> <code class="cmd">cat</code> <code class="cmd">echo</code> <code class="cmd">touch</code> <code class="cmd">cp</code> <code class="cmd">mv</code></span>
+</div>
+<div class="guide-cmd-group">
+<span class="guide-cmd-label">系统信息</span>
+<span class="guide-cmd-cmds"><code class="cmd">uname</code> <code class="val">[-a]</code> <code class="cmd">df</code> <code class="cmd">free</code> <code class="cmd">uptime</code> <code class="cmd">version</code> <code class="cmd">about</code></span>
+</div>
+<div class="guide-cmd-group">
+<span class="guide-cmd-label">网络与安全</span>
+<span class="guide-cmd-cmds"><code class="cmd">network</code> <code class="cmd">check</code> <code class="cmd">performance</code></span>
+</div>
+<div class="guide-cmd-group">
+<span class="guide-cmd-label">其他</span>
+<span class="guide-cmd-cmds"><code class="cmd">find</code> <code class="cmd">grep</code> <code class="cmd">chmod</code> <code class="cmd">chown</code></span>
+</div>
+<div class="guide-cmd-group">
+<span class="guide-cmd-label" style="color:#58a6ff">特别功能</span>
+<span class="guide-cmd-cmds"><code class="cmd" style="color:#58a6ff">penetration</code> <span style="color:#484f58;font-size:11.5px">启动虚拟渗透会话</span></span>
+</div>
+</div>
+</div>
+<div class="guide-divider"></div>
+<div class="guide-section" id="pentest">
+<div class="guide-section-title"><span class="dot" style="background:rgba(248,81,73,0.6)"></span><h2>虚拟渗透会话</h2></div>
+<p>在终端输入 <code>penetration</code> 启动交互式渗透测试模拟，以特遣队特工身份体验完整杀伤链流程：</p>
+<div class="guide-killchain">
+<div class="guide-step active">
+<div class="guide-step-num">1</div>
+<div class="guide-step-content">
+<h4>信息收集 Reconnaissance</h4>
+<p>使用探测工具收集目标网络拓扑和服务信息</p>
+<div class="guide-step-tools"><code>nmap</code><code>whois</code><code>dig</code><code>curl</code><code>nikto</code></div>
+</div>
+</div>
+<div class="guide-step">
+<div class="guide-step-num">2</div>
+<div class="guide-step-content">
+<h4>漏洞识别 Vulnerability Scan</h4>
+<p>扫描已知漏洞，评估目标系统的可利用性</p>
+<div class="guide-step-tools"><code>nmap --script vuln</code><code>sqlmap</code><code>searchsploit</code></div>
+</div>
+</div>
+<div class="guide-step">
+<div class="guide-step-num">3</div>
+<div class="guide-step-content">
+<h4>漏洞利用 Exploitation</h4>
+<p>通过 Metasploit 执行漏洞利用获取初始访问权限</p>
+<div class="guide-step-tools"><code>msfconsole</code><code>search</code><code>use</code><code>set</code><code>exploit</code></div>
+</div>
+</div>
+<div class="guide-step">
+<div class="guide-step-num">4</div>
+<div class="guide-step-content">
+<h4>权限提升 Privilege Escalation</h4>
+<p>利用系统配置缺陷将权限提升至管理员/root 级别</p>
+<div class="guide-step-tools"><code>linpeas</code><code>dirty-pipe</code><code>sudo -l</code><code>find / -perm -4000</code></div>
+</div>
+</div>
+<div class="guide-step">
+<div class="guide-step-num">5</div>
+<div class="guide-step-content">
+<h4>持久化 Persistence</h4>
+<p>部署后门程序和计划任务确保长期访问通道</p>
+<div class="guide-step-tools"><code>crontab</code><code>ssh-key</code><code>backdoor</code><code>service install</code></div>
+</div>
+</div>
+<div class="guide-step">
+<div class="guide-step-num">6</div>
+<div class="guide-step-content">
+<h4>信息窃取 Exfiltration</h4>
+<p>提取系统凭证并外发目标敏感数据</p>
+<div class="guide-step-tools"><code>mimikatz</code><code>cat /etc/shadow</code><code>tar</code><code>scp</code><code>exfil</code></div>
+</div>
+</div>
+</div>
+<div class="guide-tip">
+<h4>&#9432; 会话内命令</h4>
+<p><code>help</code> 查看可用命令 &middot; <code>phase</code> 查看当前进度 &middot; <code>exit</code> / <code>abort</code> 退出会话</p>
+</div>
+<div class="guide-note">
+<h4>&#9888; 重要提示</h4>
+<p>虚拟渗透会话所有操作均为预设剧本模拟，不涉及真实网络攻击，仅供教育与娱乐目的。请勿将其中的技术描述用于实际安全测试。</p>
+</div>
+</div>
+<div class="guide-divider"></div>
+<div class="guide-section" id="faq">
+<div class="guide-section-title"><span class="dot" style="background:rgba(210,153,34,0.7)"></span><h2>常见问题</h2></div>
+<div class="guide-faq">
+<div class="guide-faq-item">
+<h4>如何启动系统？</h4>
+<p>打开终端，输入 <code>start</code> 命令即可启动。首次启动会显示开机动画和初始化日志。桌面端还支持在桌面空白处双击快速启动。</p>
+</div>
+<div class="guide-faq-item">
+<h4>如何搜索 SCP 条目？</h4>
+<p>在终端输入 <code>search &lt;关键词&gt;</code>，或打开文档阅读器使用搜索框。支持中英文关键词、SCP 编号（如 173、CN-300）以及分部前缀（如 CN-、ES-、JP-）。</p>
+</div>
+<div class="guide-faq-item">
+<h4>离线可以使用吗？</h4>
+<p>部分功能支持离线：文档阅读器有 24 小时本地缓存（已缓存文章可离线阅读）；终端的文件系统命令（ls/cd/cat/mkdir 等）完全本地运行。需要网络的功能：搜索、聊天、下载代理。</p>
+</div>
+<div class="guide-faq-item">
+<h4>如何使用下载代理？</h4>
+<p>打开「代理」应用，粘贴任意 HTTP/HTTPS 下载链接，点击「下载」按钮。高级选项中可自定义文件名和传输速率限制（KB/s）。支持最大 500MB 文件，代理流量经由 Cloudflare Workers 转发。</p>
+</div>
+<div class="guide-faq-item">
+<h4>渗透测试是真实的攻击吗？</h4>
+<p>不是。虚拟渗透会话是完全的模拟系统，输出内容基于预设剧本生成，不会对任何真实服务器产生请求或影响。该功能灵感来自 CTF 竞赛，旨在提供沉浸式学习体验。</p>
+</div>
+<div class="guide-faq-item">
+<h4>如何获取更多帮助？</h4>
+<p>在任何界面按下 <code>help</code> 或 <code>?</code> 可查看上下文相关帮助。你也可以通过「反馈」应用提交问题或建议。</p>
+</div>
+</div>
+</div>
+<div class="guide-divider"></div>
+<div class="guide-section" id="shortcuts">
+<div class="guide-section-title"><span class="dot" style="background:rgba(175,82,222,0.7)"></span><h2>快捷操作</h2></div>
+<div class="guide-shortcuts">
+<div class="guide-shortcut">
+<div class="guide-shortcut-keys"><span class="guide-shortcut-key">Tab</span></div>
+<span class="guide-shortcut-desc">自动补全命令</span>
+</div>
+<div class="guide-shortcut">
+<div class="guide-shortcut-keys"><span class="guide-shortcut-key">↑</span><span class="guide-shortcut-key">↓</span></div>
+<span class="guide-shortcut-desc">浏览历史命令</span>
+</div>
+<div class="guide-shortcut">
+<div class="guide-shortcut-keys"><span class="guide-shortcut-key">Ctrl</span><span class="guide-shortcut-key">C</span></div>
+<span class="guide-shortcut-desc">取消当前输入</span>
+</div>
+<div class="guide-shortcut">
+<div class="guide-shortcut-keys"><span class="guide-shortcut-key">Ctrl</span><span class="guide-shortcut-key">L</span></div>
+<span class="guide-shortcut-desc">清屏</span>
+</div>
+<div class="guide-shortcut">
+<div class="guide-shortcut-keys"><span class="guide-shortcut-key">双击</span></div>
+<span class="guide-shortcut-desc">桌面快速启动终端</span>
+</div>
+<div class="guide-shortcut">
+<div class="guide-shortcut-keys"><span class="guide-shortcut-key">Esc</span></div>
+<span class="guide-shortcut-desc">关闭弹窗/返回</span>
+</div>
+</div>
+</div>
+<div class="guide-divider"></div>
+<div class="guide-warn">
+<h4>&#9888; 法律声明</h4>
+<p>SCP-OS 为 SCP 基金会主题的虚构信息平台，所有内容（包括 SCP 条目数据）均来自公开的 SCP Wiki，仅供娱乐和教育目的。虚拟渗透会话为模拟系统，不涉及真实网络攻击。下载代理功能请仅用于合法用途。系统禁止发布任何违规内容。</p>
+</div>
+<div class="guide-footer">
+<div class="guide-footer-inner">
+<p>SCP-OS &middot; Built with Cloudflare Workers &middot; v2.0.0</p>
+<p class="ver">Powered by Vue 3 &middot; TypeScript &middot; Cloudflare Edge Network</p>
+</div>
+</div>
+</div>`
+
 // ── HTTP Helper ──────────────────────────────────────────────────────
 
 async function fetchWithTimeout(url: string, timeoutMs: number = TIMEOUT_MS): Promise<Response> {
@@ -88,608 +432,5 @@ async function fetchWithTimeout(url: string, timeoutMs: number = TIMEOUT_MS): Pr
     return res
   } finally {
     clearTimeout(timeoutId)
-  }
-}
-
-// ── HTML Sanitization ────────────────────────────────────────────────
-
-let domPurifyModule: any = null
-let domPurifyLoaded = false
-
-async function loadDOMPurify(): Promise<any> {
-  if (domPurifyLoaded) return domPurifyModule
-  try {
-    const mod = await import('dompurify')
-    domPurifyModule = mod.default || mod
-    domPurifyLoaded = true
-    return domPurifyModule
-  } catch {
-    logger.warn('[DocsReader] DOMPurify not available, using fallback sanitizer')
-    domPurifyLoaded = true
-    return null
-  }
-}
-
-/**
- * Basic HTML sanitizer fallback when DOMPurify is not available.
- * Removes script tags, event handlers, and dangerous attributes.
- */
-function basicSanitize(html: string): string {
-  return html
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
-    .replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, '')
-    .replace(/<embed\b[^>]*>/gi, '')
-    .replace(/\son\w+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '')
-    .replace(/javascript\s*:/gi, '')
-    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
-}
-
-async function sanitizeHtml(html: string): Promise<string> {
-  const purify = await loadDOMPurify()
-  if (purify) {
-    purify.addHook('uponSanitizeAttribute', (node: Element, data: { attrName: string; attrValue: string | null }) => {
-      if (data.attrName === 'src' && data.attrValue && node.nodeName === 'IMG') {
-        data.attrValue = proxyImageUrl(data.attrValue)
-      }
-    })
-    try {
-      return purify.sanitize(html, {
-        ALLOWED_TAGS: [
-          'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-          'p', 'br', 'hr', 'blockquote', 'pre', 'code',
-          'ul', 'ol', 'li', 'dl', 'dt', 'dd',
-          'table', 'thead', 'tbody', 'tr', 'th', 'td',
-          'a', 'strong', 'em', 'b', 'i', 'u', 's', 'del', 'ins',
-          'sub', 'sup', 'abbr', 'mark', 'span', 'div',
-          'img', 'figure', 'figcaption', 'details', 'summary',
-          'sup', 'sub', 'ruby', 'rt', 'rp',
-        ],
-        ALLOWED_ATTR: [
-          'href', 'src', 'alt', 'title', 'class', 'id',
-          'colspan', 'rowspan', 'width', 'height',
-          'style', 'target', 'rel', 'loading',
-        ],
-        ALLOW_DATA_ATTR: false,
-        ADD_ATTR: ['target'],
-      })
-    } finally {
-      purify.removeAllHooks()
-    }
-  }
-  return basicSanitize(html)
-}
-
-// ── TOC Extraction ───────────────────────────────────────────────────
-
-function extractTOC(html: string): TOCItem[] {
-  const toc: TOCItem[] = []
-  const headingRegex = /<h([1-6])[^>]*?(?:id=["']([^"']*)["'])?[^>]*>(.*?)<\/h\1>/gi
-  let match: RegExpExecArray | null
-
-  while ((match = headingRegex.exec(html)) !== null) {
-    const level = parseInt(match[1], 10)
-    const id = match[2] || `toc-${toc.length}`
-    const text = match[3].replace(/<[^>]*>/g, '').trim()
-    if (text) {
-      toc.push({ id, text, level })
-    }
-  }
-
-  return toc
-}
-
-// ── Composable ───────────────────────────────────────────────────────
-
-export function useDocsReader() {
-  // ── Reactive State ──────────────────────────────────────────────
-  const articles = ref<SCPArticle[]>([])
-  const currentArticle = ref<SCPArticleDetail | null>(null)
-  const loading = ref(false)
-  const loadingMore = ref(false)
-  const loadingDetail = ref(false)
-  const searchQuery = ref('')
-  const selectedSeries = ref<number | null>(null)
-  const selectedClass = ref<SCPObjectClass | null>(null)
-  const fontSize = ref(16)
-  const readerTheme = ref<ReaderTheme>('dark')
-  const favorites = ref<Set<string>>(new Set())
-  const currentPage = ref(1)
-  const hasMore = ref(true)
-  const isOnline = ref(typeof navigator !== 'undefined' ? navigator.onLine : true)
-  const cacheStatus = ref<'idle' | 'loading' | 'cached'>('idle')
-  const error = ref<string | null>(null)
-
-  // ── Computed ────────────────────────────────────────────────────
-
-  const filteredArticles = computed(() => {
-    let result = articles.value
-
-    if (searchQuery.value.trim()) {
-      const query = searchQuery.value.trim().toLowerCase()
-      result = result.filter(
-        a =>
-          a.scpNumber.toLowerCase().includes(query) ||
-          a.title.toLowerCase().includes(query)
-      )
-    }
-
-    if (selectedSeries.value !== null) {
-      result = result.filter(a => a.series === selectedSeries.value)
-    }
-
-    if (selectedClass.value !== null) {
-      result = result.filter(a => a.objectClass === selectedClass.value)
-    }
-
-    return result
-  })
-
-  const isFavorited = computed(() => {
-    if (!currentArticle.value) return false
-    return favorites.value.has(currentArticle.value.scpNumber)
-  })
-
-  const cacheCount = computed(() => {
-    // Estimate from articles that have been loaded
-    return articles.value.length
-  })
-
-  // ── Online Status ───────────────────────────────────────────────
-
-  function handleOnline(): void {
-    isOnline.value = true
-  }
-
-  function handleOffline(): void {
-    isOnline.value = false
-  }
-
-  // ── API Methods ─────────────────────────────────────────────────
-
-  async function fetchArticles(page: number = 1, append: boolean = false): Promise<void> {
-    if (!isOnline.value && page === 1 && !append) {
-      error.value = 'You are offline. Connect to the internet to load articles.'
-      loading.value = false
-      return
-    }
-
-    if (page === 1) {
-      loading.value = true
-    } else {
-      loadingMore.value = true
-    }
-    error.value = null
-
-    try {
-      const offset = (page - 1) * PAGE_SIZE
-      const params = new URLSearchParams({
-        limit: String(PAGE_SIZE),
-        offset: String(offset),
-      })
-
-      if (selectedSeries.value !== null) {
-        params.set('series', String(selectedSeries.value))
-      }
-      if (selectedClass.value !== null) {
-        params.set('class', selectedClass.value)
-      }
-      if (searchQuery.value.trim()) {
-        params.set('search', searchQuery.value.trim())
-      }
-
-      const response = await fetchWithTimeout(`${API_BASE}/docs/items?${params.toString()}`)
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-      }
-
-      const data = await response.json()
-
-      if (data.success && Array.isArray(data.data)) {
-        const newArticles: SCPArticle[] = data.data.map((item: any) => ({
-          scpNumber: item.scp_number || item.scpNumber || '',
-          title: item.title || '',
-          objectClass: (item.object_class || item.objectClass || 'Unknown') as SCPObjectClass,
-          series: Number(item.series) || 1,
-          rating: item.rating || 0,
-          url: item.url || '',
-        }))
-
-        if (append) {
-          articles.value = [...articles.value, ...newArticles]
-        } else {
-          articles.value = newArticles
-        }
-
-        currentPage.value = page
-        hasMore.value = (data.total && data.offset + newArticles.length < data.total) || newArticles.length >= PAGE_SIZE
-      } else {
-        if (!append) {
-          articles.value = []
-        }
-        hasMore.value = false
-      }
-    } catch (err) {
-      logger.error('[DocsReader] Failed to fetch articles:', err)
-      error.value = err instanceof Error ? err.message : 'Failed to load articles'
-      if (!append) {
-        hasMore.value = false
-      }
-    } finally {
-      loading.value = false
-      loadingMore.value = false
-    }
-  }
-
-  async function fetchArticleDetail(scpNumber: string): Promise<void> {
-    loadingDetail.value = true
-    error.value = null
-    cacheStatus.value = 'loading'
-
-    try {
-      const cached = await indexedDBService.getSCPContent(scpNumber)
-      if (cached && (Date.now() - cached.cachedAt < CACHE_TTL)) {
-        const sanitizedContent = await sanitizeHtml(cached.rawHtml)
-        const toc = extractTOC(sanitizedContent)
-
-        const listMeta = articles.value.find(a => a.scpNumber === scpNumber)
-
-        currentArticle.value = {
-          scpNumber: cached.scpNumber,
-          title: listMeta?.title || '',
-          objectClass: listMeta?.objectClass || 'Unknown',
-          series: listMeta?.series || 1,
-          rating: listMeta?.rating || 0,
-          url: listMeta?.url || '',
-          content: sanitizedContent,
-          rawHtml: cached.rawHtml,
-          wordCount: cached.wordCount,
-          toc,
-        }
-        cacheStatus.value = 'cached'
-
-        if (isOnline.value) {
-          fetchArticleFromNetwork(scpNumber, true).catch(() => {})
-        }
-        return
-      }
-
-      await fetchArticleFromNetwork(scpNumber, false)
-    } catch (err) {
-      logger.error('[DocsReader] Failed to fetch article detail:', err)
-      error.value = err instanceof Error ? err.message : 'Failed to load article'
-    } finally {
-      loadingDetail.value = false
-    }
-  }
-
-  async function fetchArticleFromNetwork(scpNumber: string, background: boolean): Promise<void> {
-    if (!isOnline.value) return
-
-    try {
-      const [contentResponse, metaResponse] = await Promise.allSettled([
-        fetchWithTimeout(`${API_BASE}/docs/content/${encodeURIComponent(scpNumber)}`),
-        fetchWithTimeout(`${API_BASE}/docs/item/${encodeURIComponent(scpNumber)}`),
-      ])
-
-      let contentData: any = null
-      if (contentResponse.status === 'fulfilled' && contentResponse.value.ok) {
-        contentData = await contentResponse.value.json()
-      }
-
-      let metaData: any = null
-      if (metaResponse.status === 'fulfilled' && metaResponse.value.ok) {
-        metaData = await metaResponse.value.json()
-      }
-
-      if (!contentData || !contentData.success || !contentData.data) {
-        throw new Error('Content API returned no data')
-      }
-
-      const contentItem = contentData.data
-      const rawHtml: string = contentItem.content || ''
-      if (!rawHtml || rawHtml.length < 100) {
-        throw new Error('Retrieved content is empty or too short')
-      }
-
-      const sanitizedContent = await sanitizeHtml(rawHtml)
-      const toc = extractTOC(sanitizedContent)
-      const wordCount = rawHtml.replace(/<[^>]*>/g, '').length
-
-      const savedEntry = {
-        scpNumber,
-        content: sanitizedContent,
-        rawHtml,
-        wordCount,
-      }
-      await indexedDBService.saveSCPContent(savedEntry)
-
-      const metaItem = metaData?.success ? metaData.data : null
-      const detail: SCPArticleDetail = {
-        scpNumber,
-        title: metaItem?.title || '',
-        objectClass: (metaItem?.object_class || metaItem?.objectClass || 'Unknown') as SCPObjectClass,
-        series: Number(metaItem?.series) || 1,
-        rating: metaItem?.rating || 0,
-        url: metaItem?.url || '',
-        content: sanitizedContent,
-        rawHtml,
-        wordCount,
-        toc,
-      }
-
-      if (!background) {
-        currentArticle.value = detail
-      } else if (currentArticle.value?.scpNumber === scpNumber) {
-        currentArticle.value = detail
-      }
-
-      cacheStatus.value = 'cached'
-    } catch (err) {
-      if (!background) {
-        throw err
-      }
-      logger.warn('[DocsReader] Background fetch failed:', err)
-    }
-  }
-
-  // ── Search & Filter ─────────────────────────────────────────────
-
-  function search(): void {
-    currentPage.value = 1
-    hasMore.value = true
-    fetchArticles(1, false)
-  }
-
-  function setSeries(series: number | null): void {
-    selectedSeries.value = series
-    currentPage.value = 1
-    hasMore.value = true
-    fetchArticles(1, false)
-  }
-
-  function setObjectClass(cls: SCPObjectClass | null): void {
-    selectedClass.value = cls
-    currentPage.value = 1
-    hasMore.value = true
-    fetchArticles(1, false)
-  }
-
-  function loadMore(): void {
-    if (loadingMore.value || !hasMore.value) return
-    fetchArticles(currentPage.value + 1, true)
-  }
-
-  // ── Article Selection ───────────────────────────────────────────
-
-  async function selectArticle(scpNumber: string): Promise<void> {
-    await fetchArticleDetail(scpNumber)
-
-    // Restore reading progress
-    try {
-      const progress = await indexedDBService.getReadingProgress(scpNumber)
-      if (progress) {
-        // The component will handle scroll restoration
-        currentArticle.value = currentArticle.value
-          ? { ...currentArticle.value, _scrollPosition: progress.scrollPosition } as any
-          : null
-      }
-    } catch {
-      // Ignore progress restoration errors
-    }
-  }
-
-  function clearArticle(): void {
-    saveCurrentProgress()
-    currentArticle.value = null
-  }
-
-  // ── Font Size ───────────────────────────────────────────────────
-
-  const MIN_FONT_SIZE = 12
-  const MAX_FONT_SIZE = 28
-
-  function increaseFontSize(): void {
-    if (fontSize.value < MAX_FONT_SIZE) {
-      fontSize.value = Math.min(fontSize.value + 2, MAX_FONT_SIZE)
-      saveReaderSettings()
-    }
-  }
-
-  function decreaseFontSize(): void {
-    if (fontSize.value > MIN_FONT_SIZE) {
-      fontSize.value = Math.max(fontSize.value - 2, MIN_FONT_SIZE)
-      saveReaderSettings()
-    }
-  }
-
-  // ── Theme ───────────────────────────────────────────────────────
-
-  function toggleTheme(): void {
-    readerTheme.value = readerTheme.value === 'dark' ? 'light' : 'dark'
-    saveReaderSettings()
-  }
-
-  // ── Favorites ───────────────────────────────────────────────────
-
-  async function toggleFavorite(): Promise<void> {
-    if (!currentArticle.value) return
-
-    const scpNumber = currentArticle.value.scpNumber
-    if (favorites.value.has(scpNumber)) {
-      favorites.value.delete(scpNumber)
-      try {
-        await indexedDBService.removeFavorite(scpNumber)
-      } catch {
-        // Ignore
-      }
-    } else {
-      favorites.value.add(scpNumber)
-      try {
-        await indexedDBService.saveFavorite({
-          scpNumber,
-          title: currentArticle.value.title,
-        })
-      } catch {
-        // Ignore
-      }
-    }
-  }
-
-  async function loadFavorites(): Promise<void> {
-    try {
-      const favs = await indexedDBService.getFavorites()
-      favorites.value = new Set(favs.map((f: FavoriteRecord) => f.scpNumber))
-    } catch {
-      // Ignore
-    }
-  }
-
-  // ── Reading Progress ────────────────────────────────────────────
-
-  let progressSaveTimer: number | null = null
-
-  function saveCurrentProgress(): void {
-    if (!currentArticle.value) return
-    // The component should call saveProgress with the actual scroll position
-  }
-
-  async function saveProgress(scrollPosition: number): Promise<void> {
-    if (!currentArticle.value) return
-    try {
-      await indexedDBService.saveReadingProgress({
-        scpNumber: currentArticle.value.scpNumber,
-        scrollPosition,
-        readingTime: 0,
-      })
-    } catch {
-      // Ignore
-    }
-  }
-
-  function startProgressAutoSave(getScrollPosition: () => number): void {
-    if (progressSaveTimer) clearInterval(progressSaveTimer)
-    progressSaveTimer = window.setInterval(() => {
-      if (currentArticle.value) {
-        saveProgress(getScrollPosition())
-      }
-    }, 5000)
-  }
-
-  function stopProgressAutoSave(): void {
-    if (progressSaveTimer) {
-      clearInterval(progressSaveTimer)
-      progressSaveTimer = null
-    }
-  }
-
-  // ── Settings Persistence ────────────────────────────────────────
-
-  async function loadReaderSettings(): Promise<void> {
-    try {
-      const settings = await indexedDBService.loadSetting('docs_reader_settings')
-      if (settings) {
-        fontSize.value = settings.fontSize ?? 16
-        readerTheme.value = settings.readerTheme ?? 'dark'
-      }
-    } catch {
-      // Ignore
-    }
-  }
-
-  async function saveReaderSettings(): Promise<void> {
-    try {
-      await indexedDBService.saveSetting('docs_reader_settings', {
-        fontSize: fontSize.value,
-        readerTheme: readerTheme.value,
-      })
-    } catch {
-      // Ignore
-    }
-  }
-
-  // ── Scroll to TOC Item ──────────────────────────────────────────
-
-  function scrollToTOCItem(tocItem: TOCItem): void {
-    const el = document.getElementById(tocItem.id)
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }
-  }
-
-  // ── Lifecycle ───────────────────────────────────────────────────
-
-  onMounted(async () => {
-    if (typeof window !== 'undefined') {
-      window.addEventListener('online', handleOnline)
-      window.addEventListener('offline', handleOffline)
-    }
-
-    await loadReaderSettings()
-    await loadFavorites()
-    await fetchArticles(1)
-
-    // Pre-load DOMPurify
-    loadDOMPurify().catch(() => {})
-  })
-
-  onBeforeUnmount(() => {
-    if (typeof window !== 'undefined') {
-      window.removeEventListener('online', handleOnline)
-      window.removeEventListener('offline', handleOffline)
-    }
-    stopProgressAutoSave()
-    saveCurrentProgress()
-  })
-
-  return {
-    // State
-    articles,
-    currentArticle,
-    loading,
-    loadingMore,
-    loadingDetail,
-    searchQuery,
-    selectedSeries,
-    selectedClass,
-    fontSize,
-    readerTheme,
-    favorites,
-    currentPage,
-    hasMore,
-    isOnline,
-    cacheStatus,
-    error,
-
-    // Computed
-    filteredArticles,
-    isFavorited,
-    cacheCount,
-
-    // Methods
-    fetchArticles,
-    fetchArticleDetail,
-    selectArticle,
-    clearArticle,
-    search,
-    setSeries,
-    setObjectClass,
-    loadMore,
-    increaseFontSize,
-    decreaseFontSize,
-    toggleTheme,
-    toggleFavorite,
-    loadFavorites,
-    saveProgress,
-    startProgressAutoSave,
-    stopProgressAutoSave,
-    scrollToTOCItem,
-    sanitizeHtml,
-
-    // Constants
-    OBJECT_CLASS_COLORS,
-    SERIES_OPTIONS,
-    CLASS_OPTIONS,
   }
 }

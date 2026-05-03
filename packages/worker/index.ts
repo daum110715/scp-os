@@ -1,4 +1,4 @@
-﻿/**
+﻿﻿/**
  * SCP Scraper Worker
  * 重构版本 - 使用模块化架构
  */
@@ -1096,7 +1096,7 @@ export default {
         userAgent: request.headers.get('User-Agent') || '',
         timestamp: Date.now(),
       }
-      if (request.method !== 'GET' && request.method !== 'OPTIONS') {
+      if (request.method !== 'OPTIONS') {
         const identifier = authenticatedUserId || context.ip
         const isAllowed = await rateLimiter.checkLimit(identifier)
         if (!isAllowed) {

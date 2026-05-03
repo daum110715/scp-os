@@ -1,0 +1,391 @@
+<template>
+  <SCPWindow :window-instance="windowInstance" @close="onClose">
+    <div class="notif-center">
+      <div class="notif-center__header">
+        <div class="notif-center__header-left">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+          <span class="notif-center__header-title">{{ t('notif.title') }}</span>
+          <span v-if="store.hasUnread" class="notif-center__badge">{{ store.unreadCount }}</span>
+        </div>
+        <div class="notif-center__header-actions">
+          <button v-if="store.hasUnread" class="notif-center__btn notif-center__btn--ghost" @click="markAllRead">{{ t('notif.markAllRead') }}</button>
+          <button class="notif-center__btn notif-center__btn--ghost" @click="showPrefs = !showPrefs">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <transition name="notif-slide">
+        <div v-if="showPrefs" class="notif-center__prefs">
+          <div v-for="pref in prefItems" :key="pref.key" class="notif-center__pref-item">
+            <span class="notif-center__pref-label">{{ pref.label }}</span>
+            <button class="notif-center__toggle" :class="{ 'notif-center__toggle--on': store.preferences[pref.key] }" @click="togglePref(pref.key)">
+              <span class="notif-center__toggle-knob" />
+            </button>
+          </div>
+        </div>
+      </transition>
+
+      <div class="notif-center__body">
+        <div v-if="store.isLoading" class="notif-center__loading">
+          <div class="notif-center__spinner" />
+        </div>
+
+        <div v-else-if="store.notifications.length === 0" class="notif-center__empty">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" opacity="0.3"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+          <span>{{ t('notif.empty') }}</span>
+        </div>
+
+        <div v-else class="notif-center__list">
+          <div
+            v-for="item in store.notifications"
+            :key="item.id"
+            class="notif-center__item"
+            :class="{ 'notif-center__item--unread': !item.is_read }"
+            @click="handleClick(item)"
+          >
+            <div class="notif-center__item-icon" :class="`notif-center__item-icon--${item.type}`">
+              <svg v-if="item.type === 'feedback_comment'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+              <svg v-else-if="item.type === 'feedback_upvote'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3zM7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/></svg>
+              <svg v-else-if="item.type === 'feedback_downvote'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 003 3l4-9V2H5.72a2 2 0 00-2 1.7l-1.38 9a2 2 0 002 2.3zm7-13h2.67A2.31 2.31 0 0122 4v7a2.31 2.31 0 01-2.33 2H17"/></svg>
+              <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            </div>
+            <div class="notif-center__item-content">
+              <div class="notif-center__item-header">
+                <span class="notif-center__item-type">{{ typeLabel(item.type) }}</span>
+                <span class="notif-center__item-time">{{ formatTimeAgo(item.created_at) }}</span>
+              </div>
+              <p class="notif-center__item-title">{{ item.title }}</p>
+              <p class="notif-center__item-body">{{ item.actor_nickname }}: {{ item.body }}</p>
+            </div>
+            <button class="notif-center__item-delete" @click.stop="store.deleteNotification(item.id)">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </SCPWindow>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import SCPWindow from '../../components/SCPWindow.vue'
+import { useNotificationStore } from '../../../stores/notificationStore'
+import { useI18n } from '../../composables/useI18n'
+import type { WindowInstance } from '../../types'
+import type { NotificationType } from '../../../stores/notificationStore'
+
+interface Props {
+  windowInstance: WindowInstance
+}
+
+defineProps<Props>()
+const emit = defineEmits<{ close: [] }>()
+
+const store = useNotificationStore()
+const { t } = useI18n()
+const showPrefs = ref(false)
+
+const prefItems = computed(() => [
+  { key: 'feedback_comment' as const, label: t('notif.prefComment') },
+  { key: 'feedback_upvote' as const, label: t('notif.prefUpvote') },
+  { key: 'feedback_downvote' as const, label: t('notif.prefDownvote') },
+  { key: 'chat_message' as const, label: t('notif.prefChat') },
+])
+
+function typeLabel(type: NotificationType): string {
+  switch (type) {
+    case 'feedback_comment': return t('notif.typeComment')
+    case 'feedback_upvote': return t('notif.typeUpvote')
+    case 'feedback_downvote': return t('notif.typeDownvote')
+    case 'chat_message': return t('notif.typeChat')
+    default: return type
+  }
+}
+
+function formatTimeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime()
+  if (diff < 60000) return t('proxy.timeJustNow')
+  if (diff < 3600000) return t('proxy.timeMinAgo', { n: Math.floor(diff / 60000) })
+  if (diff < 86400000) return t('proxy.timeHourAgo', { n: Math.floor(diff / 3600000) })
+  return t('proxy.timeDayAgo', { n: Math.floor(diff / 86400000) })
+}
+
+async function handleClick(item: any): Promise<void> {
+  if (!item.is_read) await store.markAsRead(item.id)
+  emit('close')
+}
+
+async function markAllRead(): Promise<void> {
+  await store.markAsRead()
+}
+
+async function togglePref(key: keyof typeof store.preferences): Promise<void> {
+  await store.updatePreferences({ [key]: store.preferences[key] ? 0 : 1 })
+}
+
+function onClose() {
+  emit('close')
+}
+
+onMounted(() => {
+  store.fetchNotifications()
+  store.fetchPreferences()
+})
+
+onUnmounted(() => {
+  // keep polling alive
+})
+</script>
+
+<style scoped>
+.notif-center {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #0d1117;
+  color: #c9d1d9;
+  font-size: 13px;
+}
+
+.notif-center__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #161b22 0%, #1a2233 100%);
+  border-bottom: 1px solid #21262d;
+}
+
+.notif-center__header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #58a6ff;
+}
+
+.notif-center__header-title {
+  font-weight: 600;
+  font-size: 13px;
+  color: #e6edf3;
+}
+
+.notif-center__badge {
+  padding: 1px 7px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(248, 81, 73, 0.9);
+  color: #fff;
+  min-width: 18px;
+  text-align: center;
+}
+
+.notif-center__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.notif-center__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.notif-center__btn--ghost {
+  background: transparent;
+  color: #8b949e;
+}
+
+.notif-center__btn--ghost:hover {
+  background: #21262d;
+  color: #c9d1d9;
+}
+
+.notif-center__prefs {
+  padding: 12px 16px;
+  background: #161b22;
+  border-bottom: 1px solid #21262d;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.notif-center__pref-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.notif-center__pref-label {
+  font-size: 12px;
+  color: #8b949e;
+}
+
+.notif-center__toggle {
+  width: 36px;
+  height: 20px;
+  border-radius: 10px;
+  border: none;
+  background: #30363d;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s;
+}
+
+.notif-center__toggle--on {
+  background: #238636;
+}
+
+.notif-center__toggle-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s;
+}
+
+.notif-center__toggle--on .notif-center__toggle-knob {
+  transform: translateX(16px);
+}
+
+.notif-slide-enter-active, .notif-slide-leave-active { transition: all 0.2s ease; overflow: hidden; }
+.notif-slide-enter-from, .notif-slide-leave-to { opacity: 0; max-height: 0; }
+.notif-slide-enter-to, .notif-slide-leave-from { opacity: 1; max-height: 200px; }
+
+.notif-center__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.notif-center__loading { display: flex; justify-content: center; padding: 20px; }
+
+.notif-center__spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #30363d;
+  border-top-color: #58a6ff;
+  border-radius: 50%;
+  animation: notif-spin 0.8s linear infinite;
+}
+
+@keyframes notif-spin { to { transform: rotate(360deg); } }
+
+.notif-center__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 40px 20px;
+  color: #484f58;
+  font-size: 12px;
+}
+
+.notif-center__list { display: flex; flex-direction: column; gap: 4px; }
+
+.notif-center__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #161b22;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.notif-center__item:hover { border-color: #30363d; background: #1c2129; }
+
+.notif-center__item--unread {
+  border-left: 3px solid #58a6ff;
+  background: rgba(56, 139, 253, 0.04);
+}
+
+.notif-center__item-icon {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notif-center__item-icon--feedback_comment { background: rgba(56, 139, 253, 0.12); color: #58a6ff; }
+.notif-center__item-icon--feedback_upvote { background: rgba(46, 160, 67, 0.12); color: #3fb950; }
+.notif-center__item-icon--feedback_downvote { background: rgba(210, 153, 34, 0.12); color: #d29922; }
+.notif-center__item-icon--chat_message { background: rgba(163, 113, 247, 0.12); color: #a371f7; }
+
+.notif-center__item-content { flex: 1; min-width: 0; }
+
+.notif-center__item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2px;
+}
+
+.notif-center__item-type {
+  font-size: 11px;
+  font-weight: 500;
+  color: #8b949e;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.notif-center__item-time {
+  font-size: 10px;
+  color: #484f58;
+}
+
+.notif-center__item-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: #c9d1d9;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.notif-center__item-body {
+  font-size: 11px;
+  color: #8b949e;
+  margin: 2px 0 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.notif-center__item-delete {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: #484f58;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all 0.15s;
+}
+
+.notif-center__item:hover .notif-center__item-delete { opacity: 1; }
+.notif-center__item-delete:hover { background: rgba(248, 81, 73, 0.1); color: #f85149; }
+</style>

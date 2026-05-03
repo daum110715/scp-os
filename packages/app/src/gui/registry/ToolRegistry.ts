@@ -46,6 +46,8 @@ export interface ToolModule {
   mobileComponent: ToolComponent
   /** Pinia store factory (optional) */
   store?: () => void
+  /** Whether only one instance of this tool can be open at a time */
+  singleton?: boolean
   /** Called when tool is about to open */
   onOpen?: () => void
   /** Called when tool window is closed */
@@ -114,16 +116,22 @@ export function openTool(toolId: ToolType, openWindow: (config: {
   height: number
   isFullscreen?: boolean
   data?: Record<string, any>
-}) => void, data?: Record<string, any>): void {
+}) => void, data?: Record<string, any>, existingToolIds?: string[]): void {
   const tool = ToolRegistry.get(toolId)
   if (!tool) {
     console.warn(`[ToolRegistry] Tool "${toolId}" is not registered`)
     return
   }
 
+  if (tool.singleton && existingToolIds) {
+    const existing = existingToolIds.find(id => id.startsWith(`${toolId}-`))
+    if (existing) {
+      return
+    }
+  }
+
   tool.onOpen?.()
 
-  // Resolve label — supports both static strings and translation functions
   const resolvedLabel = typeof tool.label === 'function' ? tool.label() : tool.label
 
   openWindow({
@@ -133,7 +141,7 @@ export function openTool(toolId: ToolType, openWindow: (config: {
     iconName: tool.icon,
     width: tool.windowConfig.width ?? 750,
     height: tool.windowConfig.height ?? 500,
-    isFullscreen: true, // Default to fullscreen on PC
+    isFullscreen: true,
     data,
   })
 }

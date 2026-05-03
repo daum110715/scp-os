@@ -82,6 +82,17 @@
           <!-- Article Items -->
           <template v-else>
             <div
+              class="pc-docs__item pc-docs__item--guide"
+              :class="{ 'pc-docs__item--active': reader.currentArticle.value?.scpNumber === reader.GUIDE_SCP_NUMBER }"
+              @click="reader.selectGuide()"
+            >
+              <div class="pc-docs__item-number pc-docs__item-number--guide">📖</div>
+              <div class="pc-docs__item-body">
+                <span class="pc-docs__item-title">{{ reader.GUIDE_ARTICLE.title }}</span>
+                <span class="pc-docs__item-class" style="color: #58a6ff;">使用指南</span>
+              </div>
+            </div>
+            <div
               v-for="article in reader.filteredArticles.value"
               :key="article.scpNumber"
               class="pc-docs__item"
@@ -1009,5 +1020,20 @@ onBeforeUnmount(() => {
   .pc-docs__content {
     padding: 16px 20px;
   }
+}
+
+.pc-docs__item--guide {
+  background: rgba(56, 139, 253, 0.06);
+  border: 1px solid rgba(56, 139, 253, 0.15);
+}
+.pc-docs__item--guide:hover {
+  background: rgba(56, 139, 253, 0.12);
+  border-color: rgba(56, 139, 253, 0.3);
+}
+.pc-docs__item-number--guide {
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>

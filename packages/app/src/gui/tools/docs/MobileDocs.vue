@@ -100,6 +100,16 @@
           <!-- Cards -->
           <template v-else>
             <div
+              class="mobile-docs__card mobile-docs__card--guide"
+              @click="openGuide"
+            >
+              <div class="mobile-docs__card-header">
+                <span class="mobile-docs__card-number mobile-docs__card-number--guide">📖</span>
+                <span class="mobile-docs__card-class" style="background: rgba(88, 166, 255, 0.15); color: #58a6ff;">使用指南</span>
+              </div>
+              <div class="mobile-docs__card-title">{{ reader.GUIDE_ARTICLE.title }}</div>
+            </div>
+            <div
               v-for="article in reader.filteredArticles.value"
               :key="article.scpNumber"
               class="mobile-docs__card"
@@ -379,6 +389,11 @@ function onDetailTouchEnd(e: TouchEvent): void {
 
 async function openArticle(scpNumber: string): Promise<void> {
   await reader.selectArticle(scpNumber)
+  view.value = 'detail'
+}
+
+async function openGuide(): Promise<void> {
+  await reader.selectGuide()
   view.value = 'detail'
 }
 
@@ -1123,5 +1138,17 @@ onBeforeUnmount(() => {
 .mobile-slide-up-leave-to {
   transform: translateY(100%);
   opacity: 0;
+}
+
+.mobile-docs__card--guide {
+  background: rgba(56, 139, 253, 0.06);
+  border: 1px solid rgba(56, 139, 253, 0.15);
+}
+.mobile-docs__card--guide:active {
+  background: rgba(56, 139, 253, 0.12);
+  border-color: rgba(56, 139, 253, 0.3);
+}
+.mobile-docs__card-number--guide {
+  font-size: 16px;
 }
 </style>

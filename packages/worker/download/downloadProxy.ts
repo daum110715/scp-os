@@ -260,6 +260,15 @@ export class DownloadProxy {
   ): Promise<Response> {
     const headers = new Headers(corsHeaders(origin))
 
+    const validation = validateUrl(url)
+    if (!validation.valid) {
+      headers.set('Content-Type', 'application/json')
+      return new Response(
+        JSON.stringify({ success: false, error: validationError(validation.error!) }),
+        { status: 400, headers },
+      )
+    }
+
     const hasRateLimit = rateLimit > 0
     const rateLimitBps = hasRateLimit
       ? Math.max(DOWNLOAD_CONFIG.rateLimit.min, Math.min(rateLimit, DOWNLOAD_CONFIG.rateLimit.max))

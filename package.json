@@ -20,7 +20,7 @@
                     "worker:tail": "pnpm --filter scp-scraper-worker tail",
                     "desktop:dev": "pnpm --filter @scp-os/desktop tauri:dev",
                     "desktop:build": "pnpm --filter @scp-os/desktop tauri:build",
-                    "typecheck": "pnpm --filter @scp-os/app typecheck",
+                    "typecheck": "pnpm --filter @scp-os/app typecheck && pnpm --filter scp-os-worker run typecheck",
                     "lint:check": "pnpm --filter @scp-os/app lint:check",
                     "lint": "eslint . --ext .ts,.vue",
                     "format": "prettier --write ."

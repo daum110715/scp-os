@@ -1,5 +1,6 @@
 import type { ChatMessage, WSUser } from '../shared/types'
 import { encodeHtmlEntities } from '../utils/htmlSanitizer'
+import { createNotification } from '../api/notification'
 
 interface WebSocketConnection {
   ws: WebSocket
@@ -33,6 +34,8 @@ export class ChatRoomDO {
   private connections: Map<string, WebSocketConnection> = new Map()
   private messages: ChatMessage[] = []
   private rateLimits: Map<string, RateLimitEntry> = new Map()
+
+  private messagesLoaded = false
 
   constructor(
     private state: DurableObjectState,
@@ -301,14 +304,16 @@ export class ChatRoomDO {
   }
 
   private async loadMessages(roomId: number): Promise<void> {
+    if (this.messagesLoaded) return
     try {
       const result = await this.env.SCP_DB.prepare(
-        'SELECT * FROM chat_messages WHERE room_id = ? ORDER BY created_at DESC LIMIT ?',
+        'SELECT * FROM chat_messages ORDER BY created_at DESC LIMIT ?',
       )
-        .bind(roomId, MAX_MESSAGES)
+        .bind(MAX_MESSAGES)
         .all<ChatMessage>()
 
       this.messages = (result.results || []).reverse()
+      this.messagesLoaded = true
     } catch (error) {
       console.error('[ChatRoomDO] Failed to load messages:', error)
       this.messages = []
@@ -384,6 +389,7 @@ export class ChatRoomDO {
         break
       }
 
+      case 'auth':
       case 'rename': {
         const newUsername = typeof message.data?.username === 'string' ? message.data.username.trim() : ''
         if (!newUsername || newUsername.length > MAX_USERNAME_LENGTH) {
@@ -497,6 +503,25 @@ export class ChatRoomDO {
       } catch (error) {
         console.error('[ChatRoomDO] Failed to broadcast to connection:', conn.connectionId, error)
         this.connections.delete(conn.connectionId)
+      }
+    }
+
+    const notifiedUserIds = new Set<string>()
+    notifiedUserIds.add(message.user_id)
+    for (const conn of roomConnections) {
+      if (!notifiedUserIds.has(conn.userId)) {
+        notifiedUserIds.add(conn.userId)
+        const preview = message.content.length > 50 ? message.content.slice(0, 50) + '...' : message.content
+        createNotification(this.env.SCP_DB, {
+          recipient_user_id: conn.userId,
+          actor_user_id: message.user_id,
+          actor_nickname: message.username,
+          type: 'chat_message',
+          title: `#${message.room_id}`,
+          body: preview,
+          reference_id: String(message.room_id),
+          reference_type: 'chat_room',
+        }).catch(() => {})
       }
     }
   }
