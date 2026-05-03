@@ -1,3 +1,4 @@
+# Deploy Cloudflare Worker
 name: Deploy Worker
 
 on:
