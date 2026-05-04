@@ -373,15 +373,13 @@
               <div class="mobile-docs__font-row">
                 <span class="mobile-docs__font-label">Theme</span>
                 <div class="mobile-docs__theme-toggle">
+                  <!-- prettier-ignore -->
                   <button
                     class="mobile-docs__theme-btn"
                     :class="{
                       'mobile-docs__theme-btn--active': reader.readerTheme.value === 'dark',
                     }"
-                    @click="
-                      reader.readerTheme.value = 'dark';
-                      reader.toggleTheme()
-                    "
+                    @click="reader.readerTheme.value = 'dark'; reader.toggleTheme()"
                   >
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                       <path
@@ -392,15 +390,13 @@
                     </svg>
                     Dark
                   </button>
+                  <!-- prettier-ignore -->
                   <button
                     class="mobile-docs__theme-btn"
                     :class="{
                       'mobile-docs__theme-btn--active': reader.readerTheme.value === 'light',
                     }"
-                    @click="
-                      reader.readerTheme.value = 'light';
-                      reader.toggleTheme()
-                    "
+                    @click="reader.readerTheme.value = 'light'; reader.toggleTheme()"
                   >
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                       <circle cx="8" cy="8" r="3.5" stroke="currentColor" stroke-width="1.3" />
