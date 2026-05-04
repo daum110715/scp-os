@@ -7,6 +7,7 @@ import type {
 } from './types'
 import { logger } from '../utils/logger'
 import { validationError, internalError, notFoundError } from '../shared/errors'
+import { getBrowserHeaders } from '../utils/browserHeaders'
 
 function generateId(): string {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789'
@@ -170,8 +171,12 @@ export class DownloadProxy {
         signal: controller.signal,
         redirect: 'follow',
         headers: {
-          'User-Agent': 'SCP-Download-Proxy/1.0',
-          'Accept': '*/*',
+          ...getBrowserHeaders({
+            accept: '*/*',
+            fetchMode: 'cors',
+            fetchDest: 'empty',
+            fetchSite: 'cross-site',
+          }),
           'Accept-Encoding': 'identity',
         },
       })
@@ -276,8 +281,13 @@ export class DownloadProxy {
 
     try {
       const upstreamHeaders: Record<string, string> = {
-        'User-Agent': 'SCP-Download-Proxy/1.0',
-        'Accept': '*/*',
+        ...getBrowserHeaders({
+          accept: '*/*',
+          fetchMode: 'cors',
+          fetchDest: 'empty',
+          fetchSite: 'cross-site',
+          referer: url,
+        }),
       }
 
       const requestHeaders = new Headers(upstreamHeaders)

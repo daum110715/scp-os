@@ -59,9 +59,9 @@ describe('CORSManager', () => {
       expect(headers.get('Access-Control-Allow-Origin')).not.toBe('https://xscpos.pages.dev')
     })
 
-    it('should allow github.io wildcard subdomain', () => {
-      const headers = corsManager.getHeaders(mockContext('https://lemonstudio.github.io'))
-      expect(headers.get('Access-Control-Allow-Origin')).toBe('https://lemonstudio.github.io')
+    it('should allow github.io subdomain', () => {
+      const headers = corsManager.getHeaders(mockContext('https://lemonstudio-hub.github.io'))
+      expect(headers.get('Access-Control-Allow-Origin')).toBe('https://lemonstudio-hub.github.io')
     })
   })
 

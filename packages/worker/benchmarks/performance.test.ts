@@ -101,9 +101,9 @@ describe('Performance Benchmarks', () => {
 
     it('应该批量预编译正则表达式', () => {
       const patterns = [
-        { pattern: /\*\*特殊收容措施[:：]\*\*/gi },
-        { pattern: /\*\*描述[:：]\*\*/gi },
-        { pattern: /\*\*附录[:：]\*\*/gi },
+        { pattern: '\\*\\*特殊收容措施[:：]\\*\\*', flags: 'gi' },
+        { pattern: '\\*\\*描述[:：]\\*\\*', flags: 'gi' },
+        { pattern: '\\*\\*附录[:：]\\*\\*', flags: 'gi' },
       ]
 
       const startTime = performance.now()

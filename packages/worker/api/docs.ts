@@ -1,26 +1,84 @@
-import type { Env, SCPItem, SCPTale, SCPGOI, SCPHub, DocsContentResponse } from '../shared/types'
+import type { Env, DocsItem, DocsContentResponse, DocsTale, DocsHub, DocTag } from '../shared/types'
+import { logger } from '../utils/logger'
+import { getFetchHeaders } from '../utils/browserHeaders'
 
-function normalizeObjectClass(cls: string | null | undefined): string {
-  if (!cls) return 'Unknown'
-  const lower = cls.toLowerCase()
-  const map: Record<string, string> = {
-    safe: 'Safe',
-    euclid: 'Euclid',
-    keter: 'Keter',
-    thaumiel: 'Thaumiel',
-    neutralized: 'Neutralized',
-    apollyon: 'Apollyon',
-    unknown: 'Unknown',
+async function fetchWithRetry(url: string, options: RequestInit = {}, retries = 2): Promise<Response> {
+  let lastError: Error | null = null
+  
+  for (let i = 0; i <= retries; i++) {
+    try {
+      const response = await fetch(url, {
+        ...options,
+        headers: {
+          ...getFetchHeaders('https://github.com/scp-data/scp-api'),
+          ...options.headers
+        }
+      })
+      
+      if (response.ok || i === retries) return response
+      
+      if (response.status === 404) return response
+      if (response.status === 403) return response
+
+      logger.warn(`Retry ${i + 1}/${retries} for ${url} due to status ${response.status}`)
+      await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)))
+    } catch (error) {
+      lastError = error as Error
+      logger.warn(`Retry ${i + 1}/${retries} for ${url} due to error: ${lastError.message}`)
+      if (i === retries) throw error
+      await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)))
+    }
   }
-  return map[lower] || cls.charAt(0).toUpperCase() + cls.slice(1).toLowerCase()
+  
+  throw lastError || new Error('Fetch failed after retries')
 }
 
-function normalizeItem(item: any): any {
-  if (!item) return item
-  return {
-    ...item,
-    object_class: normalizeObjectClass(item.object_class),
+interface DocsListResponse {
+  success: boolean
+  data?: DocsItem[]
+  pagination?: {
+    total: number
+    limit: number
+    offset: number
+    has_more: boolean
   }
+  error?: string
+}
+
+interface DocsTalesListResponse {
+  success: boolean
+  data?: DocsTale[]
+  pagination?: {
+    total: number
+    limit: number
+    offset: number
+    has_more: boolean
+  }
+  error?: string
+}
+
+interface DocsHubsListResponse {
+  success: boolean
+  data?: DocsHub[]
+  pagination?: {
+    total: number
+    limit: number
+    offset: number
+    has_more: boolean
+  }
+  error?: string
+}
+
+interface DocTagsListResponse {
+  success: boolean
+  data?: DocTag[]
+  error?: string
+}
+
+function parseListParams(url: URL) {
+  const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '50', 10), 1), 200)
+  const offset = Math.max(parseInt(url.searchParams.get('offset') || '0', 10), 0)
+  return { limit, offset }
 }
 
 export async function handleDocsItems(
@@ -28,55 +86,73 @@ export async function handleDocsItems(
   env: Env
 ): Promise<Response> {
   const url = new URL(request.url)
-  const series = url.searchParams.get('series')
-  const objectClass = url.searchParams.get('class')
-  const search = url.searchParams.get('search')
-  const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '50', 10) || 50, 1), 200)
-  const offset = Math.max(parseInt(url.searchParams.get('offset') || '0', 10) || 0, 0)
+  const { limit, offset } = parseListParams(url)
+  const scpClass = url.searchParams.get('scp_class')
+  const clearanceLevel = url.searchParams.get('clearance_level')
+  const tag = url.searchParams.get('tag')
 
   try {
-    let whereParts: string[] = []
-    let params: any[] = []
-
-    if (series) {
-      whereParts.push('series = ?')
-      params.push(series)
+    const db = env.SCP_READER_DB
+    if (!db) {
+      return Response.json({
+        success: false,
+        error: 'Database binding SCP_READER_DB not found',
+      }, { status: 500 })
     }
 
-    if (objectClass) {
-      whereParts.push('UPPER(object_class) = UPPER(?)')
-      params.push(objectClass)
+    let query = 'SELECT * FROM scp_items WHERE 1=1'
+    let countQuery = 'SELECT COUNT(*) as total FROM scp_items WHERE 1=1'
+    const params: (string | number)[] = []
+    const countParams: (string | number)[] = []
+
+    if (scpClass) {
+      query += ' AND object_class = ?'
+      countQuery += ' AND object_class = ?'
+      params.push(scpClass)
+      countParams.push(scpClass)
     }
 
-    if (search) {
-      whereParts.push('(scp_search MATCH ?)')
-      params.push(search)
+    if (clearanceLevel) {
+      query += ' AND clearance_level = ?'
+      countQuery += ' AND clearance_level = ?'
+      params.push(parseInt(clearanceLevel, 10))
+      countParams.push(parseInt(clearanceLevel, 10))
     }
 
-    const whereClause = whereParts.length > 0 ? `WHERE ${whereParts.join(' AND ')}` : ''
+    if (tag) {
+      query += ' AND tags LIKE ?'
+      countQuery += ' AND tags LIKE ?'
+      params.push(`%${tag}%`)
+      countParams.push(`%${tag}%`)
+    }
 
-    const countQuery = search
-      ? `SELECT COUNT(*) as total FROM scp_items INNER JOIN scp_search ON scp_search.rowid = scp_items.id ${whereClause}`
-      : `SELECT COUNT(*) as total FROM scp_items ${whereClause}`
-    const countResult = await env.SCP_READER_DB.prepare(countQuery).bind(...params).first<{ total: number }>()
+    query += ' ORDER BY scp_number_int ASC LIMIT ? OFFSET ?'
+    params.push(limit, offset)
+
+    const [itemsResult, countResult] = await Promise.all([
+      db.prepare(query).bind(...params).all<DocsItem>(),
+      db.prepare(countQuery).bind(...countParams).first<{ total: number }>()
+    ])
+
     const total = countResult?.total || 0
 
-    const dataQuery = search
-      ? `SELECT scp_items.* FROM scp_items INNER JOIN scp_search ON scp_search.rowid = scp_items.id ${whereClause} ORDER BY scp_items.scp_number ASC LIMIT ? OFFSET ?`
-      : `SELECT * FROM scp_items ${whereClause} ORDER BY scp_number ASC LIMIT ? OFFSET ?`
-    const result = await env.SCP_READER_DB.prepare(dataQuery).bind(...params, limit, offset).all<SCPItem>()
-
-    return Response.json({
+    const response: DocsListResponse = {
       success: true,
-      data: (result.results || []).map(normalizeItem),
-      total,
-      limit,
-      offset,
-    })
+      data: itemsResult.results || [],
+      pagination: {
+        total,
+        limit,
+        offset,
+        has_more: offset + limit < total,
+      }
+    }
+
+    return Response.json(response)
   } catch (error) {
+    logger.error('Failed to fetch docs items:', error as Error)
     return Response.json({
       success: false,
-      error: `Database error: ${(error as Error).message}`,
+      error: `Failed to fetch docs: ${(error as Error).message}`,
     }, { status: 500 })
   }
 }
@@ -87,25 +163,31 @@ export async function handleDocsItem(
   scpNumber: string
 ): Promise<Response> {
   try {
-    const item = await env.SCP_READER_DB.prepare(
-      'SELECT * FROM scp_items WHERE scp_number = ?'
-    ).bind(scpNumber).first<SCPItem>()
+    const db = env.SCP_READER_DB
+    if (!db) {
+      return Response.json({
+        success: false,
+        error: 'Database binding SCP_READER_DB not found',
+      }, { status: 500 })
+    }
+
+    const item = await db.prepare(
+      'SELECT * FROM scp_items WHERE scp_number = ? OR scp_number_int = ?'
+    ).bind(scpNumber, parseInt(scpNumber, 10)).first<DocsItem>()
 
     if (!item) {
       return Response.json({
         success: false,
-        error: 'Item not found',
+        error: 'SCP item not found',
       }, { status: 404 })
     }
 
-    return Response.json({
-      success: true,
-      data: normalizeItem(item),
-    })
+    return Response.json({ success: true, data: item })
   } catch (error) {
+    logger.error(`Failed to fetch doc item ${scpNumber}:`, error as Error)
     return Response.json({
       success: false,
-      error: `Database error: ${(error as Error).message}`,
+      error: `Failed to fetch item: ${(error as Error).message}`,
     }, { status: 500 })
   }
 }
@@ -129,7 +211,15 @@ export async function handleDocsContent(
       return Response.json({ success: true, data: response })
     }
 
-    const item = await env.SCP_READER_DB.prepare(
+    const db = env.SCP_READER_DB
+    if (!db) {
+      return Response.json({
+        success: false,
+        error: 'Database binding SCP_READER_DB not found',
+      }, { status: 500 })
+    }
+
+    const item = await db.prepare(
       'SELECT content_file FROM scp_items WHERE scp_number = ?'
     ).bind(scpNumber).first<{ content_file: string | null }>()
 
@@ -141,16 +231,35 @@ export async function handleDocsContent(
     }
 
     const rawUrl = `https://raw.githubusercontent.com/scp-data/scp-api/main/docs/data/scp/items/${item.content_file}`
-    const rawResponse = await fetch(rawUrl)
+    const rawResponse = await fetchWithRetry(rawUrl)
 
-    if (!rawResponse.ok) {
+    if (rawResponse.status === 404) {
       return Response.json({
         success: false,
-        error: 'Failed to fetch content from GitHub',
+        error: 'Source content file not found on GitHub',
+      }, { status: 404 })
+    }
+
+    if (!rawResponse.ok) {
+      logger.error(`GitHub fetch failed for ${scpNumber}: ${rawResponse.status} ${rawResponse.statusText}`)
+      return Response.json({
+        success: false,
+        error: 'Failed to fetch content from upstream service',
+        details: `Upstream returned status ${rawResponse.status}`
       }, { status: 503 })
     }
 
-    const rawData: Record<string, any> = await rawResponse.json()
+    let rawData: Record<string, any>
+    try {
+      rawData = await rawResponse.json()
+    } catch (parseError) {
+      logger.error(`Failed to parse JSON for ${scpNumber}:`, parseError as Error)
+      return Response.json({
+        success: false,
+        error: 'Invalid response from upstream service',
+      }, { status: 502 })
+    }
+
     const paddedNumber = scpNumber.padStart(3, '0')
     const possibleKeys = [`SCP-${scpNumber}`, `SCP-${paddedNumber}`, scpNumber]
     let entry: any = null
@@ -180,6 +289,7 @@ export async function handleDocsContent(
     }
     return Response.json({ success: true, data: response })
   } catch (error) {
+    logger.error(`Exception in handleDocsContent for ${scpNumber}:`, error as Error)
     return Response.json({
       success: false,
       error: `Failed to get content: ${(error as Error).message}`,
@@ -192,48 +302,57 @@ export async function handleDocsTales(
   env: Env
 ): Promise<Response> {
   const url = new URL(request.url)
-  const year = url.searchParams.get('year')
-  const search = url.searchParams.get('search')
-  const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '50', 10) || 50, 1), 200)
-  const offset = Math.max(parseInt(url.searchParams.get('offset') || '0', 10) || 0, 0)
+  const { limit, offset } = parseListParams(url)
+  const tag = url.searchParams.get('tag')
 
   try {
-    let whereParts: string[] = []
-    let params: any[] = []
-
-    if (year) {
-      whereParts.push('year = ?')
-      params.push(parseInt(year, 10))
+    const db = env.SCP_READER_DB
+    if (!db) {
+      return Response.json({
+        success: false,
+        error: 'Database binding SCP_READER_DB not found',
+      }, { status: 500 })
     }
 
-    if (search) {
-      whereParts.push('(title LIKE ? OR tags LIKE ?)')
-      const likeSearch = `%${search}%`
-      params.push(likeSearch, likeSearch)
+    let query = 'SELECT * FROM tales WHERE 1=1'
+    let countQuery = 'SELECT COUNT(*) as total FROM tales WHERE 1=1'
+    const params: (string | number)[] = []
+    const countParams: (string | number)[] = []
+
+    if (tag) {
+      query += ' AND tags LIKE ?'
+      countQuery += ' AND tags LIKE ?'
+      params.push(`%${tag}%`)
+      countParams.push(`%${tag}%`)
     }
 
-    const whereClause = whereParts.length > 0 ? `WHERE ${whereParts.join(' AND ')}` : ''
+    query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?'
+    params.push(limit, offset)
 
-    const countResult = await env.SCP_READER_DB.prepare(
-      `SELECT COUNT(*) as total FROM scp_tales ${whereClause}`
-    ).bind(...params).first<{ total: number }>()
+    const [itemsResult, countResult] = await Promise.all([
+      db.prepare(query).bind(...params).all<DocsTale>(),
+      db.prepare(countQuery).bind(...countParams).first<{ total: number }>()
+    ])
+
     const total = countResult?.total || 0
 
-    const result = await env.SCP_READER_DB.prepare(
-      `SELECT * FROM scp_tales ${whereClause} ORDER BY rating DESC LIMIT ? OFFSET ?`
-    ).bind(...params, limit, offset).all<SCPTale>()
-
-    return Response.json({
+    const response: DocsTalesListResponse = {
       success: true,
-      data: result.results || [],
-      total,
-      limit,
-      offset,
-    })
+      data: itemsResult.results || [],
+      pagination: {
+        total,
+        limit,
+        offset,
+        has_more: offset + limit < total,
+      }
+    }
+
+    return Response.json(response)
   } catch (error) {
+    logger.error('Failed to fetch tales:', error as Error)
     return Response.json({
       success: false,
-      error: `Database error: ${(error as Error).message}`,
+      error: `Failed to fetch tales: ${(error as Error).message}`,
     }, { status: 500 })
   }
 }
@@ -242,19 +361,76 @@ export async function handleDocsHubs(
   request: Request,
   env: Env
 ): Promise<Response> {
-  try {
-    const result = await env.SCP_READER_DB.prepare(
-      'SELECT * FROM scp_hubs ORDER BY title ASC'
-    ).all<SCPHub>()
+  const url = new URL(request.url)
+  const { limit, offset } = parseListParams(url)
 
-    return Response.json({
+  try {
+    const db = env.SCP_READER_DB
+    if (!db) {
+      return Response.json({
+        success: false,
+        error: 'Database binding SCP_READER_DB not found',
+      }, { status: 500 })
+    }
+
+    const countResult = await db.prepare(
+      'SELECT COUNT(*) as total FROM hubs'
+    ).first<{ total: number }>()
+    const total = countResult?.total || 0
+
+    const itemsResult = await db.prepare(
+      'SELECT * FROM hubs ORDER BY title ASC LIMIT ? OFFSET ?'
+    ).bind(limit, offset).all<DocsHub>()
+
+    const response: DocsHubsListResponse = {
       success: true,
-      data: result.results || [],
-    })
+      data: itemsResult.results || [],
+      pagination: {
+        total,
+        limit,
+        offset,
+        has_more: offset + limit < total,
+      }
+    }
+
+    return Response.json(response)
   } catch (error) {
+    logger.error('Failed to fetch hubs:', error as Error)
     return Response.json({
       success: false,
-      error: `Database error: ${(error as Error).message}`,
+      error: `Failed to fetch hubs: ${(error as Error).message}`,
+    }, { status: 500 })
+  }
+}
+
+export async function handleDocTags(
+  request: Request,
+  env: Env
+): Promise<Response> {
+  try {
+    const db = env.SCP_READER_DB
+    if (!db) {
+      return Response.json({
+        success: false,
+        error: 'Database binding SCP_READER_DB not found',
+      }, { status: 500 })
+    }
+
+    const result = await db.prepare(
+      'SELECT id, name, category, color FROM doc_tags ORDER BY category, name'
+    ).all<DocTag>()
+
+    const response: DocTagsListResponse = {
+      success: true,
+      data: result.results || [],
+    }
+
+    return Response.json(response)
+  } catch (error) {
+    logger.error('Failed to fetch doc tags:', error as Error)
+    return Response.json({
+      success: false,
+      error: `Failed to fetch tags: ${(error as Error).message}`,
     }, { status: 500 })
   }
 }

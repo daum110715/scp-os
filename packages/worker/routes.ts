@@ -13,6 +13,7 @@ import type { DownloadRequest } from './download/types'
 import { logger } from './utils/logger'
 import { requireAuth } from './security/auth'
 import { validationError, unauthorizedError } from './shared/errors'
+import { getImageHeaders } from './utils/browserHeaders'
 import { getConfig } from './shared/config'
 
 function safeParseInt(value: string | null, defaultValue: number): number {
@@ -156,7 +157,7 @@ export function registerRoutes(router: Router, deps: RouteDeps): void {
         return corsManager.createErrorResponse(validationError('Image host not allowed', { host: parsedUrl.hostname }), 403, ctx(req))
       }
       const imageResponse = await fetch(imageUrl, {
-        headers: { 'User-Agent': 'SCP-OS/1.0', 'Referer': parsedUrl.origin + '/' },
+        headers: getImageHeaders(parsedUrl.origin + '/'),
       })
       if (!imageResponse.ok) {
         return corsManager.createErrorResponse('Failed to fetch image', imageResponse.status, ctx(req))
@@ -259,6 +260,22 @@ export function registerRoutes(router: Router, deps: RouteDeps): void {
   })
 
   router.get('/feedback/list', async (req, _env, _ctx_, _params, url) => {
+    const limit = safeParseInt(url.searchParams.get('limit'), 50)
+    const offset = safeParseInt(url.searchParams.get('offset'), 0)
+    const category = url.searchParams.get('category') || undefined
+    const result = await feedbackAPI.getFeedbackList(scraper.requireDB(), limit, offset, category)
+    return corsManager.createResponse(result, result.success ? 200 : 500, ctx(req))
+  })
+
+  router.get('/feedback', async (req, _env, _ctx_, _params, url) => {
+    const limit = safeParseInt(url.searchParams.get('limit'), 50)
+    const offset = safeParseInt(url.searchParams.get('offset'), 0)
+    const category = url.searchParams.get('category') || undefined
+    const result = await feedbackAPI.getFeedbackList(scraper.requireDB(), limit, offset, category)
+    return corsManager.createResponse(result, result.success ? 200 : 500, ctx(req))
+  })
+
+  router.get('/v1/feedback', async (req, _env, _ctx_, _params, url) => {
     const limit = safeParseInt(url.searchParams.get('limit'), 50)
     const offset = safeParseInt(url.searchParams.get('offset'), 0)
     const category = url.searchParams.get('category') || undefined

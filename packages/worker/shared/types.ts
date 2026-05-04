@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿/**
+﻿﻿/**
  * 统一类型定义
  * 前端和 Worker 共享此类型定义
  */
@@ -251,6 +251,7 @@ export interface D1ClearanceRow {
 
 export interface SCPItem {
   scp_number: string
+  scp_number_int: number
   title: string
   object_class: string | null
   series: string | null
@@ -261,6 +262,17 @@ export interface SCPItem {
   clearance_level: number
   has_content: number
   content_file: string | null
+}
+
+export type DocsItem = SCPItem
+export type DocsTale = SCPTale
+export type DocsHub = SCPHub
+
+export interface DocTag {
+  id: number
+  name: string
+  category: string
+  color: string
 }
 
 export interface SCPTale {

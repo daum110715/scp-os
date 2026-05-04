@@ -1,4 +1,4 @@
-﻿﻿﻿﻿/**
+﻿﻿/**
  * SCP Scraper Worker
  * 重构版本 - 使用模块化架构
  */
@@ -28,6 +28,7 @@ import { requireAuth } from './security/auth'
 // 错误处理
 import { ScraperError } from './errors/scraperError'
 import { RetryStrategy } from './errors/retryStrategy'
+import { getNavigateHeaders } from './utils/browserHeaders'
 
 // 统一错误码
 import { validationError, notFoundError, rateLimitedError, unauthorizedError, internalError } from './shared/errors'
@@ -142,12 +143,7 @@ export class SCPScraper {
 
       try {
         const response = await fetch(url, {
-          headers: {
-            'User-Agent': this.config.userAgent,
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
-            'Cache-Control': 'no-cache',
-          },
+          headers: getNavigateHeaders(`${this.config.baseUrl}/`),
           signal: controller.signal,
           redirect: 'follow',
         })

@@ -4,11 +4,28 @@ compatibility_date = "2024-01-01"
 compatibility_flags = ["nodejs_compat"]
 
 [vars]
+ENVIRONMENT = "production"
 API_DOMAIN = "api.scpos.site"
 
 [[durable_objects.bindings]]
 name = "CHAT_ROOM_DO"
 class_name = "ChatRoomDO"
+
+[[d1_databases]]
+binding = "SCP_DB"
+database_name = "scp-database"
+database_id = "77dff909-beb0-4870-bb52-90e810b2e5c1"
+migrations_dir = "migrations"
+
+[[d1_databases]]
+binding = "SCP_READER_DB"
+database_name = "scp-reader-db"
+database_id = "7454655f-d3a5-49b6-9832-b5a146c192de"
+migrations_dir = "migrations"
+
+[[kv_namespaces]]
+binding = "SCP_CACHE"
+id = "40f0d23a05e14f7484232bc1960e217f"
 
 [[migrations]]
 tag = "v1"

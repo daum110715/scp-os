@@ -39,7 +39,7 @@ export const SCRAPER_CONFIG = {
       'http://localhost:*',
       'http://127.0.0.1:*',
     ],
-    allowedMethods: ['GET', 'POST', 'OPTIONS'],
+    allowedMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     maxAge: 86400, // 24小时
   },
