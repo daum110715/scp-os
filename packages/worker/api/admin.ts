@@ -65,7 +65,7 @@ export async function getAdminUsers(
       total: (countResult.results[0] as { total: number })?.total || 0,
     }
   } catch (e) {
-    logger.error('[Admin] getAdminUsers failed:', e)
+    logger.error('[Admin] getAdminUsers failed:', e instanceof Error ? e : new Error(String(e)))
     return { success: false, error: '获取用户列表失败' }
   }
 }
@@ -81,7 +81,7 @@ export async function getAdminUserById(
     if (!user) return { success: false, error: '用户不存在' }
     return { success: true, data: user }
   } catch (e) {
-    logger.error('[Admin] getAdminUserById failed:', e)
+    logger.error('[Admin] getAdminUserById failed:', e instanceof Error ? e : new Error(String(e)))
     return { success: false, error: '获取用户详情失败' }
   }
 }
@@ -106,7 +106,7 @@ export async function banUser(
     })
     return { success: true }
   } catch (e) {
-    logger.error('[Admin] banUser failed:', e)
+    logger.error('[Admin] banUser failed:', e instanceof Error ? e : new Error(String(e)))
     return { success: false, error: '封禁用户失败' }
   }
 }
@@ -131,7 +131,7 @@ export async function unbanUser(
     })
     return { success: true }
   } catch (e) {
-    logger.error('[Admin] unbanUser failed:', e)
+    logger.error('[Admin] unbanUser failed:', e instanceof Error ? e : new Error(String(e)))
     return { success: false, error: '解封用户失败' }
   }
 }
@@ -154,7 +154,7 @@ export async function deleteAdminUser(
     })
     return { success: true }
   } catch (e) {
-    logger.error('[Admin] deleteAdminUser failed:', e)
+    logger.error('[Admin] deleteAdminUser failed:', e instanceof Error ? e : new Error(String(e)))
     return { success: false, error: '删除用户失败' }
   }
 }
@@ -184,7 +184,7 @@ export async function batchUserOperation(
     })
     return { success: true, results }
   } catch (e) {
-    logger.error('[Admin] batchUserOperation failed:', e)
+    logger.error('[Admin] batchUserOperation failed:', e instanceof Error ? e : new Error(String(e)))
     return { success: false, error: '批量操作失败' }
   }
 }
@@ -210,7 +210,7 @@ export async function exportUsers(
 
     return { success: true, data: JSON.stringify(users, null, 2), filename: 'users.json' }
   } catch (e) {
-    logger.error('[Admin] exportUsers failed:', e)
+    logger.error('[Admin] exportUsers failed:', e instanceof Error ? e : new Error(String(e)))
     return { success: false, error: '导出用户数据失败' }
   }
 }
@@ -248,7 +248,7 @@ export async function getAdminContent(
       total: (countResult.results[0] as { total: number })?.total || 0,
     }
   } catch (e) {
-    logger.error('[Admin] getAdminContent failed:', e)
+    logger.error('[Admin] getAdminContent failed:', e instanceof Error ? e : new Error(String(e)))
     return { success: false, error: '获取内容列表失败' }
   }
 }
@@ -290,7 +290,7 @@ export async function updateAdminContent(
     })
     return { success: true }
   } catch (e) {
-    logger.error('[Admin] updateAdminContent failed:', e)
+    logger.error('[Admin] updateAdminContent failed:', e instanceof Error ? e : new Error(String(e)))
     return { success: false, error: '更新内容失败' }
   }
 }
@@ -312,7 +312,7 @@ export async function deleteAdminContent(
     })
     return { success: true }
   } catch (e) {
-    logger.error('[Admin] deleteAdminContent failed:', e)
+    logger.error('[Admin] deleteAdminContent failed:', e instanceof Error ? e : new Error(String(e)))
     return { success: false, error: '删除内容失败' }
   }
 }
@@ -342,7 +342,7 @@ export async function batchContentOperation(
     })
     return { success: true, results }
   } catch (e) {
-    logger.error('[Admin] batchContentOperation failed:', e)
+    logger.error('[Admin] batchContentOperation failed:', e instanceof Error ? e : new Error(String(e)))
     return { success: false, error: '批量操作失败' }
   }
 }
@@ -369,7 +369,7 @@ export async function exportContent(
 
     return { success: true, data: JSON.stringify(items, null, 2), filename: `${type}.json` }
   } catch (e) {
-    logger.error('[Admin] exportContent failed:', e)
+    logger.error('[Admin] exportContent failed:', e instanceof Error ? e : new Error(String(e)))
     return { success: false, error: '导出内容数据失败' }
   }
 }
@@ -413,7 +413,7 @@ export async function importContent(
     })
     return { success: true, imported, errors }
   } catch (e) {
-    logger.error('[Admin] importContent failed:', e)
+    logger.error('[Admin] importContent failed:', e instanceof Error ? e : new Error(String(e)))
     return { success: false, error: '导入内容数据失败' }
   }
 }
@@ -457,7 +457,7 @@ export async function getAdminChatMessages(
       total: (countResult.results[0] as { total: number })?.total || 0,
     }
   } catch (e) {
-    logger.error('[Admin] getAdminChatMessages failed:', e)
+    logger.error('[Admin] getAdminChatMessages failed:', e instanceof Error ? e : new Error(String(e)))
     return { success: false, error: '获取聊天消息失败' }
   }
 }
@@ -476,7 +476,7 @@ export async function deleteAdminChatMessage(
     })
     return { success: true }
   } catch (e) {
-    logger.error('[Admin] deleteAdminChatMessage failed:', e)
+    logger.error('[Admin] deleteAdminChatMessage failed:', e instanceof Error ? e : new Error(String(e)))
     return { success: false, error: '删除聊天消息失败' }
   }
 }
@@ -488,7 +488,7 @@ export async function getAdminChatRooms(
     const result = await db.prepare('SELECT * FROM chat_rooms ORDER BY created_at DESC').all()
     return { success: true, data: result.results as unknown[] }
   } catch (e) {
-    logger.error('[Admin] getAdminChatRooms failed:', e)
+    logger.error('[Admin] getAdminChatRooms failed:', e instanceof Error ? e : new Error(String(e)))
     return { success: false, error: '获取聊天室列表失败' }
   }
 }
@@ -516,7 +516,7 @@ export async function updateAdminChatRoom(
     })
     return { success: true }
   } catch (e) {
-    logger.error('[Admin] updateAdminChatRoom failed:', e)
+    logger.error('[Admin] updateAdminChatRoom failed:', e instanceof Error ? e : new Error(String(e)))
     return { success: false, error: '更新聊天室失败' }
   }
 }
@@ -536,7 +536,7 @@ export async function deleteAdminChatRoom(
     })
     return { success: true }
   } catch (e) {
-    logger.error('[Admin] deleteAdminChatRoom failed:', e)
+    logger.error('[Admin] deleteAdminChatRoom failed:', e instanceof Error ? e : new Error(String(e)))
     return { success: false, error: '删除聊天室失败' }
   }
 }
@@ -576,7 +576,7 @@ export async function getAdminFeedback(
       total: (countResult.results[0] as { total: number })?.total || 0,
     }
   } catch (e) {
-    logger.error('[Admin] getAdminFeedback failed:', e)
+    logger.error('[Admin] getAdminFeedback failed:', e instanceof Error ? e : new Error(String(e)))
     return { success: false, error: '获取反馈列表失败' }
   }
 }
@@ -598,7 +598,7 @@ export async function updateFeedbackStatus(
     })
     return { success: true }
   } catch (e) {
-    logger.error('[Admin] updateFeedbackStatus failed:', e)
+    logger.error('[Admin] updateFeedbackStatus failed:', e instanceof Error ? e : new Error(String(e)))
     return { success: false, error: '更新反馈状态失败' }
   }
 }
@@ -619,7 +619,7 @@ export async function deleteAdminFeedback(
     })
     return { success: true }
   } catch (e) {
-    logger.error('[Admin] deleteAdminFeedback failed:', e)
+    logger.error('[Admin] deleteAdminFeedback failed:', e instanceof Error ? e : new Error(String(e)))
     return { success: false, error: '删除反馈失败' }
   }
 }
@@ -633,9 +633,9 @@ export async function getSystemSettings(
 ): Promise<{ success: boolean; data?: SystemSetting[]; error?: string }> {
   try {
     const result = await db.prepare('SELECT * FROM system_settings ORDER BY id ASC').all()
-    return { success: true, data: result.results as SystemSetting[] }
+    return { success: true, data: result.results as unknown as SystemSetting[] }
   } catch (e) {
-    logger.error('[Admin] getSystemSettings failed:', e)
+    logger.error('[Admin] getSystemSettings failed:', e instanceof Error ? e : new Error(String(e)))
     return { success: false, error: '获取系统设置失败' }
   }
 }
@@ -658,7 +658,7 @@ export async function updateSystemSettings(
     })
     return { success: true }
   } catch (e) {
-    logger.error('[Admin] updateSystemSettings failed:', e)
+    logger.error('[Admin] updateSystemSettings failed:', e instanceof Error ? e : new Error(String(e)))
     return { success: false, error: '更新系统设置失败' }
   }
 }
@@ -705,7 +705,7 @@ export async function getDashboardStats(
       },
     }
   } catch (e) {
-    logger.error('[Admin] getDashboardStats failed:', e)
+    logger.error('[Admin] getDashboardStats failed:', e instanceof Error ? e : new Error(String(e)))
     return { success: false, error: '获取统计数据失败' }
   }
 }
@@ -743,7 +743,7 @@ export async function getTrendData(
       },
     }
   } catch (e) {
-    logger.error('[Admin] getTrendData failed:', e)
+    logger.error('[Admin] getTrendData failed:', e instanceof Error ? e : new Error(String(e)))
     return { success: false, error: '获取趋势数据失败' }
   }
 }
@@ -791,7 +791,7 @@ export async function getAdminLogs(
       total: (countResult.results[0] as { total: number })?.total || 0,
     }
   } catch (e) {
-    logger.error('[Admin] getAdminLogs failed:', e)
+    logger.error('[Admin] getAdminLogs failed:', e instanceof Error ? e : new Error(String(e)))
     return { success: false, error: '获取操作日志失败' }
   }
 }
