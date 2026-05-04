@@ -1,5 +1,5 @@
 import type { D1Database } from '@cloudflare/workers-types'
-import type { AdminLoginBody, RequestContext } from '../shared/types'
+import type { AdminUser, AdminRole, AdminLoginBody, RequestContext } from '../shared/types'
 import { verifyPassword, createAdminToken, verifyAdminToken } from '../security/admin-auth'
 import { logAdminAction } from './admin-logs'
 import { logger } from '../utils/logger'
@@ -7,7 +7,7 @@ import { logger } from '../utils/logger'
 interface AdminAuthResult {
   adminId: number
   username: string
-  role: string
+  role: AdminRole
 }
 
 const PASSWORD_MIN_LENGTH = 8
@@ -82,7 +82,7 @@ export async function handleAdminLogin(
 
     const admin = await db.prepare(
       'SELECT * FROM admin_users WHERE username = ? AND is_active = 1'
-    ).bind(username).first()
+    ).bind(username).first<AdminUser>()
 
     if (!admin) {
       await recordFailedLoginAttempt(db, username, requestContext.ip)
@@ -188,7 +188,7 @@ export async function requireAdminAuth(
 
   const admin = await db.prepare(
     'SELECT id, username, role, is_active FROM admin_users WHERE id = ? AND is_active = 1'
-  ).bind(payload.adminId).first<{ id: number; username: string; role: string; is_active: number }>()
+  ).bind(payload.adminId).first<{ id: number; username: string; role: AdminRole; is_active: number }>()
 
   if (!admin) {
     return new Response(
@@ -206,7 +206,7 @@ export async function requireAdminAuth(
 
 export function requireRole(
   adminInfo: AdminAuthResult,
-  ...roles: string[]
+  ...roles: AdminRole[]
 ): Response | null {
   if (!roles.includes(adminInfo.role)) {
     return new Response(
