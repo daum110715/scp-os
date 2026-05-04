@@ -7,6 +7,7 @@ import * as userAPI from './api/user'
 import * as docsAPI from './api/docs'
 import * as notificationAPI from './api/notification'
 import * as adminAuthAPI from './api/admin-auth'
+import * as adminAPI from './api/admin'
 import { DownloadProxy } from './download/downloadProxy'
 import type { DownloadRequest } from './download/types'
 import { logger } from './utils/logger'
@@ -515,5 +516,326 @@ export function registerRoutes(router: Router, deps: RouteDeps): void {
     const authResult = await adminAuthAPI.requireAdminAuth(req, secret, scraper.requireDB())
     if (authResult instanceof Response) return authResult
     return corsManager.createResponse({ success: true, admin: authResult }, 200, ctx(req))
+  })
+
+  // ━━ Admin User Management ━━━━━━━━━━━━━━━━━━━━━━━━━━
+  router.get('/admin/users', async (req, _env, _ctx_, _params, url) => {
+    const secret = env.ADMIN_JWT_SECRET || env.JWT_SECRET || 'admin-secret-key'
+    const auth = await adminAuthAPI.requireAdminAuth(req, secret, scraper.requireDB())
+    if (auth instanceof Response) return auth
+
+    const limit = Math.min(safeParseInt(url.searchParams.get('limit'), 20), 100)
+    const offset = safeParseInt(url.searchParams.get('offset'), 0)
+    const search = url.searchParams.get('search') || undefined
+    const sort = url.searchParams.get('sort') || 'created_at'
+    const order = url.searchParams.get('order') === 'asc' ? 'ASC' : 'DESC'
+    const is_banned = url.searchParams.get('is_banned')
+
+    const result = await adminAPI.getAdminUsers(scraper.requireDB(), {
+      limit, offset, search, sort, order,
+      is_banned: is_banned !== null ? Number(is_banned) : undefined,
+    })
+    return corsManager.createResponse(result, result.success ? 200 : 500, ctx(req))
+  })
+
+  router.get('/admin/users/export', async (req, _env, _ctx_, _params, url) => {
+    const secret = env.ADMIN_JWT_SECRET || env.JWT_SECRET || 'admin-secret-key'
+    const auth = await adminAuthAPI.requireAdminAuth(req, secret, scraper.requireDB())
+    if (auth instanceof Response) return auth
+
+    const format = (url.searchParams.get('format') || 'json') as 'csv' | 'json'
+    const result = await adminAPI.exportUsers(scraper.requireDB(), format)
+    return corsManager.createResponse(result, result.success ? 200 : 500, ctx(req))
+  })
+
+  router.get('/admin/users/:id', async (req, _env, _ctx_, params, _url) => {
+    const secret = env.ADMIN_JWT_SECRET || env.JWT_SECRET || 'admin-secret-key'
+    const auth = await adminAuthAPI.requireAdminAuth(req, secret, scraper.requireDB())
+    if (auth instanceof Response) return auth
+
+    const result = await adminAPI.getAdminUserById(scraper.requireDB(), Number(params.id))
+    return corsManager.createResponse(result, result.success ? 200 : 404, ctx(req))
+  })
+
+  router.post('/admin/users/batch', async (req, _env, _ctx_, _params, _url) => {
+    const secret = env.ADMIN_JWT_SECRET || env.JWT_SECRET || 'admin-secret-key'
+    const auth = await adminAuthAPI.requireAdminAuth(req, secret, scraper.requireDB())
+    if (auth instanceof Response) return auth
+
+    try {
+      const body = await req.json() as { action: string; ids: number[] }
+      const result = await adminAPI.batchUserOperation(scraper.requireDB(), body.action, body.ids, auth.adminId, auth.username, ctx(req).ip)
+      return corsManager.createResponse(result, result.success ? 200 : 500, ctx(req))
+    } catch {
+      return corsManager.createErrorResponse(validationError('Invalid request body'), 400, ctx(req))
+    }
+  })
+
+  router.post('/admin/users/:id/ban', async (req, _env, _ctx_, params, _url) => {
+    const secret = env.ADMIN_JWT_SECRET || env.JWT_SECRET || 'admin-secret-key'
+    const auth = await adminAuthAPI.requireAdminAuth(req, secret, scraper.requireDB())
+    if (auth instanceof Response) return auth
+
+    try {
+      const body = await req.json() as { reason?: string }
+      const result = await adminAPI.banUser(scraper.requireDB(), Number(params.id), body.reason || '', auth.adminId, auth.username, ctx(req).ip)
+      return corsManager.createResponse(result, result.success ? 200 : 500, ctx(req))
+    } catch {
+      return corsManager.createErrorResponse(validationError('Invalid request body'), 400, ctx(req))
+    }
+  })
+
+  router.post('/admin/users/:id/unban', async (req, _env, _ctx_, params, _url) => {
+    const secret = env.ADMIN_JWT_SECRET || env.JWT_SECRET || 'admin-secret-key'
+    const auth = await adminAuthAPI.requireAdminAuth(req, secret, scraper.requireDB())
+    if (auth instanceof Response) return auth
+
+    const result = await adminAPI.unbanUser(scraper.requireDB(), Number(params.id), auth.adminId, auth.username, ctx(req).ip)
+    return corsManager.createResponse(result, result.success ? 200 : 500, ctx(req))
+  })
+
+  router.delete('/admin/users/:id', async (req, _env, _ctx_, params, _url) => {
+    const secret = env.ADMIN_JWT_SECRET || env.JWT_SECRET || 'admin-secret-key'
+    const auth = await adminAuthAPI.requireAdminAuth(req, secret, scraper.requireDB())
+    if (auth instanceof Response) return auth
+
+    const roleCheck = adminAuthAPI.requireRole(auth, 'super_admin')
+    if (roleCheck) return roleCheck
+
+    const result = await adminAPI.deleteAdminUser(scraper.requireDB(), Number(params.id), auth.adminId, auth.username, ctx(req).ip)
+    return corsManager.createResponse(result, result.success ? 200 : 500, ctx(req))
+  })
+
+  // ━━ Admin Content Management ━━━━━━━━━━━━━━━━━━━━━━━━
+  router.get('/admin/content/:type/export', async (req, _env, _ctx_, params, url) => {
+    const secret = env.ADMIN_JWT_SECRET || env.JWT_SECRET || 'admin-secret-key'
+    const auth = await adminAuthAPI.requireAdminAuth(req, secret, scraper.requireDB())
+    if (auth instanceof Response) return auth
+
+    const format = (url.searchParams.get('format') || 'json') as 'csv' | 'json'
+    const result = await adminAPI.exportContent(scraper.requireDB(), params.type, format)
+    return corsManager.createResponse(result, result.success ? 200 : 500, ctx(req))
+  })
+
+  router.get('/admin/content/:type', async (req, _env, _ctx_, params, url) => {
+    const secret = env.ADMIN_JWT_SECRET || env.JWT_SECRET || 'admin-secret-key'
+    const auth = await adminAuthAPI.requireAdminAuth(req, secret, scraper.requireDB())
+    if (auth instanceof Response) return auth
+
+    const limit = Math.min(safeParseInt(url.searchParams.get('limit'), 20), 100)
+    const offset = safeParseInt(url.searchParams.get('offset'), 0)
+    const search = url.searchParams.get('search') || undefined
+
+    const result = await adminAPI.getAdminContent(scraper.requireDB(), params.type, { limit, offset, search })
+    return corsManager.createResponse(result, result.success ? 200 : 400, ctx(req))
+  })
+
+  router.put('/admin/content/:type/:id', async (req, _env, _ctx_, params, _url) => {
+    const secret = env.ADMIN_JWT_SECRET || env.JWT_SECRET || 'admin-secret-key'
+    const auth = await adminAuthAPI.requireAdminAuth(req, secret, scraper.requireDB())
+    if (auth instanceof Response) return auth
+
+    try {
+      const body = await req.json() as Record<string, unknown>
+      const result = await adminAPI.updateAdminContent(scraper.requireDB(), params.type, Number(params.id), body, auth.adminId, auth.username, ctx(req).ip)
+      return corsManager.createResponse(result, result.success ? 200 : 500, ctx(req))
+    } catch {
+      return corsManager.createErrorResponse(validationError('Invalid request body'), 400, ctx(req))
+    }
+  })
+
+  router.delete('/admin/content/:type/:id', async (req, _env, _ctx_, params, _url) => {
+    const secret = env.ADMIN_JWT_SECRET || env.JWT_SECRET || 'admin-secret-key'
+    const auth = await adminAuthAPI.requireAdminAuth(req, secret, scraper.requireDB())
+    if (auth instanceof Response) return auth
+
+    const result = await adminAPI.deleteAdminContent(scraper.requireDB(), params.type, Number(params.id), auth.adminId, auth.username, ctx(req).ip)
+    return corsManager.createResponse(result, result.success ? 200 : 500, ctx(req))
+  })
+
+  router.post('/admin/content/:type/batch', async (req, _env, _ctx_, params, _url) => {
+    const secret = env.ADMIN_JWT_SECRET || env.JWT_SECRET || 'admin-secret-key'
+    const auth = await adminAuthAPI.requireAdminAuth(req, secret, scraper.requireDB())
+    if (auth instanceof Response) return auth
+
+    try {
+      const body = await req.json() as { action: string; ids: number[] }
+      const result = await adminAPI.batchContentOperation(scraper.requireDB(), params.type, body.action, body.ids, auth.adminId, auth.username, ctx(req).ip)
+      return corsManager.createResponse(result, result.success ? 200 : 500, ctx(req))
+    } catch {
+      return corsManager.createErrorResponse(validationError('Invalid request body'), 400, ctx(req))
+    }
+  })
+
+  router.post('/admin/content/:type/import', async (req, _env, _ctx_, params, _url) => {
+    const secret = env.ADMIN_JWT_SECRET || env.JWT_SECRET || 'admin-secret-key'
+    const auth = await adminAuthAPI.requireAdminAuth(req, secret, scraper.requireDB())
+    if (auth instanceof Response) return auth
+
+    try {
+      const body = await req.json() as { data: unknown[] }
+      const result = await adminAPI.importContent(scraper.requireDB(), params.type, body.data, auth.adminId, auth.username, ctx(req).ip)
+      return corsManager.createResponse(result, result.success ? 200 : 500, ctx(req))
+    } catch {
+      return corsManager.createErrorResponse(validationError('Invalid request body'), 400, ctx(req))
+    }
+  })
+
+  // ━━ Admin Chat Management ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  router.get('/admin/chat/messages', async (req, _env, _ctx_, _params, url) => {
+    const secret = env.ADMIN_JWT_SECRET || env.JWT_SECRET || 'admin-secret-key'
+    const auth = await adminAuthAPI.requireAdminAuth(req, secret, scraper.requireDB())
+    if (auth instanceof Response) return auth
+
+    const limit = Math.min(safeParseInt(url.searchParams.get('limit'), 50), 200)
+    const offset = safeParseInt(url.searchParams.get('offset'), 0)
+    const room_id = url.searchParams.get('room_id') ? Number(url.searchParams.get('room_id')) : undefined
+    const start_date = url.searchParams.get('start_date') || undefined
+    const end_date = url.searchParams.get('end_date') || undefined
+
+    const result = await adminAPI.getAdminChatMessages(scraper.requireDB(), { limit, offset, room_id, start_date, end_date })
+    return corsManager.createResponse(result, result.success ? 200 : 500, ctx(req))
+  })
+
+  router.delete('/admin/chat/messages/:id', async (req, _env, _ctx_, params, _url) => {
+    const secret = env.ADMIN_JWT_SECRET || env.JWT_SECRET || 'admin-secret-key'
+    const auth = await adminAuthAPI.requireAdminAuth(req, secret, scraper.requireDB())
+    if (auth instanceof Response) return auth
+
+    const result = await adminAPI.deleteAdminChatMessage(scraper.requireDB(), Number(params.id), auth.adminId, auth.username, ctx(req).ip)
+    return corsManager.createResponse(result, result.success ? 200 : 500, ctx(req))
+  })
+
+  router.get('/admin/chat/rooms', async (req, _env, _ctx_, _params, _url) => {
+    const secret = env.ADMIN_JWT_SECRET || env.JWT_SECRET || 'admin-secret-key'
+    const auth = await adminAuthAPI.requireAdminAuth(req, secret, scraper.requireDB())
+    if (auth instanceof Response) return auth
+
+    const result = await adminAPI.getAdminChatRooms(scraper.requireDB())
+    return corsManager.createResponse(result, result.success ? 200 : 500, ctx(req))
+  })
+
+  router.put('/admin/chat/rooms/:id', async (req, _env, _ctx_, params, _url) => {
+    const secret = env.ADMIN_JWT_SECRET || env.JWT_SECRET || 'admin-secret-key'
+    const auth = await adminAuthAPI.requireAdminAuth(req, secret, scraper.requireDB())
+    if (auth instanceof Response) return auth
+
+    try {
+      const body = await req.json() as { name?: string; description?: string; is_public?: number }
+      const result = await adminAPI.updateAdminChatRoom(scraper.requireDB(), Number(params.id), body, auth.adminId, auth.username, ctx(req).ip)
+      return corsManager.createResponse(result, result.success ? 200 : 500, ctx(req))
+    } catch {
+      return corsManager.createErrorResponse(validationError('Invalid request body'), 400, ctx(req))
+    }
+  })
+
+  router.delete('/admin/chat/rooms/:id', async (req, _env, _ctx_, params, _url) => {
+    const secret = env.ADMIN_JWT_SECRET || env.JWT_SECRET || 'admin-secret-key'
+    const auth = await adminAuthAPI.requireAdminAuth(req, secret, scraper.requireDB())
+    if (auth instanceof Response) return auth
+
+    const result = await adminAPI.deleteAdminChatRoom(scraper.requireDB(), Number(params.id), auth.adminId, auth.username, ctx(req).ip)
+    return corsManager.createResponse(result, result.success ? 200 : 500, ctx(req))
+  })
+
+  // ━━ Admin Feedback Management ━━━━━━━━━━━━━━━━━━━━━━━
+  router.get('/admin/feedback', async (req, _env, _ctx_, _params, url) => {
+    const secret = env.ADMIN_JWT_SECRET || env.JWT_SECRET || 'admin-secret-key'
+    const auth = await adminAuthAPI.requireAdminAuth(req, secret, scraper.requireDB())
+    if (auth instanceof Response) return auth
+
+    const limit = Math.min(safeParseInt(url.searchParams.get('limit'), 20), 100)
+    const offset = safeParseInt(url.searchParams.get('offset'), 0)
+    const status = url.searchParams.get('status') || undefined
+    const category = url.searchParams.get('category') || undefined
+
+    const result = await adminAPI.getAdminFeedback(scraper.requireDB(), { limit, offset, status, category })
+    return corsManager.createResponse(result, result.success ? 200 : 500, ctx(req))
+  })
+
+  router.put('/admin/feedback/:id/status', async (req, _env, _ctx_, params, _url) => {
+    const secret = env.ADMIN_JWT_SECRET || env.JWT_SECRET || 'admin-secret-key'
+    const auth = await adminAuthAPI.requireAdminAuth(req, secret, scraper.requireDB())
+    if (auth instanceof Response) return auth
+
+    try {
+      const body = await req.json() as { status: string }
+      const result = await adminAPI.updateFeedbackStatus(scraper.requireDB(), Number(params.id), body.status, auth.adminId, auth.username, ctx(req).ip)
+      return corsManager.createResponse(result, result.success ? 200 : 500, ctx(req))
+    } catch {
+      return corsManager.createErrorResponse(validationError('Invalid request body'), 400, ctx(req))
+    }
+  })
+
+  router.delete('/admin/feedback/:id', async (req, _env, _ctx_, params, _url) => {
+    const secret = env.ADMIN_JWT_SECRET || env.JWT_SECRET || 'admin-secret-key'
+    const auth = await adminAuthAPI.requireAdminAuth(req, secret, scraper.requireDB())
+    if (auth instanceof Response) return auth
+
+    const result = await adminAPI.deleteAdminFeedback(scraper.requireDB(), Number(params.id), auth.adminId, auth.username, ctx(req).ip)
+    return corsManager.createResponse(result, result.success ? 200 : 500, ctx(req))
+  })
+
+  // ━━ Admin System Settings ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  router.get('/admin/settings', async (req, _env, _ctx_, _params, _url) => {
+    const secret = env.ADMIN_JWT_SECRET || env.JWT_SECRET || 'admin-secret-key'
+    const auth = await adminAuthAPI.requireAdminAuth(req, secret, scraper.requireDB())
+    if (auth instanceof Response) return auth
+
+    const result = await adminAPI.getSystemSettings(scraper.requireDB())
+    return corsManager.createResponse(result, result.success ? 200 : 500, ctx(req))
+  })
+
+  router.put('/admin/settings', async (req, _env, _ctx_, _params, _url) => {
+    const secret = env.ADMIN_JWT_SECRET || env.JWT_SECRET || 'admin-secret-key'
+    const auth = await adminAuthAPI.requireAdminAuth(req, secret, scraper.requireDB())
+    if (auth instanceof Response) return auth
+
+    const roleCheck = adminAuthAPI.requireRole(auth, 'super_admin')
+    if (roleCheck) return roleCheck
+
+    try {
+      const body = await req.json() as Record<string, string>
+      const result = await adminAPI.updateSystemSettings(scraper.requireDB(), body, auth.adminId, auth.username, ctx(req).ip)
+      return corsManager.createResponse(result, result.success ? 200 : 500, ctx(req))
+    } catch {
+      return corsManager.createErrorResponse(validationError('Invalid request body'), 400, ctx(req))
+    }
+  })
+
+  // ━━ Admin Statistics ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  router.get('/admin/stats/dashboard', async (req, _env, _ctx_, _params, _url) => {
+    const secret = env.ADMIN_JWT_SECRET || env.JWT_SECRET || 'admin-secret-key'
+    const auth = await adminAuthAPI.requireAdminAuth(req, secret, scraper.requireDB())
+    if (auth instanceof Response) return auth
+
+    const result = await adminAPI.getDashboardStats(scraper.requireDB())
+    return corsManager.createResponse(result, result.success ? 200 : 500, ctx(req))
+  })
+
+  router.get('/admin/stats/trends', async (req, _env, _ctx_, _params, url) => {
+    const secret = env.ADMIN_JWT_SECRET || env.JWT_SECRET || 'admin-secret-key'
+    const auth = await adminAuthAPI.requireAdminAuth(req, secret, scraper.requireDB())
+    if (auth instanceof Response) return auth
+
+    const days = safeParseInt(url.searchParams.get('days'), 30)
+    const result = await adminAPI.getTrendData(scraper.requireDB(), days)
+    return corsManager.createResponse(result, result.success ? 200 : 500, ctx(req))
+  })
+
+  router.get('/admin/logs', async (req, _env, _ctx_, _params, url) => {
+    const secret = env.ADMIN_JWT_SECRET || env.JWT_SECRET || 'admin-secret-key'
+    const auth = await adminAuthAPI.requireAdminAuth(req, secret, scraper.requireDB())
+    if (auth instanceof Response) return auth
+
+    const limit = Math.min(safeParseInt(url.searchParams.get('limit'), 50), 200)
+    const offset = safeParseInt(url.searchParams.get('offset'), 0)
+    const admin_id = url.searchParams.get('admin_id') ? Number(url.searchParams.get('admin_id')) : undefined
+    const action = url.searchParams.get('action') || undefined
+    const start_date = url.searchParams.get('start_date') || undefined
+    const end_date = url.searchParams.get('end_date') || undefined
+
+    const result = await adminAPI.getAdminLogs(scraper.requireDB(), { limit, offset, admin_id, action, start_date, end_date })
+    return corsManager.createResponse(result, result.success ? 200 : 500, ctx(req))
   })
 }

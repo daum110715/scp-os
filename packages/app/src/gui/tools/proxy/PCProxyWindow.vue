@@ -876,8 +876,6 @@ onUnmounted(() => {
   display: block;
 }
 
-.proxy-window__progress-actions { }
-
 .proxy-window__success-section { margin-bottom: 16px; }
 
 .proxy-window__success-card {
