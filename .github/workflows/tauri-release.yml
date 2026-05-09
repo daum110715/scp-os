@@ -75,14 +75,6 @@ jobs:
             os: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
             args: ''
-          - label: macOS-ARM
-            os: macos-latest
-            target: aarch64-apple-darwin
-            args: '--target aarch64-apple-darwin'
-          - label: macOS-Intel
-            os: macos-latest
-            target: x86_64-apple-darwin
-            args: '--target x86_64-apple-darwin'
           - label: Windows-x64
             os: windows-latest
             target: x86_64-pc-windows-msvc
@@ -175,8 +167,6 @@ jobs:
 
             - **Linux (Debian/Ubuntu)**: Download the `.deb` file → `sudo dpkg -i *.deb`
             - **Linux (Universal)**: Download the `.AppImage` file → `chmod +x *.AppImage && ./SCP-OS*.AppImage`
-            - **macOS (Apple Silicon)**: Download the `.dmg` file for M1/M2/M3/M4
-            - **macOS (Intel)**: Download the `.dmg` file for Intel Macs
             - **Windows**: Download the `.msi` or `.exe` installer
 
             ### 🔐 Verification
