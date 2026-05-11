@@ -167,7 +167,7 @@
                 ? 'Connecting...'
                 : ws.connectionState.value === 'reconnecting'
                   ? 'Reconnecting...'
-                  : 'Disconnected'
+                  : ws.lastError.value || 'Disconnected'
           }}</span>
         </div>
 

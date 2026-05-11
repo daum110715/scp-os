@@ -86,6 +86,10 @@ export function useChatWebSocket(options: UseChatWebSocketOptions) {
   let currentUsername = username
 
   function getWsUrl(): string {
+    // 开发模式下优先连接本地 worker，避免被 Cloudflare 拦截
+    if (import.meta.env.DEV) {
+      return `ws://localhost:8787/chat/ws?user_id=${encodeURIComponent(currentUserId)}&username=${encodeURIComponent(currentUsername)}&room_id=${currentRoomId}`
+    }
     const base = apiUrl.startsWith('https')
       ? apiUrl.replace(/^https/, 'wss')
       : apiUrl.replace(/^http/, 'ws')
@@ -290,7 +294,11 @@ export function useChatWebSocket(options: UseChatWebSocketOptions) {
   function scheduleReconnect(): void {
     if (reconnectAttempts >= maxReconnectAttempts) {
       connectionState.value = 'disconnected'
-      lastError.value = 'Max reconnection attempts reached'
+      const msg = import.meta.env.DEV
+        ? 'Chat server unavailable. Run pnpm worker:dev to start local worker.'
+        : 'Chat server unavailable. Please try again later.'
+      lastError.value = msg
+      onError?.(msg)
       return
     }
 

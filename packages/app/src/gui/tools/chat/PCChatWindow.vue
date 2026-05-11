@@ -585,7 +585,7 @@ const wsStatusLabel = computed(() => {
   if (state === 'connected') return 'Connected'
   if (state === 'connecting') return 'Connecting...'
   if (state === 'reconnecting') return 'Reconnecting...'
-  return 'Disconnected'
+  return ws.lastError.value || 'Disconnected'
 })
 
 function getUnreadCount(roomId: number): number {
