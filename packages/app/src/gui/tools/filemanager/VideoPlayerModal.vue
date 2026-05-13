@@ -149,7 +149,7 @@ function close() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.8);
+  background: var(--gui-backdrop-bg, rgba(0, 0, 0, 0.8));
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
@@ -245,7 +245,7 @@ function close() {
 .video-player__spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid rgba(255, 255, 255, 0.2);
+  border: 3px solid var(--gui-border-default, rgba(255, 255, 255, 0.2));
   border-top-color: var(--gui-accent, #007aff);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;

@@ -60,6 +60,7 @@ export const useThemeStore = defineStore('theme', () => {
     root.style.setProperty('--gui-error', c.error)
     root.style.setProperty('--gui-info', c.info)
     root.style.setProperty('--gui-glass-bg', c.glassBg)
+    root.style.setProperty('--gui-glass-bg-strong', c.glassBgStrong)
     root.style.setProperty('--gui-glass-border', c.glassBorder)
     root.style.setProperty('--gui-dock-bg', c.dockBg)
     root.style.setProperty('--gui-dock-border', c.dockBorder)
@@ -89,6 +90,11 @@ export const useThemeStore = defineStore('theme', () => {
     root.style.setProperty('--gui-ios-slider-track', c.iosSliderTrack)
     root.style.setProperty('--gui-ios-slider-thumb', c.iosSliderThumb)
     root.style.setProperty('--gui-icon-fg', c.iconFg)
+    root.style.setProperty('--gui-error-bg', c.errorBg)
+    root.style.setProperty('--gui-warning-bg', c.warningBg)
+    root.style.setProperty('--gui-success-bg', c.successBg)
+    root.style.setProperty('--gui-editor-bg', c.editorBg)
+    root.style.setProperty('--gui-inner-glow', c.innerGlow)
 
     // Update light/dark class on html element
     if (theme.isDark) {
@@ -97,6 +103,13 @@ export const useThemeStore = defineStore('theme', () => {
     } else {
       root.classList.add('light')
       root.classList.remove('dark')
+    }
+
+    // Update body background and color to match theme
+    const body = document.body
+    if (body) {
+      body.style.background = c.bgBase
+      body.style.color = c.textPrimary
     }
   }
 

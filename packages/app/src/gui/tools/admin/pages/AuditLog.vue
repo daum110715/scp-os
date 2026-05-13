@@ -183,10 +183,10 @@ onMounted(fetchLogs)
 
 .audit-log__select {
   padding: 7px 12px;
-  background: #1a1a1a;
-  border: 1px solid #2a2a2a;
+  background: var(--gui-bg-surface-raised, #1a1a1a);
+  border: 1px solid var(--gui-border-default, #2a2a2a);
   border-radius: 8px;
-  color: #e0e0e0;
+  color: var(--gui-text-primary, #e0e0e0);
   font-size: 13px;
   outline: none;
   cursor: pointer;
@@ -194,7 +194,7 @@ onMounted(fetchLogs)
 }
 
 .audit-log__select:focus {
-  border-color: #e94560;
+  border-color: var(--gui-error, #e94560);
 }
 
 .audit-log__date-range {
@@ -205,10 +205,10 @@ onMounted(fetchLogs)
 
 .audit-log__date-input {
   padding: 6px 10px;
-  background: #1a1a1a;
-  border: 1px solid #2a2a2a;
+  background: var(--gui-bg-surface-raised, #1a1a1a);
+  border: 1px solid var(--gui-border-default, #2a2a2a);
   border-radius: 8px;
-  color: #e0e0e0;
+  color: var(--gui-text-primary, #e0e0e0);
   font-size: 13px;
   outline: none;
   transition: border-color 150ms ease;
@@ -216,12 +216,12 @@ onMounted(fetchLogs)
 }
 
 .audit-log__date-input:focus {
-  border-color: #e94560;
+  border-color: var(--gui-error, #e94560);
 }
 
 .audit-log__date-sep {
   font-size: 12px;
-  color: #6a6a6a;
+  color: var(--gui-text-tertiary, #6a6a6a);
 }
 
 .audit-log__action-badge {
@@ -231,7 +231,7 @@ onMounted(fetchLogs)
   font-size: 11px;
   font-weight: 500;
   background: rgba(233, 69, 96, 0.1);
-  color: #e94560;
+  color: var(--gui-error, #e94560);
 }
 
 .audit-log__details {
@@ -240,7 +240,7 @@ onMounted(fetchLogs)
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: #6a6a6a;
+  color: var(--gui-text-tertiary, #6a6a6a);
   font-size: 12px;
 }
 </style>

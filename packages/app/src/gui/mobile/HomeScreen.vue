@@ -458,6 +458,10 @@ onMounted(async () => {
   transition: all var(--gui-transition-bounce-spring, 400ms cubic-bezier(0.34, 1.56, 0.64, 1));
 }
 
+.light .home-screen__app-icon {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(0, 0, 0, 0.04);
+}
+
 .home-screen__app-icon svg {
   width: 24px;
   height: 24px;
@@ -486,17 +490,26 @@ onMounted(async () => {
   transform: scale(1.04);
 }
 
+.light .home-screen__app:hover .home-screen__app-icon {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
 .home-screen__app-label {
   width: 100%;
   font-size: var(--gui-font-xs, 11px);
   font-weight: var(--gui-font-weight-medium, 500);
   color: var(--home-text, #ffffff);
   text-align: center;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  text-shadow: 0 1px 3px var(--gui-backdrop-bg, rgba(0, 0, 0, 0.6));
   letter-spacing: 0.02em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.light .home-screen__app-label {
+  text-shadow: none;
+  color: var(--gui-text-primary, #000000);
 }
 
 /* Home Indicator */

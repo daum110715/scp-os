@@ -278,10 +278,10 @@ onMounted(fetchFeedback)
 
 .feedback-mgmt__select {
   padding: 7px 12px;
-  background: #1a1a1a;
-  border: 1px solid #2a2a2a;
+  background: var(--gui-bg-surface-raised, #1a1a1a);
+  border: 1px solid var(--gui-border-default, #2a2a2a);
   border-radius: 8px;
-  color: #e0e0e0;
+  color: var(--gui-text-primary, #e0e0e0);
   font-size: 13px;
   outline: none;
   cursor: pointer;
@@ -289,14 +289,14 @@ onMounted(fetchFeedback)
 }
 
 .feedback-mgmt__select:focus {
-  border-color: #e94560;
+  border-color: var(--gui-error, #e94560);
 }
 
 .feedback-mgmt__status-select {
   padding: 3px 8px;
-  border: 1px solid #2a2a2a;
+  border: 1px solid var(--gui-border-default, #2a2a2a);
   border-radius: 5px;
-  background: #242424;
+  background: var(--gui-bg-surface-raised, #242424);
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
@@ -305,22 +305,22 @@ onMounted(fetchFeedback)
 }
 
 .feedback-mgmt__status--pending {
-  color: #ffcc00;
+  color: var(--gui-warning, #ffcc00);
   border-color: rgba(255, 204, 0, 0.3);
 }
 
 .feedback-mgmt__status--in_progress {
-  color: #0a84ff;
+  color: var(--gui-info, #0a84ff);
   border-color: rgba(10, 132, 255, 0.3);
 }
 
 .feedback-mgmt__status--resolved {
-  color: #34c759;
+  color: var(--gui-success, #34c759);
   border-color: rgba(52, 199, 89, 0.3);
 }
 
 .feedback-mgmt__status--rejected {
-  color: #ff3b30;
+  color: var(--gui-error, #ff3b30);
   border-color: rgba(255, 59, 48, 0.3);
 }
 
@@ -333,11 +333,11 @@ onMounted(fetchFeedback)
 }
 
 .feedback-mgmt__vote--up {
-  color: #34c759;
+  color: var(--gui-success, #34c759);
 }
 
 .feedback-mgmt__vote--down {
-  color: #ff3b30;
+  color: var(--gui-error, #ff3b30);
 }
 
 .feedback-mgmt__cell-actions {
@@ -348,9 +348,9 @@ onMounted(fetchFeedback)
 
 .feedback-mgmt__action-btn {
   padding: 4px 10px;
-  border: 1px solid #2a2a2a;
+  border: 1px solid var(--gui-border-default, #2a2a2a);
   border-radius: 5px;
-  background: #242424;
+  background: var(--gui-bg-surface-raised, #242424);
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
@@ -362,7 +362,7 @@ onMounted(fetchFeedback)
 }
 
 .feedback-mgmt__action-btn--view {
-  color: #0a84ff;
+  color: var(--gui-info, #0a84ff);
   border-color: rgba(10, 132, 255, 0.2);
 }
 
@@ -371,12 +371,12 @@ onMounted(fetchFeedback)
 }
 
 .feedback-mgmt__action-btn--danger {
-  color: #ff3b30;
+  color: var(--gui-error, #ff3b30);
   border-color: rgba(255, 59, 48, 0.2);
 }
 
 .feedback-mgmt__action-btn--danger:hover {
-  background: rgba(255, 59, 48, 0.12);
+  background: var(--gui-error-bg, rgba(255, 59, 48, 0.12));
 }
 
 .feedback-mgmt__detail {
@@ -398,7 +398,7 @@ onMounted(fetchFeedback)
 
 .feedback-mgmt__detail-label {
   font-size: 12px;
-  color: #6a6a6a;
+  color: var(--gui-text-tertiary, #6a6a6a);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   min-width: 60px;
@@ -407,7 +407,7 @@ onMounted(fetchFeedback)
 
 .feedback-mgmt__detail-value {
   font-size: 14px;
-  color: #e0e0e0;
+  color: var(--gui-text-primary, #e0e0e0);
 }
 
 .feedback-mgmt__detail-content {
@@ -416,8 +416,8 @@ onMounted(fetchFeedback)
   color: #a0a0a0;
   line-height: 1.6;
   padding: 12px;
-  background: #0f0f0f;
-  border: 1px solid #2a2a2a;
+  background: var(--gui-bg-surface, #0f0f0f);
+  border: 1px solid var(--gui-border-default, #2a2a2a);
   border-radius: 8px;
   white-space: pre-wrap;
   word-break: break-word;

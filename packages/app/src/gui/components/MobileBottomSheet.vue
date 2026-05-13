@@ -11,7 +11,7 @@
           class="mobile-bottom-sheet w-full max-w-[600px] bg-[var(--gui-bg-surface,#2C2C2E)] rounded-t-[14px] overflow-hidden flex flex-col"
           style="
             max-height: 85vh;
-            box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.5);
+            box-shadow: var(--gui-shadow-ios-sheet, 0 -8px 32px rgba(0, 0, 0, 0.5));
             padding-bottom: env(safe-area-inset-bottom, 0px);
           "
           :class="{

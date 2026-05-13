@@ -105,7 +105,7 @@ function onPageChange(page: number) {
 }
 
 .admin-pagination__total {
-  color: #6a6a6a;
+  color: var(--gui-text-tertiary, #6a6a6a);
   font-size: 12px;
   white-space: nowrap;
 }
@@ -133,8 +133,8 @@ function onPageChange(page: number) {
 }
 
 .admin-pagination__btn:hover:not(:disabled):not(.admin-pagination__btn--active) {
-  background: rgba(255, 255, 255, 0.06);
-  color: #e0e0e0;
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
+  color: var(--gui-text-primary, #e0e0e0);
 }
 
 .admin-pagination__btn:disabled {
@@ -144,7 +144,7 @@ function onPageChange(page: number) {
 
 .admin-pagination__btn--active {
   background: rgba(233, 69, 96, 0.15);
-  color: #e94560;
+  color: var(--gui-error, #e94560);
   border-color: rgba(233, 69, 96, 0.2);
   font-weight: 500;
 }
@@ -155,7 +155,7 @@ function onPageChange(page: number) {
   justify-content: center;
   width: 32px;
   height: 32px;
-  color: #6a6a6a;
+  color: var(--gui-text-tertiary, #6a6a6a);
   font-size: 13px;
   user-select: none;
 }

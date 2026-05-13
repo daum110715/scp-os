@@ -283,10 +283,22 @@ async function handleLogin(): Promise<void> {
   }
 }
 
-// Pattern colors from theme store (fallback to design tokens)
-const patternColor1 = 'rgba(255, 255, 255, 0.06)'
-const patternColor2 = 'rgba(255, 255, 255, 0.08)'
-const patternColor3 = 'rgba(63, 63, 66, 0.03)'
+// Pattern colors adapt to theme
+const patternColor1 = computed(() =>
+  document.documentElement.classList.contains('light')
+    ? 'rgba(0, 0, 0, 0.06)'
+    : 'rgba(255, 255, 255, 0.06)'
+)
+const patternColor2 = computed(() =>
+  document.documentElement.classList.contains('light')
+    ? 'rgba(0, 0, 0, 0.08)'
+    : 'rgba(255, 255, 255, 0.08)'
+)
+const patternColor3 = computed(() =>
+  document.documentElement.classList.contains('light')
+    ? 'rgba(60, 60, 67, 0.03)'
+    : 'rgba(63, 63, 66, 0.03)'
+)
 
 // Auto-focus input on mount
 onMounted(() => {
@@ -377,11 +389,11 @@ onMounted(() => {
   backdrop-filter: blur(40px);
   -webkit-backdrop-filter: blur(40px);
   border-radius: var(--radius-squircle-2xl, 24px);
-  border: 1px solid rgba(255, 255, 255, 0.08); /* glassBorder */
+  border: 1px solid var(--gui-border-default, rgba(255, 255, 255, 0.08)); /* glassBorder */
   box-shadow:
     0 24px 48px rgba(0, 0, 0, 0.5),
     /* xl shadow */ 0 8px 16px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    var(--gui-inner-glow, inset 0 1px 0 rgba(255, 255, 255, 0.06));
   overflow: hidden;
 }
 
@@ -565,8 +577,8 @@ onMounted(() => {
   font-size: var(--gui-font-lg, 15px);
   font-weight: var(--gui-font-weight-medium, 500);
   color: var(--gui-text-primary, #ffffff);
-  background: rgba(255, 255, 255, 0.05);
-  border: 1.5px solid rgba(255, 255, 255, 0.08);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.05));
+  border: 1.5px solid var(--gui-border-default, rgba(255, 255, 255, 0.08));
   border-radius: var(--gui-radius-lg, 12px);
   outline: none;
   transition: all var(--gui-transition-base, 200ms ease);
@@ -579,7 +591,7 @@ onMounted(() => {
 
 .pc-login-screen__input:hover {
   background: rgba(255, 255, 255, 0.07);
-  border-color: rgba(255, 255, 255, 0.12);
+  border-color: var(--gui-border-strong, rgba(255, 255, 255, 0.12));
 }
 
 .pc-login-screen__input--focused,
@@ -622,7 +634,7 @@ onMounted(() => {
 
 .pc-login-screen__input-clear:hover {
   color: var(--gui-text-primary, #ffffff);
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--gui-bg-surface-active, rgba(255, 255, 255, 0.12));
   transform: translateY(-50%) scale(1.05);
 }
 
@@ -819,7 +831,7 @@ onMounted(() => {
   width: 100%;
   margin-top: var(--gui-spacing-2xl, 32px);
   padding-top: var(--gui-spacing-lg, 20px);
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   text-align: center;
   animation: footer-fade-in 0.5s ease 0.55s both;
 }

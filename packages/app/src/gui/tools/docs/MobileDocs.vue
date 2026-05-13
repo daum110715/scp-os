@@ -773,7 +773,7 @@ onBeforeUnmount(() => {
 
 .mobile-docs__filter-tag--active {
   background: var(--docs-accent);
-  color: #ffffff;
+  color: var(--gui-text-primary, #ffffff);
   border-color: var(--docs-accent);
 }
 
@@ -921,7 +921,7 @@ onBeforeUnmount(() => {
 }
 
 .mobile-docs__cards-error {
-  color: #ff3b30;
+  color: var(--gui-error, #ff3b30);
 }
 
 .mobile-docs__cards-error p {
@@ -1259,7 +1259,7 @@ onBeforeUnmount(() => {
 
 .mobile-docs__theme-btn--active {
   background: var(--docs-accent);
-  color: #ffffff;
+  color: var(--gui-text-primary, #ffffff);
   border-color: var(--docs-accent);
 }
 
@@ -1357,7 +1357,7 @@ onBeforeUnmount(() => {
   border: 1px solid rgba(56, 139, 253, 0.15);
 }
 .mobile-docs__card--guide:active {
-  background: rgba(56, 139, 253, 0.12);
+  background: var(--gui-accent-soft);
   border-color: rgba(56, 139, 253, 0.3);
 }
 .mobile-docs__card-number--guide {

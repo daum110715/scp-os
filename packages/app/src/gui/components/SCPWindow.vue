@@ -288,7 +288,7 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   height: 40px;
   padding: 0 14px;
-  background: var(--gui-glass-bg-subtle, rgba(44, 44, 46, 0.6));
+  background: var(--gui-glass-bg);
   backdrop-filter: blur(12px) saturate(150%);
   -webkit-backdrop-filter: blur(12px) saturate(150%);
   border-bottom: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));

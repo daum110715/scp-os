@@ -757,7 +757,7 @@ function resetSettings(): void {
   left: 2px;
   width: 20px;
   height: 20px;
-  background: #ffffff;
+  background: var(--gui-bg-surface, #ffffff);
   border-radius: 50%;
   transition: transform var(--gui-transition-bounce-spring, 300ms cubic-bezier(0.34, 1.56, 0.64, 1));
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);

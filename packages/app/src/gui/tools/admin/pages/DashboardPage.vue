@@ -162,8 +162,8 @@ onMounted(fetchDashboard)
 .dashboard-page__spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid #1a1a1a;
-  border-top-color: #e94560;
+  border: 3px solid var(--gui-border-subtle, #1a1a1a);
+  border-top-color: var(--gui-error, #e94560);
   border-radius: 50%;
   animation: dashboardSpin 0.8s linear infinite;
 }
@@ -187,8 +187,8 @@ onMounted(fetchDashboard)
 }
 
 .dashboard-page__chart-card {
-  background: #1a1a1a;
-  border: 1px solid #2a2a2a;
+  background: var(--gui-bg-surface-raised, #1a1a1a);
+  border: 1px solid var(--gui-border-default, #2a2a2a);
   border-radius: 10px;
   padding: 16px;
 }
@@ -200,7 +200,7 @@ onMounted(fetchDashboard)
 .dashboard-page__chart-title {
   font-size: 13px;
   font-weight: 600;
-  color: #e0e0e0;
+  color: var(--gui-text-primary, #e0e0e0);
 }
 
 .dashboard-page__activity {
@@ -208,8 +208,8 @@ onMounted(fetchDashboard)
 }
 
 .dashboard-page__activity-card {
-  background: #1a1a1a;
-  border: 1px solid #2a2a2a;
+  background: var(--gui-bg-surface-raised, #1a1a1a);
+  border: 1px solid var(--gui-border-default, #2a2a2a);
   border-radius: 10px;
   padding: 16px 20px;
 }
@@ -221,7 +221,7 @@ onMounted(fetchDashboard)
 .dashboard-page__activity-title {
   font-size: 13px;
   font-weight: 600;
-  color: #e0e0e0;
+  color: var(--gui-text-primary, #e0e0e0);
 }
 
 .dashboard-page__activity-grid {
@@ -235,14 +235,14 @@ onMounted(fetchDashboard)
   flex-direction: column;
   gap: 4px;
   padding: 12px 16px;
-  background: #0f0f0f;
-  border: 1px solid #2a2a2a;
+  background: var(--gui-bg-surface, #0f0f0f);
+  border: 1px solid var(--gui-border-default, #2a2a2a);
   border-radius: 8px;
 }
 
 .dashboard-page__activity-label {
   font-size: 11px;
-  color: #6a6a6a;
+  color: var(--gui-text-tertiary, #6a6a6a);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -250,7 +250,7 @@ onMounted(fetchDashboard)
 .dashboard-page__activity-value {
   font-size: 22px;
   font-weight: 700;
-  color: #e0e0e0;
+  color: var(--gui-text-primary, #e0e0e0);
   font-variant-numeric: tabular-nums;
 }
 </style>

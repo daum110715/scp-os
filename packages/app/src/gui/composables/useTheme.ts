@@ -123,7 +123,7 @@ export function useTheme() {
     // Update terminal theme if provided
     if (terminal) {
       terminal.options.theme = {
-        background: '#0a0a0a',
+        background: 'var(--gui-bg-base, #0a0a0a)',
         foreground: '#f0f0f0',
         cursor: theme.accent,
         cursorAccent: '#0a0a0a',

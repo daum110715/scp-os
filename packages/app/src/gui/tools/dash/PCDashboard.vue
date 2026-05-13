@@ -956,11 +956,11 @@ async function runSpeedTest() {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: #050508;
+  background: var(--gui-bg-base, #050508);
   font-family: 'SF Mono', 'JetBrains Mono', 'Cascadia Code', 'Consolas', monospace;
   overflow-y: auto;
   overflow-x: hidden;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--gui-text-primary, rgba(255, 255, 255, 0.9));
 }
 
 .dash::-webkit-scrollbar {
@@ -970,7 +970,7 @@ async function runSpeedTest() {
   background: transparent;
 }
 .dash::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
   border-radius: 2px;
 }
 
@@ -1082,6 +1082,11 @@ async function runSpeedTest() {
   box-shadow: 0 0 4px rgba(255, 255, 255, 0.15);
 }
 
+.light .dash__particle {
+  background: rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
+}
+
 @keyframes particleFloat {
   0% {
     transform: translateY(0) translateX(0);
@@ -1165,7 +1170,7 @@ async function runSpeedTest() {
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.1em;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--gui-text-secondary, rgba(255, 255, 255, 0.6));
   text-transform: uppercase;
 }
 
@@ -1181,14 +1186,14 @@ async function runSpeedTest() {
   padding: 2px 6px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 3px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--gui-text-tertiary, rgba(255, 255, 255, 0.5));
   letter-spacing: 0.15em;
 }
 
 .dash__class-level {
   font-size: 9px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--gui-text-tertiary, rgba(255, 255, 255, 0.3));
   letter-spacing: 0.12em;
 }
 
@@ -1201,12 +1206,12 @@ async function runSpeedTest() {
 
 .dash__clock {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.35);
+  color: var(--gui-text-tertiary, rgba(255, 255, 255, 0.35));
   letter-spacing: 0.08em;
 }
 .dash__uptime {
   font-size: 9px;
-  color: rgba(255, 255, 255, 0.15);
+  color: var(--gui-text-disabled, rgba(255, 255, 255, 0.15));
   letter-spacing: 0.06em;
 }
 
@@ -1219,7 +1224,7 @@ async function runSpeedTest() {
 .dash__header-divider {
   width: 1px;
   height: 16px;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
   margin: 0 4px;
 }
 
@@ -1232,19 +1237,19 @@ async function runSpeedTest() {
   border-radius: 6px;
   border: 1px solid transparent;
   background: transparent;
-  color: rgba(255, 255, 255, 0.35);
+  color: var(--gui-text-tertiary, rgba(255, 255, 255, 0.35));
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .dash__btn-icon:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.8);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
+  color: var(--gui-text-primary, rgba(255, 255, 255, 0.8));
 }
 .dash__btn-icon--active {
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
-  border-color: rgba(255, 255, 255, 0.1);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.08));
+  color: var(--gui-text-primary, #fff);
+  border-color: var(--gui-border-strong, rgba(255, 255, 255, 0.1));
 }
 .dash__btn-icon--spinning {
   animation: dashSpin 0.8s linear infinite;
@@ -1270,7 +1275,7 @@ async function runSpeedTest() {
   align-items: center;
   gap: 20px;
   padding: 16px 20px;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.02));
   border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: 16px;
   backdrop-filter: blur(24px);
@@ -1317,16 +1322,16 @@ async function runSpeedTest() {
   align-items: center;
   gap: 4px;
   padding: 10px 6px;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.02));
   border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: 12px;
   transition: all 0.25s ease;
 }
 
 .dash__hero-stat:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.05));
   transform: translateY(-2px);
-  border-color: rgba(255, 255, 255, 0.08);
+  border-color: var(--gui-border-default, rgba(255, 255, 255, 0.08));
 }
 
 .dash__hero-stat-body {
@@ -1342,14 +1347,14 @@ async function runSpeedTest() {
 .dash__hero-stat-val small {
   font-size: 9px;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--gui-text-tertiary, rgba(255, 255, 255, 0.3));
   margin-left: 1px;
 }
 
 .dash__hero-stat-lbl {
   display: block;
   font-size: 9px;
-  color: rgba(255, 255, 255, 0.25);
+  color: var(--gui-text-disabled, rgba(255, 255, 255, 0.25));
   margin-top: 2px;
   letter-spacing: 0.05em;
 }
@@ -1361,7 +1366,7 @@ async function runSpeedTest() {
 }
 
 .dash__chart-card {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.02));
   border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: 12px;
   padding: 12px;
@@ -1372,8 +1377,8 @@ async function runSpeedTest() {
 }
 
 .dash__chart-card:hover {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.08);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.04));
+  border-color: var(--gui-border-default, rgba(255, 255, 255, 0.08));
   transform: translateY(-1px);
 }
 
@@ -1383,7 +1388,7 @@ async function runSpeedTest() {
   gap: 6px;
   font-size: 10px;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.55);
+  color: var(--gui-text-secondary, rgba(255, 255, 255, 0.55));
   margin-bottom: 8px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -1401,7 +1406,7 @@ async function runSpeedTest() {
   margin-left: auto;
   font-size: 9px;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.2);
+  color: var(--gui-text-disabled, rgba(255, 255, 255, 0.2));
 }
 
 .dash__chart-body {
@@ -1454,7 +1459,7 @@ async function runSpeedTest() {
   align-items: center;
   gap: 8px;
   padding: 10px;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.02));
   border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: 10px;
   animation: dashFadeIn 0.5s ease both;
@@ -1465,20 +1470,20 @@ async function runSpeedTest() {
 }
 
 .dash__metric:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.05));
   transform: translateY(-1px);
-  border-color: rgba(255, 255, 255, 0.08);
+  border-color: var(--gui-border-default, rgba(255, 255, 255, 0.08));
 }
 
 .dash__metric-icon {
   width: 28px;
   height: 28px;
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.04));
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgba(255, 255, 255, 0.35);
+  color: var(--gui-text-tertiary, rgba(255, 255, 255, 0.35));
   flex-shrink: 0;
 }
 
@@ -1490,7 +1495,7 @@ async function runSpeedTest() {
 .dash__metric-label {
   display: block;
   font-size: 9px;
-  color: rgba(255, 255, 255, 0.25);
+  color: var(--gui-text-disabled, rgba(255, 255, 255, 0.25));
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -1499,7 +1504,7 @@ async function runSpeedTest() {
   display: block;
   font-size: 11px;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--gui-text-primary, rgba(255, 255, 255, 0.8));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1511,7 +1516,7 @@ async function runSpeedTest() {
   left: 0;
   right: 0;
   height: 2px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.04));
 }
 
 .dash__metric-bar {
@@ -1530,7 +1535,7 @@ async function runSpeedTest() {
 }
 
 .dash__system-card {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.02));
   border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: 12px;
   padding: 14px;
@@ -1547,7 +1552,7 @@ async function runSpeedTest() {
   gap: 6px;
   font-size: 11px;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.55);
+  color: var(--gui-text-secondary, rgba(255, 255, 255, 0.55));
   text-transform: uppercase;
   letter-spacing: 0.06em;
   margin-bottom: 10px;
@@ -1563,17 +1568,17 @@ async function runSpeedTest() {
   display: flex;
   justify-content: space-between;
   padding: 5px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.03));
 }
 
 .dash__info-key {
   font-size: 10px;
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--gui-text-tertiary, rgba(255, 255, 255, 0.3));
 }
 .dash__info-val {
   font-size: 10px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--gui-text-secondary, rgba(255, 255, 255, 0.7));
 }
 .dash__info-val--sm {
   font-size: 8px;
@@ -1590,7 +1595,7 @@ async function runSpeedTest() {
   position: relative;
   width: 32px;
   height: 56px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  border: 2px solid var(--gui-border-strong, rgba(255, 255, 255, 0.3));
   border-radius: 6px;
   padding: 3px;
   overflow: hidden;
@@ -1624,7 +1629,7 @@ async function runSpeedTest() {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--gui-text-primary, rgba(255, 255, 255, 0.8));
 }
 
 .dash__battery-icon--charging .dash__battery-fill {
@@ -1633,11 +1638,11 @@ async function runSpeedTest() {
 .dash__battery-pct {
   font-size: 20px;
   font-weight: 800;
-  color: #fff;
+  color: var(--gui-text-primary, #fff);
 }
 .dash__battery-status {
   font-size: 9px;
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--gui-text-tertiary, rgba(255, 255, 255, 0.3));
   text-transform: uppercase;
 }
 
@@ -1653,15 +1658,15 @@ async function runSpeedTest() {
   font-size: 10px;
 }
 .dash__perf-row span:first-child {
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--gui-text-tertiary, rgba(255, 255, 255, 0.3));
 }
 .dash__perf-row span:last-child {
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--gui-text-secondary, rgba(255, 255, 255, 0.7));
   font-weight: 600;
 }
 
 .dash__alerts {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.02));
   border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: 10px;
   padding: 12px;
@@ -1674,7 +1679,7 @@ async function runSpeedTest() {
   margin-bottom: 8px;
   font-size: 11px;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--gui-text-tertiary, rgba(255, 255, 255, 0.5));
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
@@ -1684,8 +1689,8 @@ async function runSpeedTest() {
   font-size: 10px;
   padding: 1px 8px;
   border-radius: 4px;
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.5);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
+  color: var(--gui-text-tertiary, rgba(255, 255, 255, 0.5));
 }
 
 .dash__alerts-list {
@@ -1707,11 +1712,11 @@ async function runSpeedTest() {
 }
 
 .dash__alert--warn {
-  border-left-color: #ff9500;
+  border-left-color: var(--gui-warning);
   background: rgba(255, 149, 0, 0.04);
 }
 .dash__alert--bad {
-  border-left-color: #ff3b30;
+  border-left-color: var(--gui-error, #ff3b30);
   background: rgba(255, 59, 48, 0.04);
 }
 .dash__alert--info {
@@ -1719,15 +1724,15 @@ async function runSpeedTest() {
 }
 .dash__alert-time {
   flex-shrink: 0;
-  color: rgba(255, 255, 255, 0.2);
+  color: var(--gui-text-disabled, rgba(255, 255, 255, 0.2));
   font-size: 9px;
 }
 .dash__alert-msg {
-  color: rgba(255, 255, 255, 0.55);
+  color: var(--gui-text-secondary, rgba(255, 255, 255, 0.55));
 }
 
 .dash__network-card--full {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.02));
   border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: 14px;
   padding: 18px;
@@ -1740,7 +1745,7 @@ async function runSpeedTest() {
   gap: 8px;
   font-size: 12px;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--gui-text-secondary, rgba(255, 255, 255, 0.6));
   margin-bottom: 14px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -1757,26 +1762,26 @@ async function runSpeedTest() {
 }
 
 .status-online {
-  color: #34c759;
+  color: var(--gui-success, #34c759);
 }
 .status-slow {
   color: #ff9500;
 }
 .status-offline {
-  color: #ff3b30;
+  color: var(--gui-error, #ff3b30);
 }
 
 .dash__network-badge.status-online {
   background: rgba(52, 199, 89, 0.12);
-  color: #34c759;
+  color: var(--gui-success, #34c759);
 }
 .dash__network-badge.status-slow {
   background: rgba(255, 149, 0, 0.12);
   color: #ff9500;
 }
 .dash__network-badge.status-offline {
-  background: rgba(255, 59, 48, 0.12);
-  color: #ff3b30;
+  background: var(--gui-error-bg, rgba(255, 59, 48, 0.12));
+  color: var(--gui-error, #ff3b30);
 }
 
 .dash__network-rows {
@@ -1793,14 +1798,14 @@ async function runSpeedTest() {
 }
 .dash__network-key {
   font-size: 9px;
-  color: rgba(255, 255, 255, 0.25);
+  color: var(--gui-text-disabled, rgba(255, 255, 255, 0.25));
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 .dash__network-val {
   font-size: 12px;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--gui-text-primary, rgba(255, 255, 255, 0.8));
 }
 
 .dash__speed-section {
@@ -1818,7 +1823,7 @@ async function runSpeedTest() {
 .dash__speed-label {
   font-size: 11px;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.45);
+  color: var(--gui-text-tertiary, rgba(255, 255, 255, 0.45));
   text-transform: uppercase;
 }
 
@@ -1828,9 +1833,9 @@ async function runSpeedTest() {
   gap: 6px;
   padding: 5px 14px;
   border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.04);
-  color: rgba(255, 255, 255, 0.6);
+  border: 1px solid var(--gui-border-default, rgba(255, 255, 255, 0.08));
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.04));
+  color: var(--gui-text-secondary, rgba(255, 255, 255, 0.6));
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
@@ -1838,8 +1843,8 @@ async function runSpeedTest() {
 }
 
 .dash__speed-btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.08));
+  color: var(--gui-text-primary, #fff);
 }
 .dash__speed-btn:disabled {
   opacity: 0.5;
@@ -1849,7 +1854,7 @@ async function runSpeedTest() {
 .dash__speed-spinner {
   width: 12px;
   height: 12px;
-  border: 2px solid rgba(255, 255, 255, 0.1);
+  border: 2px solid var(--gui-border-strong, rgba(255, 255, 255, 0.1));
   border-top: 2px solid #fff;
   border-radius: 50%;
   animation: dashSpin 0.8s linear infinite;
@@ -1872,24 +1877,24 @@ async function runSpeedTest() {
 }
 .dash__speed-item-label {
   font-size: 9px;
-  color: rgba(255, 255, 255, 0.25);
+  color: var(--gui-text-disabled, rgba(255, 255, 255, 0.25));
   text-transform: uppercase;
   letter-spacing: 0.1em;
 }
 .dash__speed-item-value {
   font-size: 16px;
   font-weight: 800;
-  color: #fff;
+  color: var(--gui-text-primary, #fff);
 }
 .dash__speed-item-value small {
   font-size: 10px;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--gui-text-tertiary, rgba(255, 255, 255, 0.3));
 }
 
 .dash__speed-bar {
   height: 3px;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
   border-radius: 2px;
   overflow: hidden;
 }
@@ -1914,19 +1919,19 @@ async function runSpeedTest() {
 
 .dash__footer-text {
   font-size: 9px;
-  color: rgba(255, 255, 255, 0.2);
+  color: var(--gui-text-disabled, rgba(255, 255, 255, 0.2));
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
 .dash__footer-sep {
-  color: rgba(255, 255, 255, 0.08);
+  color: var(--gui-text-disabled, rgba(255, 255, 255, 0.08));
 }
 
 .dash__footer-pulse {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--gui-bg-surface-active, rgba(255, 255, 255, 0.15));
   transition: all 0.3s ease;
 }
 

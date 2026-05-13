@@ -256,10 +256,7 @@ onUnmounted(() => {
   border: 0.5px solid var(--gui-border-default, rgba(255, 255, 255, 0.08));
   border-bottom: none;
   border-radius: var(--gui-radius-xl, 14px) var(--gui-radius-xl, 14px) 0 0;
-  box-shadow:
-    0 -16px 48px rgba(0, 0, 0, 0.5),
-    0 -4px 16px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  box-shadow: var(--gui-shadow-ios-sheet, 0 -10px 40px rgba(0, 0, 0, 0.5));
   overflow: hidden;
   font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
   animation: menuSlideUp 0.35s
@@ -268,10 +265,7 @@ onUnmounted(() => {
 }
 
 .pc-start-menu:hover {
-  box-shadow:
-    0 -20px 60px rgba(0, 0, 0, 0.6),
-    0 -6px 20px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  box-shadow: var(--gui-shadow-ios-modal, 0 20px 60px rgba(0, 0, 0, 0.7));
   background: var(--gui-glass-bg-strong, rgba(32, 32, 34, 0.98));
 }
 
@@ -316,7 +310,7 @@ onUnmounted(() => {
 .pc-start-menu__search-field {
   width: 100%;
   padding: var(--gui-spacing-sm, 8px) var(--gui-spacing-sm, 8px) var(--gui-spacing-sm, 8px) 36px;
-  background: var(--gui-bg-surface-raised, rgba(255, 255, 255, 0.08));
+  background: var(--gui-bg-surface-raised, #3a3a3c);
   border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   border-radius: var(--gui-radius-base, 8px);
   color: var(--gui-text-primary, #ffffff);
@@ -331,7 +325,7 @@ onUnmounted(() => {
 }
 
 .pc-start-menu__search-field:focus {
-  background: var(--gui-bg-surface-active, rgba(255, 255, 255, 0.12));
+  background: var(--gui-bg-surface-active, rgba(255, 255, 255, 0.1));
   border-color: var(--gui-border-strong, rgba(255, 255, 255, 0.12));
   box-shadow: 0 0 0 3px var(--gui-accent-glow, rgba(142, 142, 147, 0.15));
 }
@@ -440,13 +434,11 @@ onUnmounted(() => {
 .pc-start-menu__app:hover {
   background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.08));
   transform: scale(1.08) translateY(-2px);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
 }
 
 .pc-start-menu__app:active {
   transform: scale(0.92) translateY(0);
   opacity: 0.7;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
 }
 
 .pc-start-menu__app-icon {
@@ -455,20 +447,16 @@ onUnmounted(() => {
   justify-content: center;
   width: 48px;
   height: 48px;
-  background: var(--gui-bg-surface-raised, rgba(255, 255, 255, 0.08));
+  background: var(--gui-bg-surface-raised, #3a3a3c);
   border-radius: var(--gui-radius-lg, 12px);
   color: var(--gui-text-primary, #ffffff);
   transition: all var(--gui-transition-base, 200ms ease);
-  box-shadow:
-    0 2px 8px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  box-shadow: var(--gui-shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.3));
 }
 
 .pc-start-menu__app:hover .pc-start-menu__app-icon {
-  background: var(--gui-bg-surface-active, rgba(255, 255, 255, 0.12));
-  box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  background: var(--gui-bg-surface-active, rgba(255, 255, 255, 0.1));
+  box-shadow: var(--gui-shadow-md, 0 4px 12px rgba(0, 0, 0, 0.4));
   transform: scale(1.05);
 }
 
@@ -532,7 +520,7 @@ onUnmounted(() => {
   justify-content: center;
   width: 40px;
   height: 40px;
-  background: var(--gui-bg-surface-raised, rgba(255, 255, 255, 0.08));
+  background: var(--gui-bg-surface-raised, #3a3a3c);
   border-radius: var(--gui-radius-base, 8px);
   color: var(--gui-text-primary, #ffffff);
 }
@@ -581,7 +569,7 @@ onUnmounted(() => {
   justify-content: center;
   width: 48px;
   height: 48px;
-  background: var(--gui-bg-surface-raised, rgba(255, 255, 255, 0.08));
+  background: var(--gui-bg-surface-raised, #3a3a3c);
   border-radius: var(--gui-radius-lg, 12px);
   color: var(--gui-text-primary, #ffffff);
 }

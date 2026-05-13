@@ -262,7 +262,7 @@ function close() {
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--gui-backdrop-bg, rgba(0, 0, 0, 0.5));
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
@@ -367,10 +367,10 @@ function close() {
   font-size: 14px;
 }
 
-.wallpaper-picker__spinner {
+ .wallpaper-picker__spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid rgba(255, 255, 255, 0.2);
+  border: 3px solid var(--gui-border-default, rgba(255, 255, 255, 0.2));
   border-top-color: var(--gui-accent, #007aff);
   border-radius: 50%;
   animation: wallpaper-spin 0.8s linear infinite;
@@ -459,8 +459,8 @@ function close() {
   height: 22px;
   border-radius: 50%;
   border: none;
-  background: rgba(0, 0, 0, 0.5);
-  color: #ff3b30;
+  background: var(--gui-backdrop-bg, rgba(0, 0, 0, 0.5));
+  color: var(--gui-error, #ff3b30);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -508,8 +508,8 @@ function close() {
 }
 
 .wallpaper-picker__delete-actions button:last-child {
-  background: #ff3b30;
-  color: #ffffff;
+  background: var(--gui-error, #ff3b30);
+  color: var(--gui-text-inverse, #ffffff);
 }
 
 /* ── Transition ─────────────────────────────────────────────────────── */

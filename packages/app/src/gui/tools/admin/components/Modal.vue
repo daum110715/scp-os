@@ -63,14 +63,14 @@ function onClose() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--gui-backdrop-bg, rgba(0, 0, 0, 0.5));
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
 }
 
 .admin-modal {
-  background: #1a1a1a;
-  border: 1px solid #2a2a2a;
+  background: var(--gui-bg-surface-raised, #1a1a1a);
+  border: 1px solid var(--gui-border-default, #2a2a2a);
   border-radius: 12px;
   box-shadow:
     0 20px 60px rgba(0, 0, 0, 0.7),
@@ -86,7 +86,7 @@ function onClose() {
   align-items: center;
   justify-content: space-between;
   padding: 16px 20px;
-  border-bottom: 1px solid #2a2a2a;
+  border-bottom: 1px solid var(--gui-border-default, #2a2a2a);
   flex-shrink: 0;
 }
 
@@ -94,7 +94,7 @@ function onClose() {
   margin: 0;
   font-size: 15px;
   font-weight: 600;
-  color: #e0e0e0;
+  color: var(--gui-text-primary, #e0e0e0);
 }
 
 .admin-modal__close {
@@ -106,14 +106,14 @@ function onClose() {
   border: none;
   border-radius: 6px;
   background: transparent;
-  color: #6a6a6a;
+  color: var(--gui-text-tertiary, #6a6a6a);
   cursor: pointer;
   transition: all 120ms ease;
 }
 
 .admin-modal__close:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: #e0e0e0;
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
+  color: var(--gui-text-primary, #e0e0e0);
 }
 
 .admin-modal__body {
@@ -128,7 +128,7 @@ function onClose() {
   justify-content: flex-end;
   gap: 8px;
   padding: 12px 20px;
-  border-top: 1px solid #2a2a2a;
+  border-top: 1px solid var(--gui-border-default, #2a2a2a);
   flex-shrink: 0;
 }
 

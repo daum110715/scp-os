@@ -219,7 +219,7 @@ function onTap(_item: DockItemDef) {
   border-radius: var(--gui-radius-full, 9999px);
   font-size: 10px;
   font-weight: var(--gui-font-weight-bold, 700);
-  color: #fff;
+  color: var(--gui-text-primary, #fff);
   line-height: 1;
   animation: badgePop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }

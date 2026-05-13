@@ -131,7 +131,7 @@ function onKeyDown(event: KeyboardEvent) {
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--gui-backdrop-bg, rgba(0, 0, 0, 0.6));
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
@@ -183,7 +183,7 @@ function onKeyDown(event: KeyboardEvent) {
 
 .fm-text-editor__save-btn {
   background: var(--gui-accent, #007aff);
-  color: #ffffff;
+  color: var(--gui-text-primary, #ffffff);
 }
 
 .fm-text-editor__save-btn:disabled {

@@ -59,6 +59,7 @@ export interface ThemeColors {
   terminalBrightWhite: string
   // UI elements
   glassBg: string
+  glassBgStrong: string
   glassBorder: string
   dockBg: string
   dockBorder: string
@@ -88,6 +89,12 @@ export interface ThemeColors {
   iosSliderTrack: string
   iosSliderThumb: string
   iconFg: string
+  // Semantic backgrounds
+  errorBg: string
+  warningBg: string
+  successBg: string
+  editorBg: string
+  innerGlow: string
 }
 
 export interface Theme {
@@ -153,6 +160,7 @@ export const darkTheme: Theme = {
     terminalBrightCyan: '#64D2FF',
     terminalBrightWhite: '#FFFFFF',
     glassBg: 'rgba(28, 28, 30, 0.75)',
+    glassBgStrong: 'rgba(44, 44, 46, 0.95)',
     glassBorder: 'rgba(255, 255, 255, 0.08)',
     dockBg: 'rgba(28, 28, 30, 0.85)',
     dockBorder: 'rgba(255, 255, 255, 0.08)',
@@ -182,6 +190,11 @@ export const darkTheme: Theme = {
     iosSliderTrack: 'rgba(255, 255, 255, 0.15)',
     iosSliderThumb: '#FFFFFF',
     iconFg: '#FFFFFF',
+    errorBg: 'rgba(255, 59, 48, 0.12)',
+    warningBg: 'rgba(255, 204, 0, 0.12)',
+    successBg: 'rgba(52, 199, 89, 0.12)',
+    editorBg: '#0A0A0A',
+    innerGlow: 'inset 0 1px 0 rgba(255, 255, 255, 0.06)',
   },
 }
 
@@ -197,8 +210,8 @@ export const lightTheme: Theme = {
     bgSurface: '#FFFFFF',
     bgSurfaceRaised: '#FFFFFF',
     bgSurfaceOverlay: '#F2F2F7',
-    bgSurfaceHover: 'rgba(0, 0, 0, 0.04)',
-    bgSurfaceActive: 'rgba(0, 0, 0, 0.08)',
+    bgSurfaceHover: 'rgba(0, 0, 0, 0.06)',
+    bgSurfaceActive: 'rgba(0, 0, 0, 0.12)',
     textPrimary: '#000000',
     textSecondary: '#6E6E73',
     textTertiary: '#AEAEB2',
@@ -239,11 +252,12 @@ export const lightTheme: Theme = {
     terminalBrightCyan: '#1098AD',
     terminalBrightWhite: '#343A40',
     glassBg: 'rgba(255, 255, 255, 0.8)',
+    glassBgStrong: 'rgba(255, 255, 255, 0.92)',
     glassBorder: 'rgba(0, 0, 0, 0.08)',
     dockBg: 'rgba(255, 255, 255, 0.85)',
     dockBorder: 'rgba(0, 0, 0, 0.08)',
     dockItemBg: 'rgba(0, 0, 0, 0.04)',
-    dockItemHover: 'rgba(0, 0, 0, 0.08)',
+    dockItemHover: 'rgba(0, 0, 0, 0.1)',
     dockItemActive: 'rgba(0, 122, 255, 0.15)',
     windowHeaderBg: 'rgba(255, 255, 255, 0.85)',
     windowBorder: 'rgba(0, 0, 0, 0.08)',
@@ -268,6 +282,11 @@ export const lightTheme: Theme = {
     iosSliderTrack: 'rgba(0, 0, 0, 0.15)',
     iosSliderThumb: '#FFFFFF',
     iconFg: '#000000',
+    errorBg: 'rgba(255, 59, 48, 0.08)',
+    warningBg: 'rgba(255, 149, 0, 0.08)',
+    successBg: 'rgba(52, 199, 89, 0.08)',
+    editorBg: '#FFFFFF',
+    innerGlow: 'inset 0 1px 0 rgba(0, 0, 0, 0.04)',
   },
 }
 
@@ -325,6 +344,7 @@ export const scpTheme: Theme = {
     terminalBrightCyan: '#66FFFF',
     terminalBrightWhite: '#FFFFFF',
     glassBg: 'rgba(26, 26, 26, 0.75)',
+    glassBgStrong: 'rgba(36, 36, 36, 0.95)',
     glassBorder: 'rgba(233, 69, 96, 0.08)',
     dockBg: 'rgba(26, 26, 26, 0.85)',
     dockBorder: 'rgba(233, 69, 96, 0.08)',
@@ -354,6 +374,11 @@ export const scpTheme: Theme = {
     iosSliderTrack: 'rgba(233, 69, 96, 0.15)',
     iosSliderThumb: '#FFFFFF',
     iconFg: '#E94560',
+    errorBg: 'rgba(255, 68, 68, 0.12)',
+    warningBg: 'rgba(255, 165, 0, 0.12)',
+    successBg: 'rgba(0, 255, 0, 0.12)',
+    editorBg: '#0A0A0A',
+    innerGlow: 'inset 0 1px 0 rgba(233, 69, 96, 0.06)',
   },
 }
 
@@ -411,6 +436,7 @@ export const hackerTheme: Theme = {
     terminalBrightCyan: '#44FFFF',
     terminalBrightWhite: '#00FF00',
     glassBg: 'rgba(0, 10, 0, 0.75)',
+    glassBgStrong: 'rgba(15, 47, 15, 0.95)',
     glassBorder: 'rgba(0, 255, 0, 0.08)',
     dockBg: 'rgba(0, 10, 0, 0.85)',
     dockBorder: 'rgba(0, 255, 0, 0.08)',
@@ -440,6 +466,11 @@ export const hackerTheme: Theme = {
     iosSliderTrack: 'rgba(0, 255, 0, 0.15)',
     iosSliderThumb: '#00FF00',
     iconFg: '#00FF00',
+    errorBg: 'rgba(255, 0, 0, 0.12)',
+    warningBg: 'rgba(255, 255, 0, 0.12)',
+    successBg: 'rgba(0, 255, 0, 0.12)',
+    editorBg: '#000000',
+    innerGlow: 'inset 0 1px 0 rgba(0, 255, 0, 0.06)',
   },
 }
 

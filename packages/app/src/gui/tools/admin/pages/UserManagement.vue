@@ -429,36 +429,36 @@ onMounted(fetchUsers)
 .user-mgmt__search-icon {
   position: absolute;
   left: 10px;
-  color: #6a6a6a;
+  color: var(--gui-text-tertiary, #6a6a6a);
   pointer-events: none;
 }
 
 .user-mgmt__search-input {
   width: 260px;
   padding: 7px 10px 7px 32px;
-  background: #1a1a1a;
-  border: 1px solid #2a2a2a;
+  background: var(--gui-bg-surface-raised, #1a1a1a);
+  border: 1px solid var(--gui-border-default, #2a2a2a);
   border-radius: 8px;
-  color: #e0e0e0;
+  color: var(--gui-text-primary, #e0e0e0);
   font-size: 13px;
   outline: none;
   transition: border-color 150ms ease;
 }
 
 .user-mgmt__search-input:focus {
-  border-color: #e94560;
+  border-color: var(--gui-error, #e94560);
 }
 
 .user-mgmt__search-input::placeholder {
-  color: #4a4a4a;
+  color: var(--gui-text-disabled, #4a4a4a);
 }
 
 .user-mgmt__select {
   padding: 7px 12px;
-  background: #1a1a1a;
-  border: 1px solid #2a2a2a;
+  background: var(--gui-bg-surface-raised, #1a1a1a);
+  border: 1px solid var(--gui-border-default, #2a2a2a);
   border-radius: 8px;
-  color: #e0e0e0;
+  color: var(--gui-text-primary, #e0e0e0);
   font-size: 13px;
   outline: none;
   cursor: pointer;
@@ -466,7 +466,7 @@ onMounted(fetchUsers)
 }
 
 .user-mgmt__select:focus {
-  border-color: #e94560;
+  border-color: var(--gui-error, #e94560);
 }
 
 .user-mgmt__actions-right {
@@ -484,8 +484,8 @@ onMounted(fetchUsers)
   top: 100%;
   right: 0;
   margin-top: 4px;
-  background: #1a1a1a;
-  border: 1px solid #2a2a2a;
+  background: var(--gui-bg-surface-raised, #1a1a1a);
+  border: 1px solid var(--gui-border-default, #2a2a2a);
   border-radius: 8px;
   overflow: hidden;
   z-index: 20;
@@ -507,8 +507,8 @@ onMounted(fetchUsers)
 }
 
 .user-mgmt__dropdown-item:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: #e0e0e0;
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
+  color: var(--gui-text-primary, #e0e0e0);
 }
 
 .dropdown-enter-active,
@@ -527,7 +527,7 @@ onMounted(fetchUsers)
   align-items: center;
   gap: 6px;
   padding: 7px 16px;
-  border: 1px solid #2a2a2a;
+  border: 1px solid var(--gui-border-default, #2a2a2a);
   border-radius: 8px;
   font-size: 13px;
   font-weight: 500;
@@ -541,33 +541,33 @@ onMounted(fetchUsers)
 }
 
 .user-mgmt__btn--secondary {
-  background: #242424;
+  background: var(--gui-bg-surface-raised, #242424);
   color: #a0a0a0;
 }
 
 .user-mgmt__btn--secondary:hover {
   background: #303030;
-  color: #e0e0e0;
+  color: var(--gui-text-primary, #e0e0e0);
 }
 
 .user-mgmt__btn--danger {
-  background: rgba(255, 59, 48, 0.15);
-  color: #ff3b30;
+  background: var(--gui-error-bg, rgba(255, 59, 48, 0.15));
+  color: var(--gui-error, #ff3b30);
 }
 
 .user-mgmt__btn--danger:hover {
-  background: rgba(255, 59, 48, 0.25);
+  background: var(--gui-error-bg, rgba(255, 59, 48, 0.25));
 }
 
 .user-mgmt__btn--ghost {
-  background: #242424;
+  background: var(--gui-bg-surface-raised, #242424);
   color: #a0a0a0;
-  border: 1px solid #2a2a2a;
+  border: 1px solid var(--gui-border-default, #2a2a2a);
 }
 
 .user-mgmt__btn--ghost:hover {
   background: #303030;
-  color: #e0e0e0;
+  color: var(--gui-text-primary, #e0e0e0);
 }
 
 .user-mgmt__badge {
@@ -580,12 +580,12 @@ onMounted(fetchUsers)
 
 .user-mgmt__badge--active {
   background: rgba(52, 199, 89, 0.12);
-  color: #34c759;
+  color: var(--gui-success, #34c759);
 }
 
 .user-mgmt__badge--banned {
-  background: rgba(255, 59, 48, 0.12);
-  color: #ff3b30;
+  background: var(--gui-error-bg, rgba(255, 59, 48, 0.12));
+  color: var(--gui-error, #ff3b30);
 }
 
 .user-mgmt__cell-actions {
@@ -596,9 +596,9 @@ onMounted(fetchUsers)
 
 .user-mgmt__action-btn {
   padding: 4px 10px;
-  border: 1px solid #2a2a2a;
+  border: 1px solid var(--gui-border-default, #2a2a2a);
   border-radius: 5px;
-  background: #242424;
+  background: var(--gui-bg-surface-raised, #242424);
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
@@ -610,16 +610,16 @@ onMounted(fetchUsers)
 }
 
 .user-mgmt__action-btn--warn {
-  color: #ffcc00;
+  color: var(--gui-warning, #ffcc00);
   border-color: rgba(255, 204, 0, 0.2);
 }
 
 .user-mgmt__action-btn--warn:hover {
-  background: rgba(255, 204, 0, 0.12);
+  background: var(--gui-warning-bg, rgba(255, 204, 0, 0.12));
 }
 
 .user-mgmt__action-btn--success {
-  color: #34c759;
+  color: var(--gui-success, #34c759);
   border-color: rgba(52, 199, 89, 0.2);
 }
 
@@ -628,12 +628,12 @@ onMounted(fetchUsers)
 }
 
 .user-mgmt__action-btn--danger {
-  color: #ff3b30;
+  color: var(--gui-error, #ff3b30);
   border-color: rgba(255, 59, 48, 0.2);
 }
 
 .user-mgmt__action-btn--danger:hover {
-  background: rgba(255, 59, 48, 0.12);
+  background: var(--gui-error-bg, rgba(255, 59, 48, 0.12));
 }
 
 .user-mgmt__modal-body {
@@ -650,23 +650,23 @@ onMounted(fetchUsers)
 
 .user-mgmt__modal-label {
   font-size: 12px;
-  color: #6a6a6a;
+  color: var(--gui-text-tertiary, #6a6a6a);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .user-mgmt__modal-value {
   font-size: 14px;
-  color: #e0e0e0;
+  color: var(--gui-text-primary, #e0e0e0);
 }
 
 .user-mgmt__textarea {
   width: 100%;
   padding: 8px 12px;
-  background: #0f0f0f;
-  border: 1px solid #2a2a2a;
+  background: var(--gui-bg-surface, #0f0f0f);
+  border: 1px solid var(--gui-border-default, #2a2a2a);
   border-radius: 8px;
-  color: #e0e0e0;
+  color: var(--gui-text-primary, #e0e0e0);
   font-size: 13px;
   resize: vertical;
   outline: none;
@@ -675,10 +675,10 @@ onMounted(fetchUsers)
 }
 
 .user-mgmt__textarea:focus {
-  border-color: #e94560;
+  border-color: var(--gui-error, #e94560);
 }
 
 .user-mgmt__textarea::placeholder {
-  color: #4a4a4a;
+  color: var(--gui-text-disabled, #4a4a4a);
 }
 </style>

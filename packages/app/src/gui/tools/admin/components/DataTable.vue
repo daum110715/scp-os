@@ -210,10 +210,10 @@ function onSelectRow(id: number) {
 <style scoped>
 .admin-table-wrapper {
   width: 100%;
-  border: 1px solid #2a2a2a;
+  border: 1px solid var(--gui-border-default, #2a2a2a);
   border-radius: 10px;
   overflow: hidden;
-  background: #0f0f0f;
+  background: var(--gui-bg-surface, #0f0f0f);
 }
 
 .admin-table-scroll {
@@ -234,9 +234,9 @@ function onSelectRow(id: number) {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: #6a6a6a;
-  background: #141414;
-  border-bottom: 1px solid #2a2a2a;
+  color: var(--gui-text-tertiary, #6a6a6a);
+  background: var(--gui-bg-surface, #141414);
+  border-bottom: 1px solid var(--gui-border-default, #2a2a2a);
   user-select: none;
 }
 
@@ -256,17 +256,17 @@ function onSelectRow(id: number) {
 }
 
 .admin-table__th--sortable:hover {
-  color: #e0e0e0;
+  color: var(--gui-text-primary, #e0e0e0);
 }
 
 .admin-table__sort-icon {
   display: flex;
   align-items: center;
-  color: #e94560;
+  color: var(--gui-error, #e94560);
 }
 
 .admin-table__sort-inactive {
-  color: #6a6a6a;
+  color: var(--gui-text-tertiary, #6a6a6a);
 }
 
 .admin-table__row {
@@ -278,7 +278,7 @@ function onSelectRow(id: number) {
 }
 
 .admin-table__row:hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.04));
 }
 
 .admin-table__row--selected {
@@ -295,8 +295,8 @@ function onSelectRow(id: number) {
 
 .admin-table__td {
   padding: 10px 16px;
-  color: #e0e0e0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  color: var(--gui-text-primary, #e0e0e0);
+  border-bottom: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.03));
 }
 
 .admin-table__td--checkbox {
@@ -331,7 +331,7 @@ function onSelectRow(id: number) {
 
 .admin-table__checkbox input:checked + .admin-table__checkmark {
   background: #e94560;
-  border-color: #e94560;
+  border-color: var(--gui-error, #e94560);
 }
 
 .admin-table__checkbox input:checked + .admin-table__checkmark::after {
@@ -348,7 +348,7 @@ function onSelectRow(id: number) {
 
 .admin-table__checkbox input:indeterminate + .admin-table__checkmark {
   background: #e94560;
-  border-color: #e94560;
+  border-color: var(--gui-error, #e94560);
 }
 
 .admin-table__checkbox input:indeterminate + .admin-table__checkmark::after {
@@ -396,7 +396,7 @@ function onSelectRow(id: number) {
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  color: #4a4a4a;
+  color: var(--gui-text-disabled, #4a4a4a);
   font-size: 13px;
 }
 </style>

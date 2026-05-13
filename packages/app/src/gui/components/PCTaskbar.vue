@@ -398,10 +398,7 @@ onUnmounted(() => {
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-top: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
-  box-shadow:
-    0 -8px 32px rgba(0, 0, 0, 0.4),
-    0 -2px 8px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  box-shadow: var(--gui-shadow-md, 0 -8px 24px rgba(0, 0, 0, 0.5));
   transition:
     background var(--gui-transition-base, 200ms ease),
     box-shadow var(--gui-transition-base, 200ms ease);
@@ -409,10 +406,7 @@ onUnmounted(() => {
 
 .pc-taskbar:hover {
   background: var(--gui-glass-bg-strong, rgba(44, 44, 46, 0.95));
-  box-shadow:
-    0 -12px 40px rgba(0, 0, 0, 0.5),
-    0 -4px 12px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  box-shadow: var(--gui-shadow-lg, 0 -12px 40px rgba(0, 0, 0, 0.6));
 }
 
 .pc-taskbar__container {
@@ -503,13 +497,11 @@ onUnmounted(() => {
   background: var(--gui-dock-item-hover, rgba(255, 255, 255, 0.08));
   color: var(--gui-text-primary, #ffffff);
   transform: scale(1.08) translateY(-2px);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
 }
 
 .pc-taskbar__app-btn:active {
   transform: scale(0.88) translateY(0);
   opacity: 0.7;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
 }
 
 .pc-taskbar__app-btn--disabled {
@@ -596,12 +588,12 @@ onUnmounted(() => {
   align-items: center;
   gap: 2px;
   padding: 6px 12px;
-  background: rgba(28, 28, 30, 0.92);
+  background: var(--gui-glass-bg-strong, rgba(28, 28, 30, 0.92));
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 0.5px solid rgba(255, 255, 255, 0.08);
+  border: 0.5px solid var(--gui-border-default, rgba(255, 255, 255, 0.08));
   border-radius: 10px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--gui-shadow-ios-dropdown, 0 8px 24px rgba(0, 0, 0, 0.5));
   white-space: nowrap;
   pointer-events: none;
   z-index: 1000;
@@ -614,7 +606,7 @@ onUnmounted(() => {
   left: 50%;
   transform: translateX(-50%);
   border: 5px solid transparent;
-  border-top-color: rgba(28, 28, 30, 0.92);
+  border-top-color: var(--gui-glass-bg-strong, rgba(28, 28, 30, 0.92));
 }
 
 .pc-taskbar__latency-tip__value {
@@ -638,7 +630,7 @@ onUnmounted(() => {
   letter-spacing: 0.02em;
   margin-top: 2px;
   padding-top: 2px;
-  border-top: 0.5px solid rgba(255, 255, 255, 0.06);
+  border-top: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
 }
 
 /* Tooltip transition */
@@ -677,8 +669,8 @@ onUnmounted(() => {
   font-weight: 600;
   line-height: 14px;
   text-align: center;
-  background: rgba(248, 81, 73, 0.9);
-  color: #fff;
+  background: var(--gui-error-bg);
+  color: var(--gui-text-primary, #fff);
 }
 
 .pc-taskbar__time-text {

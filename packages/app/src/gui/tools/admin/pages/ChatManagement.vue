@@ -367,8 +367,8 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 2px;
-  background: #141414;
-  border: 1px solid #2a2a2a;
+  background: var(--gui-bg-surface, #141414);
+  border: 1px solid var(--gui-border-default, #2a2a2a);
   border-radius: 10px;
   padding: 3px;
   width: fit-content;
@@ -379,7 +379,7 @@ onMounted(() => {
   border: none;
   border-radius: 7px;
   background: transparent;
-  color: #6a6a6a;
+  color: var(--gui-text-tertiary, #6a6a6a);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -391,8 +391,8 @@ onMounted(() => {
 }
 
 .chat-mgmt__tab--active {
-  background: #1a1a1a;
-  color: #e0e0e0;
+  background: var(--gui-bg-surface-raised, #1a1a1a);
+  color: var(--gui-text-primary, #e0e0e0);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
 
@@ -410,10 +410,10 @@ onMounted(() => {
 
 .chat-mgmt__select {
   padding: 7px 12px;
-  background: #1a1a1a;
-  border: 1px solid #2a2a2a;
+  background: var(--gui-bg-surface-raised, #1a1a1a);
+  border: 1px solid var(--gui-border-default, #2a2a2a);
   border-radius: 8px;
-  color: #e0e0e0;
+  color: var(--gui-text-primary, #e0e0e0);
   font-size: 13px;
   outline: none;
   cursor: pointer;
@@ -421,7 +421,7 @@ onMounted(() => {
 }
 
 .chat-mgmt__select:focus {
-  border-color: #e94560;
+  border-color: var(--gui-error, #e94560);
 }
 
 .chat-mgmt__msg-content {
@@ -442,12 +442,12 @@ onMounted(() => {
 
 .chat-mgmt__badge--public {
   background: rgba(52, 199, 89, 0.12);
-  color: #34c759;
+  color: var(--gui-success, #34c759);
 }
 
 .chat-mgmt__badge--private {
-  background: rgba(255, 204, 0, 0.12);
-  color: #ffcc00;
+  background: var(--gui-warning-bg, rgba(255, 204, 0, 0.12));
+  color: var(--gui-warning, #ffcc00);
 }
 
 .chat-mgmt__cell-actions {
@@ -458,9 +458,9 @@ onMounted(() => {
 
 .chat-mgmt__action-btn {
   padding: 4px 10px;
-  border: 1px solid #2a2a2a;
+  border: 1px solid var(--gui-border-default, #2a2a2a);
   border-radius: 5px;
-  background: #242424;
+  background: var(--gui-bg-surface-raised, #242424);
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
@@ -472,7 +472,7 @@ onMounted(() => {
 }
 
 .chat-mgmt__action-btn--edit {
-  color: #0a84ff;
+  color: var(--gui-info, #0a84ff);
   border-color: rgba(10, 132, 255, 0.2);
 }
 
@@ -481,12 +481,12 @@ onMounted(() => {
 }
 
 .chat-mgmt__action-btn--danger {
-  color: #ff3b30;
+  color: var(--gui-error, #ff3b30);
   border-color: rgba(255, 59, 48, 0.2);
 }
 
 .chat-mgmt__action-btn--danger:hover {
-  background: rgba(255, 59, 48, 0.12);
+  background: var(--gui-error-bg, rgba(255, 59, 48, 0.12));
 }
 
 .chat-mgmt__btn {
@@ -494,7 +494,7 @@ onMounted(() => {
   align-items: center;
   gap: 6px;
   padding: 7px 16px;
-  border: 1px solid #2a2a2a;
+  border: 1px solid var(--gui-border-default, #2a2a2a);
   border-radius: 8px;
   font-size: 13px;
   font-weight: 500;
@@ -509,7 +509,7 @@ onMounted(() => {
 
 .chat-mgmt__btn--primary {
   background: rgba(233, 69, 96, 0.15);
-  color: #e94560;
+  color: var(--gui-error, #e94560);
   border-color: rgba(233, 69, 96, 0.2);
 }
 
@@ -518,14 +518,14 @@ onMounted(() => {
 }
 
 .chat-mgmt__btn--ghost {
-  background: #242424;
+  background: var(--gui-bg-surface-raised, #242424);
   color: #a0a0a0;
-  border: 1px solid #2a2a2a;
+  border: 1px solid var(--gui-border-default, #2a2a2a);
 }
 
 .chat-mgmt__btn--ghost:hover {
   background: #303030;
-  color: #e0e0e0;
+  color: var(--gui-text-primary, #e0e0e0);
 }
 
 .chat-mgmt__modal-body {
@@ -542,37 +542,37 @@ onMounted(() => {
 
 .chat-mgmt__modal-label {
   font-size: 12px;
-  color: #6a6a6a;
+  color: var(--gui-text-tertiary, #6a6a6a);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .chat-mgmt__input {
   padding: 8px 12px;
-  background: #0f0f0f;
-  border: 1px solid #2a2a2a;
+  background: var(--gui-bg-surface, #0f0f0f);
+  border: 1px solid var(--gui-border-default, #2a2a2a);
   border-radius: 8px;
-  color: #e0e0e0;
+  color: var(--gui-text-primary, #e0e0e0);
   font-size: 13px;
   outline: none;
   transition: border-color 150ms ease;
 }
 
 .chat-mgmt__input:focus {
-  border-color: #e94560;
+  border-color: var(--gui-error, #e94560);
 }
 
 .chat-mgmt__input::placeholder {
-  color: #4a4a4a;
+  color: var(--gui-text-disabled, #4a4a4a);
 }
 
 .chat-mgmt__textarea {
   width: 100%;
   padding: 8px 12px;
-  background: #0f0f0f;
-  border: 1px solid #2a2a2a;
+  background: var(--gui-bg-surface, #0f0f0f);
+  border: 1px solid var(--gui-border-default, #2a2a2a);
   border-radius: 8px;
-  color: #e0e0e0;
+  color: var(--gui-text-primary, #e0e0e0);
   font-size: 13px;
   resize: vertical;
   outline: none;
@@ -581,11 +581,11 @@ onMounted(() => {
 }
 
 .chat-mgmt__textarea:focus {
-  border-color: #e94560;
+  border-color: var(--gui-error, #e94560);
 }
 
 .chat-mgmt__textarea::placeholder {
-  color: #4a4a4a;
+  color: var(--gui-text-disabled, #4a4a4a);
 }
 
 .chat-mgmt__toggle-wrap {
@@ -618,7 +618,7 @@ onMounted(() => {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: #ffffff;
+  background: var(--gui-bg-surface, #ffffff);
   transition: transform 200ms ease;
 }
 

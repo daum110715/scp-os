@@ -51,8 +51,8 @@ const roleLabel = computed(() => {
   justify-content: space-between;
   height: 56px;
   padding: 0 20px;
-  background: #111111;
-  border-bottom: 1px solid #1a1a1a;
+  background: var(--gui-bg-surface, #111111);
+  border-bottom: 1px solid var(--gui-border-subtle, #1a1a1a);
   flex-shrink: 0;
 }
 
@@ -65,7 +65,7 @@ const roleLabel = computed(() => {
 .admin-topbar__page-title {
   font-size: 15px;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--gui-text-primary, #ffffff);
   letter-spacing: -0.01em;
 }
 
@@ -84,13 +84,13 @@ const roleLabel = computed(() => {
 .admin-topbar__username {
   font-size: 13px;
   font-weight: 500;
-  color: #cccccc;
+  color: var(--gui-text-secondary, #cccccc);
 }
 
 .admin-topbar__role {
   font-size: 11px;
   font-weight: 500;
-  color: #e94560;
+  color: var(--gui-error, #e94560);
   background: rgba(233, 69, 96, 0.1);
   padding: 2px 8px;
   border-radius: 4px;
@@ -106,13 +106,13 @@ const roleLabel = computed(() => {
   border: none;
   border-radius: 8px;
   background: transparent;
-  color: #666666;
+  color: var(--gui-text-tertiary, #666666);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .admin-topbar__logout:hover {
   background: rgba(233, 69, 96, 0.1);
-  color: #e94560;
+  color: var(--gui-error, #e94560);
 }
 </style>

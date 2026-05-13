@@ -212,7 +212,7 @@ onMounted(() => {
   flex-direction: column;
   height: 100%;
   overflow: hidden;
-  color: #c9d1d9;
+  color: var(--gui-text-secondary);
   font-size: 13px;
 }
 
@@ -241,8 +241,8 @@ onMounted(() => {
   border-radius: 10px;
   font-size: 11px;
   font-weight: 600;
-  background: rgba(248, 81, 73, 0.9);
-  color: #fff;
+  background: var(--gui-error-bg);
+  color: var(--gui-text-primary, #fff);
 }
 
 .mobile-notif__header-actions {
@@ -259,16 +259,16 @@ onMounted(() => {
   border-radius: 6px;
   font-size: 12px;
   border: none;
-  background: #161b22;
-  color: #8b949e;
+  background: var(--gui-bg-surface);
+  color: var(--gui-text-tertiary);
   cursor: pointer;
 }
 
 .mobile-notif__prefs {
   padding: 12px;
-  background: #161b22;
+  background: var(--gui-bg-surface);
   border-radius: 10px;
-  border: 1px solid #21262d;
+  border: 1px solid var(--gui-border-default);
   margin-bottom: 12px;
   display: flex;
   flex-direction: column;
@@ -283,7 +283,7 @@ onMounted(() => {
 
 .mobile-notif__pref-label {
   font-size: 13px;
-  color: #c9d1d9;
+  color: var(--gui-text-secondary);
 }
 
 .mobile-notif__toggle {
@@ -291,14 +291,14 @@ onMounted(() => {
   height: 22px;
   border-radius: 11px;
   border: none;
-  background: #30363d;
+  background: var(--gui-border-default);
   cursor: pointer;
   position: relative;
   transition: background 0.2s;
 }
 
 .mobile-notif__toggle--on {
-  background: #238636;
+  background: var(--gui-success);
 }
 
 .mobile-notif__toggle-knob {
@@ -341,8 +341,8 @@ onMounted(() => {
 .mobile-notif__spinner {
   width: 20px;
   height: 20px;
-  border: 2px solid #30363d;
-  border-top-color: #58a6ff;
+  border: 2px solid var(--gui-border-default);
+  border-top-color: var(--gui-accent);
   border-radius: 50%;
   animation: mnotif-spin 0.8s linear infinite;
 }
@@ -359,7 +359,7 @@ onMounted(() => {
   align-items: center;
   gap: 8px;
   padding: 40px 20px;
-  color: #484f58;
+  color: var(--gui-text-disabled);
   font-size: 13px;
 }
 
@@ -374,14 +374,14 @@ onMounted(() => {
   align-items: flex-start;
   gap: 10px;
   padding: 12px;
-  background: #161b22;
+  background: var(--gui-bg-surface);
   border-radius: 10px;
   border: 1px solid transparent;
 }
 
 .mobile-notif__item--unread {
   border-left: 3px solid #58a6ff;
-  background: rgba(56, 139, 253, 0.04);
+  background: var(--gui-accent-soft);
 }
 
 .mobile-notif__item-icon {
@@ -395,20 +395,20 @@ onMounted(() => {
 }
 
 .mobile-notif__item-icon--feedback_comment {
-  background: rgba(56, 139, 253, 0.12);
-  color: #58a6ff;
+  background: var(--gui-accent-soft);
+  color: var(--gui-accent);
 }
 .mobile-notif__item-icon--feedback_upvote {
-  background: rgba(46, 160, 67, 0.12);
-  color: #3fb950;
+  background: var(--gui-success-bg);
+  color: var(--gui-success);
 }
 .mobile-notif__item-icon--feedback_downvote {
-  background: rgba(210, 153, 34, 0.12);
-  color: #d29922;
+  background: var(--gui-warning-bg);
+  color: var(--gui-warning);
 }
 .mobile-notif__item-icon--chat_message {
-  background: rgba(163, 113, 247, 0.12);
-  color: #a371f7;
+  background: var(--gui-accent-soft);
+  color: var(--gui-accent);
 }
 
 .mobile-notif__item-content {
@@ -426,19 +426,19 @@ onMounted(() => {
 .mobile-notif__item-type {
   font-size: 11px;
   font-weight: 500;
-  color: #8b949e;
+  color: var(--gui-text-tertiary);
   text-transform: uppercase;
 }
 
 .mobile-notif__item-time {
   font-size: 10px;
-  color: #484f58;
+  color: var(--gui-text-disabled);
 }
 
 .mobile-notif__item-title {
   font-size: 13px;
   font-weight: 500;
-  color: #c9d1d9;
+  color: var(--gui-text-secondary);
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -447,7 +447,7 @@ onMounted(() => {
 
 .mobile-notif__item-body {
   font-size: 12px;
-  color: #8b949e;
+  color: var(--gui-text-tertiary);
   margin: 2px 0 0;
   overflow: hidden;
   text-overflow: ellipsis;

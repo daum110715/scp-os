@@ -92,8 +92,8 @@ function getIconSvg(icon: string): string {
 .admin-sidebar {
   width: 240px;
   height: 100%;
-  background: #0f0f0f;
-  border-right: 1px solid #1a1a1a;
+  background: var(--gui-bg-surface, #0f0f0f);
+  border-right: 1px solid var(--gui-border-subtle, #1a1a1a);
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
@@ -110,7 +110,7 @@ function getIconSvg(icon: string): string {
   align-items: center;
   gap: 10px;
   padding: 16px;
-  border-bottom: 1px solid #1a1a1a;
+  border-bottom: 1px solid var(--gui-border-subtle, #1a1a1a);
   height: 56px;
   box-sizing: border-box;
 }
@@ -122,15 +122,15 @@ function getIconSvg(icon: string): string {
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: rgba(233, 69, 96, 0.1);
-  color: #e94560;
+  background: var(--gui-error-bg, rgba(233, 69, 96, 0.1));
+  color: var(--gui-error, #e94560);
   flex-shrink: 0;
 }
 
 .admin-sidebar__brand {
   font-size: 14px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--gui-text-primary, #ffffff);
   letter-spacing: -0.01em;
   white-space: nowrap;
 }
@@ -144,7 +144,7 @@ function getIconSvg(icon: string): string {
   border: none;
   border-radius: 6px;
   background: transparent;
-  color: #666666;
+  color: var(--gui-text-tertiary, #666666);
   cursor: pointer;
   margin-left: auto;
   flex-shrink: 0;
@@ -152,8 +152,8 @@ function getIconSvg(icon: string): string {
 }
 
 .admin-sidebar__toggle:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: #aaaaaa;
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
+  color: var(--gui-text-secondary, #aaaaaa);
 }
 
 .admin-sidebar__nav {
@@ -173,7 +173,7 @@ function getIconSvg(icon: string): string {
   border: none;
   border-radius: 8px;
   background: transparent;
-  color: #888888;
+  color: var(--gui-text-tertiary, #888888);
   cursor: pointer;
   font-size: 13px;
   font-weight: 500;
@@ -183,18 +183,18 @@ function getIconSvg(icon: string): string {
 }
 
 .admin-sidebar__item:hover {
-  background: rgba(255, 255, 255, 0.04);
-  color: #cccccc;
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.04));
+  color: var(--gui-text-secondary, #cccccc);
 }
 
 .admin-sidebar__item--active {
-  background: rgba(233, 69, 96, 0.1);
-  color: #e94560;
+  background: var(--gui-error-bg, rgba(233, 69, 96, 0.1));
+  color: var(--gui-error, #e94560);
 }
 
 .admin-sidebar__item--active:hover {
   background: rgba(233, 69, 96, 0.15);
-  color: #e94560;
+  color: var(--gui-error, #e94560);
 }
 
 .admin-sidebar__icon {

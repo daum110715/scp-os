@@ -42,7 +42,7 @@
 
           <template v-else>
             <!-- DEBUG: rooms count -->
-            <div v-if="rooms.length === 0" style="padding: 16px; color: #ff3b30; font-size: 12px;">
+            <div v-if="rooms.length === 0" style="padding: 16px; color: var(--gui-error, #ff3b30); font-size: 12px;">
               DEBUG: rooms.length = {{ rooms.length }}<br>
               query = "{{ roomSearchQuery }}"<br>
               filtered = {{ filteredRooms.length }}
@@ -107,7 +107,7 @@
       <!-- View: Chat -->
       <div v-else class="mobile-chat__chat-view">
         <div ref="messagesRef" class="mobile-chat__messages">
-          <div v-if="messages.length > 0 || loading" style="padding: 4px 8px; font-size: 10px; color: #666; background: rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.1);">
+          <div v-if="messages.length > 0 || loading" style="padding: 4px 8px; font-size: 10px; color: #666; background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.05)); border-bottom: 1px solid rgba(255,255,255,0.1);">
             DEBUG: 房间={{ currentRoomId }} 消息数={{ messages.length }} 最后ID={{ messages[messages.length-1]?.id || '?' }}
           </div>
           <div v-if="messages.length === 0 && !loading" class="mobile-chat__empty">
@@ -896,7 +896,7 @@ async function saveNickname() {
   padding: 0 6px;
   border-radius: 10px;
   background: var(--chat-error, #ff3b30);
-  color: #ffffff;
+  color: var(--gui-text-primary, #ffffff);
   font-size: 12px;
   font-weight: 600;
   display: flex;
@@ -1022,7 +1022,7 @@ async function saveNickname() {
 
 .chat-bubble--self .chat-bubble__content {
   background: var(--chat-accent, #007aff);
-  color: #ffffff;
+  color: var(--gui-text-primary, #ffffff);
   border-bottom-right-radius: 4px;
 }
 
@@ -1091,7 +1091,7 @@ async function saveNickname() {
 .mobile-chat__rate-warning {
   padding: 8px 12px;
   background: var(--chat-error, #ff3b30);
-  color: #ffffff;
+  color: var(--gui-text-primary, #ffffff);
   font-size: 13px;
   text-align: center;
 }
@@ -1103,7 +1103,7 @@ async function saveNickname() {
   gap: 5px;
   padding: 3px 10px;
   font-size: 10px;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.02));
   border-top: 0.5px solid rgba(255, 255, 255, 0.04);
 }
 
@@ -1131,7 +1131,7 @@ async function saveNickname() {
 }
 
 .mobile-chat__ws-text {
-  color: rgba(255, 255, 255, 0.35);
+  color: var(--gui-text-tertiary, rgba(255, 255, 255, 0.35));
   font-family: 'SF Mono', 'JetBrains Mono', monospace;
 }
 
@@ -1224,7 +1224,7 @@ async function saveNickname() {
   border-radius: 50%;
   border: none;
   background: var(--chat-accent, #007aff);
-  color: #ffffff;
+  color: var(--gui-text-primary, #ffffff);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1246,8 +1246,8 @@ async function saveNickname() {
 .mobile-chat__spinner {
   width: 16px;
   height: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #ffffff;
+  border: 2px solid var(--gui-border-strong, rgba(255, 255, 255, 0.3));
+  border-top-color: var(--gui-text-primary, #ffffff);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -1262,7 +1262,7 @@ async function saveNickname() {
 .mobile-chat__dialog-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--gui-backdrop-bg, rgba(0, 0, 0, 0.5));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1356,15 +1356,15 @@ async function saveNickname() {
 
 .mobile-chat__dialog-success {
   font-size: 13px;
-  color: #34c759;
+  color: var(--gui-success, #34c759);
   margin-bottom: 8px;
 }
 
 .mobile-chat__dialog-spinner {
   width: 16px;
   height: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #ffffff;
+  border: 2px solid var(--gui-border-strong, rgba(255, 255, 255, 0.3));
+  border-top-color: var(--gui-text-primary, #ffffff);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   margin: 0 auto;

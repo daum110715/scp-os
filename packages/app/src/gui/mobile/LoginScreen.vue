@@ -464,7 +464,7 @@ onMounted(() => {
   font-size: var(--gui-font-lg, 15px);
   font-weight: var(--gui-font-weight-medium, 500);
   color: var(--gui-text-primary, #ffffff);
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
   border: 1.5px solid transparent;
   border-radius: var(--gui-radius-lg, 12px);
   outline: none;
@@ -478,8 +478,8 @@ onMounted(() => {
 }
 
 .login-screen__input:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.08);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.08));
+  border-color: var(--gui-border-default, rgba(255, 255, 255, 0.08));
 }
 
 .login-screen__input--focused,
@@ -523,7 +523,7 @@ onMounted(() => {
 
 .login-screen__input-clear:hover {
   color: var(--gui-text-primary, #ffffff);
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--gui-bg-surface-active, rgba(255, 255, 255, 0.1));
 }
 
 .login-screen__input-clear:active {

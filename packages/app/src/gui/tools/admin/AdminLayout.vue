@@ -88,8 +88,8 @@ function handleLogout() {
   display: flex;
   width: 100%;
   height: 100%;
-  background: #0a0a0a;
-  color: #ffffff;
+  background: var(--gui-bg-base, #0a0a0a);
+  color: var(--gui-text-primary, #ffffff);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   overflow: hidden;
 }
@@ -105,8 +105,8 @@ function handleLogout() {
 .admin-layout__spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid #1a1a1a;
-  border-top-color: #e94560;
+  border: 3px solid var(--gui-border-subtle, #1a1a1a);
+  border-top-color: var(--gui-error, #e94560);
   border-radius: 50%;
   animation: adminLayoutSpin 0.8s linear infinite;
 }
@@ -128,7 +128,7 @@ function handleLogout() {
 .admin-layout__page-title {
   font-size: 15px;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--gui-text-primary, #ffffff);
   letter-spacing: -0.01em;
 }
 

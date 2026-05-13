@@ -111,7 +111,7 @@ defineEmits<{
 }
 
 .gui-btn:hover::after {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.04));
 }
 
 .gui-btn:active:not(.gui-btn--disabled) {
@@ -152,7 +152,7 @@ defineEmits<{
 }
 
 .gui-btn--primary:hover::after {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--gui-bg-surface-active, rgba(255, 255, 255, 0.1));
 }
 
 .gui-btn--secondary {

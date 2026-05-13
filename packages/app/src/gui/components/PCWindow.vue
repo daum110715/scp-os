@@ -308,14 +308,14 @@ function handleWindowResize() {
   position: fixed;
   display: flex;
   flex-direction: column;
-  background: var(--gui-window-bg, #1c1c1e);
+  background: var(--gui-bg-surface);
   border: 0.5px solid var(--gui-window-border, rgba(255, 255, 255, 0.08));
   border-radius: var(--gui-radius-xl, 14px);
   overflow: hidden;
   animation: windowOpenSpring 0.45s
     var(--gui-transition-ios-spring, 400ms cubic-bezier(0.32, 0.72, 0, 1)) both;
   will-change: transform, opacity, box-shadow;
-  box-shadow: var(--gui-shadow-ios-card, 0 2px 12px rgba(0, 0, 0, 0.4), 0 0 1px rgba(0, 0, 0, 0.3));
+  box-shadow: var(--gui-shadow-ios-card, 0 2px 12px rgba(0, 0, 0, 0.4));
   transition:
     border-color var(--gui-transition-base, 200ms ease),
     box-shadow var(--gui-transition-base, 200ms ease),
@@ -323,11 +323,7 @@ function handleWindowResize() {
 }
 
 .pc-window:hover {
-  box-shadow: var(
-    --gui-shadow-ios-modal,
-    0 12px 40px rgba(0, 0, 0, 0.6),
-    0 0 1px rgba(255, 255, 255, 0.06)
-  );
+  box-shadow: var(--gui-shadow-ios-modal, 0 12px 40px rgba(0, 0, 0, 0.6));
   transform: translateY(-2px);
 }
 
@@ -344,16 +340,12 @@ function handleWindowResize() {
 
 .pc-window--focused {
   border-color: var(--gui-window-border-active, rgba(255, 255, 255, 0.12));
-  box-shadow: var(
-    --gui-shadow-ios-modal,
-    0 20px 60px rgba(0, 0, 0, 0.7),
-    0 0 1px rgba(255, 255, 255, 0.06)
-  );
+  box-shadow: var(--gui-shadow-ios-modal, 0 20px 60px rgba(0, 0, 0, 0.7));
 }
 
 .pc-window:not(.pc-window--focused) {
   opacity: 0.95;
-  box-shadow: var(--gui-shadow-ios-card, 0 2px 12px rgba(0, 0, 0, 0.4), 0 0 1px rgba(0, 0, 0, 0.3));
+  box-shadow: var(--gui-shadow-ios-card, 0 2px 12px rgba(0, 0, 0, 0.4));
 }
 
 .pc-window--minimized {
@@ -372,7 +364,7 @@ function handleWindowResize() {
   justify-content: space-between;
   height: 44px;
   padding: 0 var(--gui-spacing-base, 16px);
-  background: var(--gui-glass-bg-subtle, rgba(44, 44, 46, 0.6));
+  background: var(--gui-glass-bg);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-bottom: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
@@ -382,12 +374,10 @@ function handleWindowResize() {
   transition:
     background var(--gui-transition-fast, 120ms ease),
     box-shadow var(--gui-transition-fast, 120ms ease);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
 .pc-window__header:hover {
   background: var(--gui-glass-bg-strong, rgba(44, 44, 46, 0.8));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .pc-window__header:active {
@@ -446,32 +436,24 @@ function handleWindowResize() {
   transition: all var(--gui-transition-snappy, 250ms cubic-bezier(0.2, 0.9, 0.3, 1.1));
   -webkit-tap-highlight-color: transparent;
   overflow: hidden;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    0 1px 2px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .pc-window__btn--icon:hover {
   transform: scale(1.1);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.15),
-    0 2px 4px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .pc-window__btn--icon:active {
   transform: scale(0.9);
   filter: brightness(0.9);
-  box-shadow:
-    inset 0 1px 0 rgba(0, 0, 0, 0.2),
-    0 1px 2px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 /* Minimize button - Yellow */
 .pc-window__btn--minimize {
   background: var(--gui-warning, #ffcc00);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.15),
-    0 1px 2px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .pc-window__btn--minimize:hover {
@@ -486,9 +468,7 @@ function handleWindowResize() {
 /* Maximize button - Green */
 .pc-window__btn--maximize {
   background: var(--gui-success, #34c759);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.15),
-    0 1px 2px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .pc-window__btn--maximize:hover {
@@ -503,9 +483,7 @@ function handleWindowResize() {
 /* Close button - Red */
 .pc-window__btn--close {
   background: var(--gui-error, #ff3b30);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.15),
-    0 1px 2px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .pc-window__btn--close:hover {
@@ -514,7 +492,7 @@ function handleWindowResize() {
 }
 
 .pc-window__btn--close:hover svg {
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--gui-text-primary, rgba(255, 255, 255, 0.9));
 }
 
 .pc-window__btn--icon:active {

@@ -444,6 +444,7 @@ function detectLanguage(fileName: string): any {
 }
 
 function createTheme(): any {
+  const isLight = document.documentElement.classList.contains('light')
   return EditorView.theme({
     '&': {
       height: '100%',
@@ -467,10 +468,10 @@ function createTheme(): any {
       borderLeftWidth: '2px',
     },
     '.cm-activeLine': {
-      backgroundColor: 'rgba(255, 255, 255, 0.03)',
+      backgroundColor: isLight ? 'rgba(0, 0, 0, 0.03)' : 'rgba(255, 255, 255, 0.03)',
     },
     '.cm-activeLineGutter': {
-      backgroundColor: 'rgba(255, 255, 255, 0.04)',
+      backgroundColor: isLight ? 'rgba(0, 0, 0, 0.04)' : 'rgba(255, 255, 255, 0.04)',
     },
     '.cm-gutters': {
       backgroundColor: 'var(--gui-editor-bg, #0a0a0a)',
@@ -519,7 +520,7 @@ function createTheme(): any {
     '.cm-scroller': {
       overflow: 'auto',
       scrollbarWidth: 'thin',
-      scrollbarColor: 'rgba(255, 255, 255, 0.08) transparent',
+      scrollbarColor: isLight ? 'rgba(0, 0, 0, 0.15) transparent' : 'rgba(255, 255, 255, 0.08) transparent',
     },
     '.cm-scroller::-webkit-scrollbar': {
       width: '6px',
@@ -529,11 +530,11 @@ function createTheme(): any {
       background: 'transparent',
     },
     '.cm-scroller::-webkit-scrollbar-thumb': {
-      background: 'rgba(255, 255, 255, 0.06)',
+      background: isLight ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.06)',
       borderRadius: '3px',
     },
     '.cm-scroller::-webkit-scrollbar-thumb:hover': {
-      background: 'rgba(255, 255, 255, 0.12)',
+      background: isLight ? 'rgba(0, 0, 0, 0.2)' : 'rgba(255, 255, 255, 0.12)',
     },
     '.cm-panels': {
       display: 'none',
@@ -550,7 +551,7 @@ function createTheme(): any {
       },
       '& > ul > li[aria-selected]': {
         background: 'rgba(233, 69, 96, 0.15)',
-        color: '#fff',
+        color: 'var(--gui-text-primary, #fff)',
       },
     },
   })
@@ -959,7 +960,7 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--gui-window-bg, #0e0e0e);
+  background: var(--gui-bg-surface);
   font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
 }
 

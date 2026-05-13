@@ -672,9 +672,9 @@ async function runSpeedTest() {
 .mdash {
   position: relative;
   min-height: 100%;
-  background: #050508;
+  background: var(--gui-bg-base, #050508);
   font-family: 'SF Mono', 'JetBrains Mono', 'Cascadia Code', monospace;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--gui-text-primary, rgba(255, 255, 255, 0.9));
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
@@ -773,6 +773,11 @@ async function runSpeedTest() {
   box-shadow: 0 0 3px rgba(255, 255, 255, 0.12);
 }
 
+.light .mdash__particle {
+  background: rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.08);
+}
+
 @keyframes mParticleFloat {
   0% {
     transform: translateY(0) translateX(0);
@@ -853,7 +858,7 @@ async function runSpeedTest() {
 .mdash__status-text {
   font-size: 11px;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.55);
+  color: var(--gui-text-secondary, rgba(255, 255, 255, 0.55));
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
@@ -867,7 +872,7 @@ async function runSpeedTest() {
 .mdash__tab-pills {
   display: flex;
   gap: 2px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.04));
   border-radius: 8px;
   padding: 2px;
 }
@@ -877,7 +882,7 @@ async function runSpeedTest() {
   border-radius: 6px;
   border: none;
   background: transparent;
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--gui-text-tertiary, rgba(255, 255, 255, 0.3));
   font-size: 10px;
   font-weight: 700;
   cursor: pointer;
@@ -891,8 +896,8 @@ async function runSpeedTest() {
   transform: scale(0.95);
 }
 .mdash__pill--active {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  background: var(--gui-bg-surface-active, rgba(255, 255, 255, 0.1));
+  color: var(--gui-text-primary, #fff);
 }
 
 .mdash__refresh-btn {
@@ -900,8 +905,8 @@ async function runSpeedTest() {
   height: 30px;
   border-radius: 8px;
   border: none;
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.4);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.05));
+  color: var(--gui-text-tertiary, rgba(255, 255, 255, 0.4));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -911,7 +916,7 @@ async function runSpeedTest() {
 }
 
 .mdash__refresh-btn:active {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--gui-bg-surface-active, rgba(255, 255, 255, 0.1));
   transform: scale(0.9);
 }
 .mdash__refresh-btn--spin {
@@ -935,12 +940,12 @@ async function runSpeedTest() {
 
 .mdash__meta-item {
   font-size: 9px;
-  color: rgba(255, 255, 255, 0.18);
+  color: var(--gui-text-disabled, rgba(255, 255, 255, 0.18));
   letter-spacing: 0.04em;
 }
 
 .mdash__meta-sep {
-  color: rgba(255, 255, 255, 0.08);
+  color: var(--gui-text-disabled, rgba(255, 255, 255, 0.08));
 }
 
 .mdash__tab {
@@ -956,7 +961,7 @@ async function runSpeedTest() {
   align-items: center;
   gap: 10px;
   padding: 14px;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.02));
   border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: 14px;
   backdrop-filter: blur(16px);
@@ -990,7 +995,7 @@ async function runSpeedTest() {
   align-items: center;
   gap: 3px;
   padding: 6px 2px;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.02));
   border: 1px solid rgba(255, 255, 255, 0.03);
   border-radius: 8px;
   transition: all 0.2s ease;
@@ -998,7 +1003,7 @@ async function runSpeedTest() {
 
 .mdash__mini-stat:active {
   transform: scale(0.95);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.04));
 }
 
 .mdash__mini-gauge {
@@ -1023,14 +1028,14 @@ async function runSpeedTest() {
 .mdash__mini-stat-val small {
   font-size: 8px;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--gui-text-tertiary, rgba(255, 255, 255, 0.3));
   margin-left: 1px;
 }
 
 .mdash__mini-stat-lbl {
   display: block;
   font-size: 7px;
-  color: rgba(255, 255, 255, 0.2);
+  color: var(--gui-text-disabled, rgba(255, 255, 255, 0.2));
   margin-top: 2px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -1043,7 +1048,7 @@ async function runSpeedTest() {
 }
 
 .mdash__chart-card {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.02));
   border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: 12px;
   padding: 10px;
@@ -1056,7 +1061,7 @@ async function runSpeedTest() {
   gap: 5px;
   font-size: 10px;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--gui-text-tertiary, rgba(255, 255, 255, 0.5));
   margin-bottom: 6px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -1073,7 +1078,7 @@ async function runSpeedTest() {
   margin-left: auto;
   font-size: 8px;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.18);
+  color: var(--gui-text-disabled, rgba(255, 255, 255, 0.18));
 }
 
 .mdash__chart-body {
@@ -1122,7 +1127,7 @@ async function runSpeedTest() {
   flex-direction: column;
   gap: 4px;
   padding: 8px 10px;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.02));
   border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: 10px;
   animation: mFadeIn 0.35s ease both;
@@ -1138,7 +1143,7 @@ async function runSpeedTest() {
 
 .mdash__metric-label {
   font-size: 9px;
-  color: rgba(255, 255, 255, 0.25);
+  color: var(--gui-text-disabled, rgba(255, 255, 255, 0.25));
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -1146,12 +1151,12 @@ async function runSpeedTest() {
 .mdash__metric-value {
   font-size: 10px;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--gui-text-secondary, rgba(255, 255, 255, 0.7));
 }
 
 .mdash__metric-bar {
   height: 2px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.04));
   border-radius: 1px;
   overflow: hidden;
 }
@@ -1164,7 +1169,7 @@ async function runSpeedTest() {
 }
 
 .mdash__card {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.02));
   border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: 12px;
   padding: 12px;
@@ -1176,7 +1181,7 @@ async function runSpeedTest() {
   justify-content: space-between;
   font-size: 11px;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--gui-text-tertiary, rgba(255, 255, 255, 0.5));
   text-transform: uppercase;
   letter-spacing: 0.06em;
   margin-bottom: 10px;
@@ -1197,10 +1202,10 @@ async function runSpeedTest() {
 }
 
 .mdash__info-row span:first-child {
-  color: rgba(255, 255, 255, 0.25);
+  color: var(--gui-text-disabled, rgba(255, 255, 255, 0.25));
 }
 .mdash__info-row span:last-child {
-  color: rgba(255, 255, 255, 0.65);
+  color: var(--gui-text-secondary, rgba(255, 255, 255, 0.65));
   font-weight: 600;
 }
 
@@ -1214,7 +1219,7 @@ async function runSpeedTest() {
   position: relative;
   width: 28px;
   height: 48px;
-  border: 2px solid rgba(255, 255, 255, 0.25);
+  border: 2px solid var(--gui-border-strong, rgba(255, 255, 255, 0.25));
   border-radius: 5px;
   padding: 2px;
   overflow: hidden;
@@ -1253,7 +1258,7 @@ async function runSpeedTest() {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--gui-text-secondary, rgba(255, 255, 255, 0.7));
 }
 
 .mdash__battery-detail {
@@ -1265,12 +1270,12 @@ async function runSpeedTest() {
 .mdash__battery-pct {
   font-size: 18px;
   font-weight: 800;
-  color: #fff;
+  color: var(--gui-text-primary, #fff);
 }
 
 .mdash__battery-state {
   font-size: 9px;
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--gui-text-tertiary, rgba(255, 255, 255, 0.3));
 }
 
 .mdash__alerts {
@@ -1287,17 +1292,17 @@ async function runSpeedTest() {
 }
 
 .mdash__alert--warn {
-  border-left-color: #ff9500;
+  border-left-color: var(--gui-warning);
   background: rgba(255, 149, 0, 0.04);
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--gui-text-tertiary, rgba(255, 255, 255, 0.5));
 }
 .mdash__alert--bad {
-  border-left-color: #ff3b30;
+  border-left-color: var(--gui-error, #ff3b30);
   background: rgba(255, 59, 48, 0.04);
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--gui-text-tertiary, rgba(255, 255, 255, 0.5));
 }
 .mdash__alert--ok {
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--gui-text-tertiary, rgba(255, 255, 255, 0.3));
   padding: 5px 0;
 }
 
@@ -1311,26 +1316,26 @@ async function runSpeedTest() {
 }
 
 .status-online {
-  color: #34c759;
+  color: var(--gui-success, #34c759);
 }
 .status-slow {
   color: #ff9500;
 }
 .status-offline {
-  color: #ff3b30;
+  color: var(--gui-error, #ff3b30);
 }
 
 .mdash__network-badge.status-online {
   background: rgba(52, 199, 89, 0.12);
-  color: #34c759;
+  color: var(--gui-success, #34c759);
 }
 .mdash__network-badge.status-slow {
   background: rgba(255, 149, 0, 0.12);
   color: #ff9500;
 }
 .mdash__network-badge.status-offline {
-  background: rgba(255, 59, 48, 0.12);
-  color: #ff3b30;
+  background: var(--gui-error-bg, rgba(255, 59, 48, 0.12));
+  color: var(--gui-error, #ff3b30);
 }
 
 .mdash__network-grid {
@@ -1348,7 +1353,7 @@ async function runSpeedTest() {
 
 .mdash__network-key {
   font-size: 8px;
-  color: rgba(255, 255, 255, 0.22);
+  color: var(--gui-text-disabled, rgba(255, 255, 255, 0.22));
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -1356,7 +1361,7 @@ async function runSpeedTest() {
 .mdash__network-val {
   font-size: 11px;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.75);
+  color: var(--gui-text-secondary, rgba(255, 255, 255, 0.75));
 }
 
 .mdash__speed-btn {
@@ -1367,9 +1372,9 @@ async function runSpeedTest() {
   gap: 6px;
   padding: 10px;
   border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  background: rgba(255, 255, 255, 0.03);
-  color: rgba(255, 255, 255, 0.5);
+  border: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.03));
+  color: var(--gui-text-tertiary, rgba(255, 255, 255, 0.5));
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
@@ -1380,7 +1385,7 @@ async function runSpeedTest() {
 }
 
 .mdash__speed-btn:active:not(:disabled) {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.08));
   transform: scale(0.97);
 }
 .mdash__speed-btn:disabled {
@@ -1391,7 +1396,7 @@ async function runSpeedTest() {
 .mdash__speed-spinner {
   width: 12px;
   height: 12px;
-  border: 2px solid rgba(255, 255, 255, 0.08);
+  border: 2px solid var(--gui-border-default, rgba(255, 255, 255, 0.08));
   border-top: 2px solid #fff;
   border-radius: 50%;
   animation: mSpin 0.8s linear infinite;
@@ -1416,7 +1421,7 @@ async function runSpeedTest() {
 
 .mdash__speed-item-lbl {
   font-size: 8px;
-  color: rgba(255, 255, 255, 0.25);
+  color: var(--gui-text-disabled, rgba(255, 255, 255, 0.25));
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
@@ -1424,13 +1429,13 @@ async function runSpeedTest() {
 .mdash__speed-item-val {
   font-size: 13px;
   font-weight: 800;
-  color: #fff;
+  color: var(--gui-text-primary, #fff);
 }
 
 .mdash__speed-item-val small {
   font-size: 8px;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.25);
+  color: var(--gui-text-disabled, rgba(255, 255, 255, 0.25));
 }
 
 .mdash__footer {
@@ -1445,7 +1450,7 @@ async function runSpeedTest() {
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--gui-bg-surface-active, rgba(255, 255, 255, 0.1));
   transition: all 0.3s ease;
 }
 
@@ -1469,7 +1474,7 @@ async function runSpeedTest() {
 
 .mdash__footer-text {
   font-size: 9px;
-  color: rgba(255, 255, 255, 0.18);
+  color: var(--gui-text-disabled, rgba(255, 255, 255, 0.18));
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }

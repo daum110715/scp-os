@@ -258,8 +258,8 @@ watch(containerRef, (el, oldEl) => {
 .admin-trend-chart__tooltip {
   position: absolute;
   transform: translateX(-50%);
-  background: #1a1a1a;
-  border: 1px solid #2a2a2a;
+  background: var(--gui-bg-surface-raised, #1a1a1a);
+  border: 1px solid var(--gui-border-default, #2a2a2a);
   border-radius: 8px;
   padding: 6px 10px;
   pointer-events: none;
@@ -270,13 +270,13 @@ watch(containerRef, (el, oldEl) => {
 
 .admin-trend-chart__tooltip-date {
   font-size: 10px;
-  color: #6a6a6a;
+  color: var(--gui-text-tertiary, #6a6a6a);
   margin-bottom: 2px;
 }
 
 .admin-trend-chart__tooltip-value {
   font-size: 14px;
   font-weight: 600;
-  color: #e0e0e0;
+  color: var(--gui-text-primary, #e0e0e0);
 }
 </style>

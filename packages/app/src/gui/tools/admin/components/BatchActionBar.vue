@@ -91,8 +91,8 @@ defineEmits<{
   justify-content: space-between;
   gap: 16px;
   padding: 10px 16px;
-  background: #1a1a1a;
-  border: 1px solid #2a2a2a;
+  background: var(--gui-bg-surface-raised, #1a1a1a);
+  border: 1px solid var(--gui-border-default, #2a2a2a);
   border-radius: 10px;
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
 }
@@ -106,13 +106,13 @@ defineEmits<{
 .admin-batch-bar__count {
   font-size: 13px;
   font-weight: 500;
-  color: #e94560;
+  color: var(--gui-error, #e94560);
   white-space: nowrap;
 }
 
 .admin-batch-bar__clear {
   font-size: 12px;
-  color: #6a6a6a;
+  color: var(--gui-text-tertiary, #6a6a6a);
   background: none;
   border: none;
   cursor: pointer;
@@ -124,7 +124,7 @@ defineEmits<{
 
 .admin-batch-bar__clear:hover {
   color: #a0a0a0;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
 }
 
 .admin-batch-bar__actions {
@@ -138,9 +138,9 @@ defineEmits<{
   align-items: center;
   gap: 6px;
   padding: 6px 14px;
-  border: 1px solid #2a2a2a;
+  border: 1px solid var(--gui-border-default, #2a2a2a);
   border-radius: 6px;
-  background: #242424;
+  background: var(--gui-bg-surface-raised, #242424);
   color: #a0a0a0;
   font-size: 12px;
   font-weight: 500;
@@ -151,7 +151,7 @@ defineEmits<{
 
 .admin-batch-bar__action:hover {
   background: #303030;
-  color: #e0e0e0;
+  color: var(--gui-text-primary, #e0e0e0);
 }
 
 .admin-batch-bar__action:active {
@@ -159,9 +159,9 @@ defineEmits<{
 }
 
 .admin-batch-bar__action--danger {
-  background: rgba(255, 59, 48, 0.1);
+  background: var(--gui-error-bg, rgba(255, 59, 48, 0.1));
   border-color: rgba(255, 59, 48, 0.2);
-  color: #ff3b30;
+  color: var(--gui-error, #ff3b30);
 }
 
 .admin-batch-bar__action--danger:hover {
@@ -170,9 +170,9 @@ defineEmits<{
 }
 
 .admin-batch-bar__action--warning {
-  background: rgba(255, 204, 0, 0.1);
+  background: var(--gui-warning-bg, rgba(255, 204, 0, 0.1));
   border-color: rgba(255, 204, 0, 0.2);
-  color: #ffcc00;
+  color: var(--gui-warning, #ffcc00);
 }
 
 .admin-batch-bar__action--warning:hover {

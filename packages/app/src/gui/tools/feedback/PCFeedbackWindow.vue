@@ -706,7 +706,7 @@ function getCategoryIcon(category: string): string {
 
 .pc-feedback__category--active {
   background: var(--gui-accent, #007aff);
-  color: #ffffff;
+  color: var(--gui-text-primary, #ffffff);
   border-color: var(--gui-accent, #007aff);
 }
 
@@ -717,7 +717,7 @@ function getCategoryIcon(category: string): string {
   border-radius: 12px;
   border: none;
   background: var(--gui-accent, #007aff);
-  color: #ffffff;
+  color: var(--gui-text-primary, #ffffff);
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
@@ -837,7 +837,7 @@ function getCategoryIcon(category: string): string {
   height: 32px;
   border-radius: 50%;
   background: var(--gui-accent, #007aff);
-  color: #ffffff;
+  color: var(--gui-text-primary, #ffffff);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -915,13 +915,13 @@ function getCategoryIcon(category: string): string {
 }
 
 .pc-feedback__vote-btn--up {
-  color: #34c759;
+  color: var(--gui-success, #34c759);
   background: rgba(52, 199, 89, 0.1);
 }
 
 .pc-feedback__vote-btn--down {
-  color: #ff3b30;
-  background: rgba(255, 59, 48, 0.1);
+  color: var(--gui-error, #ff3b30);
+  background: var(--gui-error-bg, rgba(255, 59, 48, 0.1));
 }
 
 .pc-feedback__vote-btn:active {
@@ -997,7 +997,7 @@ function getCategoryIcon(category: string): string {
   height: 28px;
   border-radius: 50%;
   background: var(--gui-accent, #007aff);
-  color: #ffffff;
+  color: var(--gui-text-primary, #ffffff);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1060,7 +1060,7 @@ function getCategoryIcon(category: string): string {
   border-radius: 10px;
   border: none;
   background: var(--gui-accent, #007aff);
-  color: #ffffff;
+  color: var(--gui-text-primary, #ffffff);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;

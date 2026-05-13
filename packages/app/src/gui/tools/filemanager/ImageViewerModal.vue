@@ -256,7 +256,7 @@ function close() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.9);
+  background: var(--gui-backdrop-bg, rgba(0, 0, 0, 0.9));
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
 }
@@ -292,7 +292,7 @@ function close() {
   justify-content: space-between;
   padding: 12px 16px;
   padding-top: max(12px, env(safe-area-inset-top, 12px));
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--gui-backdrop-bg, rgba(0, 0, 0, 0.6));
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
@@ -300,7 +300,7 @@ function close() {
 .fm-image-viewer__title {
   font-size: 14px;
   font-weight: 500;
-  color: #ffffff;
+  color: var(--gui-text-primary, #ffffff);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -321,8 +321,8 @@ function close() {
   height: 34px;
   border-radius: 8px;
   border: none;
-  background: rgba(255, 255, 255, 0.15);
-  color: #ffffff;
+  background: var(--gui-bg-surface-active, rgba(255, 255, 255, 0.15));
+  color: var(--gui-text-primary, #ffffff);
   cursor: pointer;
   transition: background 0.2s ease;
   -webkit-tap-highlight-color: transparent;
@@ -361,15 +361,15 @@ function close() {
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--gui-text-secondary, rgba(255, 255, 255, 0.6));
   font-size: 14px;
 }
 
 .fm-image-viewer__spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid rgba(255, 255, 255, 0.2);
-  border-top-color: #ffffff;
+  border: 3px solid var(--gui-border-default, rgba(255, 255, 255, 0.2));
+  border-top-color: var(--gui-text-primary, #ffffff);
   border-radius: 50%;
   animation: fm-spin 0.8s linear infinite;
 }
@@ -393,11 +393,11 @@ function close() {
   gap: 12px;
   padding: 12px 16px;
   padding-bottom: max(12px, env(safe-area-inset-bottom, 12px));
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--gui-backdrop-bg, rgba(0, 0, 0, 0.6));
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--gui-text-secondary, rgba(255, 255, 255, 0.6));
   font-family: 'SF Mono', 'JetBrains Mono', monospace;
 }
 

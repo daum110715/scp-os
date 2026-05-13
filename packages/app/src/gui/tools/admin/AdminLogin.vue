@@ -100,7 +100,7 @@ async function handleLogin() {
   align-items: center;
   justify-content: center;
   min-height: 100%;
-  background: #0a0a0a;
+  background: var(--gui-bg-base, #0a0a0a);
   animation: adminLoginFadeIn 0.4s ease both;
 }
 
@@ -116,11 +116,11 @@ async function handleLogin() {
 .admin-login__card {
   width: 100%;
   max-width: 380px;
-  background: #111111;
-  border: 1px solid #1a1a1a;
+  background: var(--gui-bg-surface, #111111);
+  border: 1px solid var(--gui-border-subtle, #1a1a1a);
   border-radius: 16px;
   padding: 40px 32px 32px;
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
+  box-shadow: var(--gui-shadow-xl, 0 24px 80px rgba(0, 0, 0, 0.6));
   animation: adminLoginCardIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;
 }
 
@@ -147,22 +147,22 @@ async function handleLogin() {
   width: 56px;
   height: 56px;
   border-radius: 14px;
-  background: rgba(233, 69, 96, 0.1);
-  color: #e94560;
+  background: var(--gui-error-bg, rgba(233, 69, 96, 0.1));
+  color: var(--gui-error, #e94560);
   margin-bottom: 16px;
 }
 
 .admin-login__title {
   font-size: 20px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--gui-text-primary, #ffffff);
   margin: 0 0 4px;
   letter-spacing: -0.02em;
 }
 
 .admin-login__subtitle {
   font-size: 13px;
-  color: #666666;
+  color: var(--gui-text-tertiary, #666666);
   margin: 0;
 }
 
@@ -181,17 +181,17 @@ async function handleLogin() {
 .admin-login__label {
   font-size: 12px;
   font-weight: 500;
-  color: #888888;
+  color: var(--gui-text-secondary, #888888);
   letter-spacing: 0.02em;
 }
 
 .admin-login__input {
   width: 100%;
   padding: 10px 14px;
-  background: #0a0a0a;
-  border: 1px solid #222222;
+  background: var(--gui-bg-base, #0a0a0a);
+  border: 1px solid var(--gui-border-default, #222222);
   border-radius: 10px;
-  color: #ffffff;
+  color: var(--gui-text-primary, #ffffff);
   font-size: 14px;
   font-family: inherit;
   outline: none;
@@ -202,11 +202,11 @@ async function handleLogin() {
 }
 
 .admin-login__input::placeholder {
-  color: #444444;
+  color: var(--gui-text-disabled, #444444);
 }
 
 .admin-login__input:focus {
-  border-color: #e94560;
+  border-color: var(--gui-error, #e94560);
   box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.15);
 }
 
@@ -217,7 +217,7 @@ async function handleLogin() {
 
 .admin-login__error {
   font-size: 12px;
-  color: #e94560;
+  color: var(--gui-error, #e94560);
   padding: 8px 12px;
   background: rgba(233, 69, 96, 0.08);
   border-radius: 8px;
@@ -243,7 +243,7 @@ async function handleLogin() {
   background: #e94560;
   border: none;
   border-radius: 10px;
-  color: #ffffff;
+  color: var(--gui-text-primary, #ffffff);
   font-size: 14px;
   font-weight: 600;
   font-family: inherit;
@@ -271,8 +271,8 @@ async function handleLogin() {
   display: inline-block;
   width: 18px;
   height: 18px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #ffffff;
+  border: 2px solid var(--gui-border-strong, rgba(255, 255, 255, 0.3));
+  border-top-color: var(--gui-text-primary, #ffffff);
   border-radius: 50%;
   animation: adminLoginSpin 0.6s linear infinite;
 }
@@ -287,12 +287,12 @@ async function handleLogin() {
   text-align: center;
   margin-top: 24px;
   padding-top: 16px;
-  border-top: 1px solid #1a1a1a;
+  border-top: 1px solid var(--gui-border-subtle, #1a1a1a);
 }
 
 .admin-login__footer span {
   font-size: 11px;
-  color: #444444;
+  color: var(--gui-text-disabled, #444444);
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }

@@ -118,8 +118,8 @@ const trendClass = computed(() => {
 
 <style scoped>
 .admin-stat-card {
-  background: #1a1a1a;
-  border: 1px solid #2a2a2a;
+  background: var(--gui-bg-surface-raised, #1a1a1a);
+  border: 1px solid var(--gui-border-default, #2a2a2a);
   border-radius: 10px;
   padding: 16px 20px;
   border-left: 3px solid var(--stat-color, #e94560);
@@ -136,7 +136,7 @@ const trendClass = computed(() => {
 .admin-stat-card__title {
   font-size: 12px;
   font-weight: 500;
-  color: #6a6a6a;
+  color: var(--gui-text-tertiary, #6a6a6a);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -155,7 +155,7 @@ const trendClass = computed(() => {
 .admin-stat-card__value {
   font-size: 28px;
   font-weight: 700;
-  color: #e0e0e0;
+  color: var(--gui-text-primary, #e0e0e0);
   line-height: 1.2;
   margin-bottom: 8px;
   font-variant-numeric: tabular-nums;
@@ -172,12 +172,12 @@ const trendClass = computed(() => {
 }
 
 .admin-stat-card__trend--up {
-  color: #34c759;
+  color: var(--gui-success, #34c759);
   background: rgba(52, 199, 89, 0.1);
 }
 
 .admin-stat-card__trend--down {
-  color: #ff3b30;
-  background: rgba(255, 59, 48, 0.1);
+  color: var(--gui-error, #ff3b30);
+  background: var(--gui-error-bg, rgba(255, 59, 48, 0.1));
 }
 </style>

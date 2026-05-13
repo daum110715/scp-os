@@ -124,7 +124,7 @@ function onCancel() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--gui-backdrop-bg, rgba(0, 0, 0, 0.5));
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);
 }
@@ -220,7 +220,7 @@ function onCancel() {
 }
 
 .fm-dialog__btn--danger {
-  color: #ff3b30;
+  color: var(--gui-error, #ff3b30);
 }
 
 /* ── Transition ─────────────────────────────────────────────────────── */

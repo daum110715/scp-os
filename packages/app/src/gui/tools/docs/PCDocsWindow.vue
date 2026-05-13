@@ -663,7 +663,7 @@ onBeforeUnmount(() => {
 }
 
 .pc-docs__item--active .pc-docs__item-number {
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--gui-text-primary, rgba(255, 255, 255, 0.9));
 }
 
 .pc-docs__item-body {
@@ -684,7 +684,7 @@ onBeforeUnmount(() => {
 }
 
 .pc-docs__item--active .pc-docs__item-title {
-  color: #ffffff;
+  color: var(--gui-text-primary, #ffffff);
 }
 
 .pc-docs__item-class {
@@ -844,7 +844,7 @@ onBeforeUnmount(() => {
 }
 
 .pc-docs__toolbar-btn--active {
-  color: #ff3b30;
+  color: var(--gui-error, #ff3b30);
 }
 
 .pc-docs__font-label {
@@ -993,7 +993,7 @@ onBeforeUnmount(() => {
 
 .pc-docs__toc-toggle--active {
   background: var(--docs-accent);
-  color: #ffffff;
+  color: var(--gui-text-primary, #ffffff);
   border-color: var(--docs-accent);
 }
 
@@ -1055,7 +1055,7 @@ onBeforeUnmount(() => {
 
 .pc-docs__retry-btn:hover {
   background: var(--docs-accent);
-  color: #ffffff;
+  color: var(--gui-text-primary, #ffffff);
 }
 
 /* ── Article Content Styles ─────────────────────────────────────────── */
@@ -1204,7 +1204,7 @@ onBeforeUnmount(() => {
   border: 1px solid rgba(56, 139, 253, 0.15);
 }
 .pc-docs__item--guide:hover {
-  background: rgba(56, 139, 253, 0.12);
+  background: var(--gui-accent-soft);
   border-color: rgba(56, 139, 253, 0.3);
 }
 .pc-docs__item-number--guide {

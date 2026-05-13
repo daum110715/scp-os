@@ -179,8 +179,8 @@ onMounted(fetchSettings)
 .sys-settings__spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid #1a1a1a;
-  border-top-color: #e94560;
+  border: 3px solid var(--gui-border-subtle, #1a1a1a);
+  border-top-color: var(--gui-error, #e94560);
   border-radius: 50%;
   animation: sysSettingsSpin 0.8s linear infinite;
 }
@@ -203,21 +203,21 @@ onMounted(fetchSettings)
 }
 
 .sys-settings__card {
-  background: #1a1a1a;
-  border: 1px solid #2a2a2a;
+  background: var(--gui-bg-surface-raised, #1a1a1a);
+  border: 1px solid var(--gui-border-default, #2a2a2a);
   border-radius: 10px;
   overflow: hidden;
 }
 
 .sys-settings__card-header {
   padding: 16px 20px;
-  border-bottom: 1px solid #2a2a2a;
+  border-bottom: 1px solid var(--gui-border-default, #2a2a2a);
 }
 
 .sys-settings__card-title {
   font-size: 14px;
   font-weight: 600;
-  color: #e0e0e0;
+  color: var(--gui-text-primary, #e0e0e0);
 }
 
 .sys-settings__list {
@@ -230,7 +230,7 @@ onMounted(fetchSettings)
   justify-content: space-between;
   gap: 16px;
   padding: 12px 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.03));
   transition: background 120ms ease;
 }
 
@@ -239,7 +239,7 @@ onMounted(fetchSettings)
 }
 
 .sys-settings__item:hover {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.02));
 }
 
 .sys-settings__item-info {
@@ -288,7 +288,7 @@ onMounted(fetchSettings)
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: #ffffff;
+  background: var(--gui-bg-surface, #ffffff);
   transition: transform 200ms ease;
 }
 
@@ -298,24 +298,24 @@ onMounted(fetchSettings)
 
 .sys-settings__toggle-label {
   font-size: 12px;
-  color: #6a6a6a;
+  color: var(--gui-text-tertiary, #6a6a6a);
   min-width: 32px;
 }
 
 .sys-settings__input {
   width: 200px;
   padding: 6px 10px;
-  background: #0f0f0f;
-  border: 1px solid #2a2a2a;
+  background: var(--gui-bg-surface, #0f0f0f);
+  border: 1px solid var(--gui-border-default, #2a2a2a);
   border-radius: 6px;
-  color: #e0e0e0;
+  color: var(--gui-text-primary, #e0e0e0);
   font-size: 13px;
   outline: none;
   transition: border-color 150ms ease;
 }
 
 .sys-settings__input:focus {
-  border-color: #e94560;
+  border-color: var(--gui-error, #e94560);
 }
 
 .sys-settings__input:disabled {
@@ -327,7 +327,7 @@ onMounted(fetchSettings)
   display: flex;
   justify-content: flex-end;
   padding: 14px 20px;
-  border-top: 1px solid #2a2a2a;
+  border-top: 1px solid var(--gui-border-default, #2a2a2a);
 }
 
 .sys-settings__btn {
@@ -354,7 +354,7 @@ onMounted(fetchSettings)
 
 .sys-settings__btn--primary {
   background: #e94560;
-  color: #ffffff;
+  color: var(--gui-text-primary, #ffffff);
 }
 
 .sys-settings__btn--primary:hover:not(:disabled) {

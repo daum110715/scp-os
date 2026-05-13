@@ -101,18 +101,18 @@ function onCancel() {
 }
 
 .confirm-dialog__icon--danger {
-  background: rgba(255, 59, 48, 0.12);
-  color: #ff3b30;
+  background: var(--gui-error-bg, rgba(255, 59, 48, 0.12));
+  color: var(--gui-error, #ff3b30);
 }
 
 .confirm-dialog__icon--warning {
-  background: rgba(255, 204, 0, 0.12);
-  color: #ffcc00;
+  background: var(--gui-warning-bg, rgba(255, 204, 0, 0.12));
+  color: var(--gui-warning, #ffcc00);
 }
 
 .confirm-dialog__icon--info {
   background: rgba(10, 132, 255, 0.12);
-  color: #0a84ff;
+  color: var(--gui-info, #0a84ff);
 }
 
 .confirm-dialog__message {
@@ -137,37 +137,37 @@ function onCancel() {
 }
 
 .confirm-dialog__btn--cancel {
-  background: #242424;
+  background: var(--gui-bg-surface-raised, #242424);
   color: #a0a0a0;
-  border: 1px solid #2a2a2a;
+  border: 1px solid var(--gui-border-default, #2a2a2a);
 }
 
 .confirm-dialog__btn--cancel:hover {
   background: #303030;
-  color: #e0e0e0;
+  color: var(--gui-text-primary, #e0e0e0);
 }
 
 .confirm-dialog__btn--danger {
-  background: rgba(255, 59, 48, 0.15);
-  color: #ff3b30;
+  background: var(--gui-error-bg, rgba(255, 59, 48, 0.15));
+  color: var(--gui-error, #ff3b30);
 }
 
 .confirm-dialog__btn--danger:hover {
-  background: rgba(255, 59, 48, 0.25);
+  background: var(--gui-error-bg, rgba(255, 59, 48, 0.25));
 }
 
 .confirm-dialog__btn--warning {
-  background: rgba(255, 204, 0, 0.15);
-  color: #ffcc00;
+  background: var(--gui-warning-bg, rgba(255, 204, 0, 0.15));
+  color: var(--gui-warning, #ffcc00);
 }
 
 .confirm-dialog__btn--warning:hover {
-  background: rgba(255, 204, 0, 0.25);
+  background: var(--gui-warning-bg, rgba(255, 204, 0, 0.25));
 }
 
 .confirm-dialog__btn--info {
   background: rgba(10, 132, 255, 0.15);
-  color: #0a84ff;
+  color: var(--gui-info, #0a84ff);
 }
 
 .confirm-dialog__btn--info:hover {

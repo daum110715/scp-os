@@ -1043,7 +1043,7 @@ onMounted(() => {
 }
 
 .mobile-file-manager__item-icon--image {
-  color: #ff3b30;
+  color: var(--gui-error, #ff3b30);
 }
 
 .mobile-file-manager__item-icon--audio {
@@ -1126,6 +1126,6 @@ onMounted(() => {
 }
 
 .mobile-file-manager__context-item--danger {
-  color: #ff3b30;
+  color: var(--gui-error, #ff3b30);
 }
 </style>

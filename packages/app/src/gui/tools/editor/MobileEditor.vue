@@ -671,7 +671,7 @@ function findPrev(): void {
 }
 
 .mobile-editor__tab-close:active {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--gui-bg-surface-active, rgba(255, 255, 255, 0.1));
   color: var(--gui-text-primary, #f0f0f0);
 }
 

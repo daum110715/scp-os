@@ -513,8 +513,8 @@ onMounted(fetchContent)
   display: flex;
   align-items: center;
   gap: 2px;
-  background: #141414;
-  border: 1px solid #2a2a2a;
+  background: var(--gui-bg-surface, #141414);
+  border: 1px solid var(--gui-border-default, #2a2a2a);
   border-radius: 10px;
   padding: 3px;
 }
@@ -524,7 +524,7 @@ onMounted(fetchContent)
   border: none;
   border-radius: 7px;
   background: transparent;
-  color: #6a6a6a;
+  color: var(--gui-text-tertiary, #6a6a6a);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -536,8 +536,8 @@ onMounted(fetchContent)
 }
 
 .content-mgmt__tab--active {
-  background: #1a1a1a;
-  color: #e0e0e0;
+  background: var(--gui-bg-surface-raised, #1a1a1a);
+  color: var(--gui-text-primary, #e0e0e0);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
 
@@ -561,7 +561,7 @@ onMounted(fetchContent)
 .content-mgmt__search-icon {
   position: absolute;
   left: 10px;
-  color: #6a6a6a;
+  color: var(--gui-text-tertiary, #6a6a6a);
   pointer-events: none;
 }
 
@@ -569,21 +569,21 @@ onMounted(fetchContent)
   width: 100%;
   max-width: 320px;
   padding: 7px 10px 7px 32px;
-  background: #1a1a1a;
-  border: 1px solid #2a2a2a;
+  background: var(--gui-bg-surface-raised, #1a1a1a);
+  border: 1px solid var(--gui-border-default, #2a2a2a);
   border-radius: 8px;
-  color: #e0e0e0;
+  color: var(--gui-text-primary, #e0e0e0);
   font-size: 13px;
   outline: none;
   transition: border-color 150ms ease;
 }
 
 .content-mgmt__search-input:focus {
-  border-color: #e94560;
+  border-color: var(--gui-error, #e94560);
 }
 
 .content-mgmt__search-input::placeholder {
-  color: #4a4a4a;
+  color: var(--gui-text-disabled, #4a4a4a);
 }
 
 .content-mgmt__btn {
@@ -591,7 +591,7 @@ onMounted(fetchContent)
   align-items: center;
   gap: 6px;
   padding: 7px 16px;
-  border: 1px solid #2a2a2a;
+  border: 1px solid var(--gui-border-default, #2a2a2a);
   border-radius: 8px;
   font-size: 13px;
   font-weight: 500;
@@ -605,18 +605,18 @@ onMounted(fetchContent)
 }
 
 .content-mgmt__btn--secondary {
-  background: #242424;
+  background: var(--gui-bg-surface-raised, #242424);
   color: #a0a0a0;
 }
 
 .content-mgmt__btn--secondary:hover {
   background: #303030;
-  color: #e0e0e0;
+  color: var(--gui-text-primary, #e0e0e0);
 }
 
 .content-mgmt__btn--primary {
   background: rgba(233, 69, 96, 0.15);
-  color: #e94560;
+  color: var(--gui-error, #e94560);
   border-color: rgba(233, 69, 96, 0.2);
 }
 
@@ -625,14 +625,14 @@ onMounted(fetchContent)
 }
 
 .content-mgmt__btn--ghost {
-  background: #242424;
+  background: var(--gui-bg-surface-raised, #242424);
   color: #a0a0a0;
-  border: 1px solid #2a2a2a;
+  border: 1px solid var(--gui-border-default, #2a2a2a);
 }
 
 .content-mgmt__btn--ghost:hover {
   background: #303030;
-  color: #e0e0e0;
+  color: var(--gui-text-primary, #e0e0e0);
 }
 
 .content-mgmt__dropdown {
@@ -640,8 +640,8 @@ onMounted(fetchContent)
   top: 100%;
   right: 80px;
   margin-top: 4px;
-  background: #1a1a1a;
-  border: 1px solid #2a2a2a;
+  background: var(--gui-bg-surface-raised, #1a1a1a);
+  border: 1px solid var(--gui-border-default, #2a2a2a);
   border-radius: 8px;
   overflow: hidden;
   z-index: 20;
@@ -663,8 +663,8 @@ onMounted(fetchContent)
 }
 
 .content-mgmt__dropdown-item:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: #e0e0e0;
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
+  color: var(--gui-text-primary, #e0e0e0);
 }
 
 .dropdown-enter-active,
@@ -686,9 +686,9 @@ onMounted(fetchContent)
 
 .content-mgmt__action-btn {
   padding: 4px 10px;
-  border: 1px solid #2a2a2a;
+  border: 1px solid var(--gui-border-default, #2a2a2a);
   border-radius: 5px;
-  background: #242424;
+  background: var(--gui-bg-surface-raised, #242424);
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
@@ -700,7 +700,7 @@ onMounted(fetchContent)
 }
 
 .content-mgmt__action-btn--edit {
-  color: #0a84ff;
+  color: var(--gui-info, #0a84ff);
   border-color: rgba(10, 132, 255, 0.2);
 }
 
@@ -709,12 +709,12 @@ onMounted(fetchContent)
 }
 
 .content-mgmt__action-btn--danger {
-  color: #ff3b30;
+  color: var(--gui-error, #ff3b30);
   border-color: rgba(255, 59, 48, 0.2);
 }
 
 .content-mgmt__action-btn--danger:hover {
-  background: rgba(255, 59, 48, 0.12);
+  background: var(--gui-error-bg, rgba(255, 59, 48, 0.12));
 }
 
 .content-mgmt__modal-body {
@@ -731,37 +731,37 @@ onMounted(fetchContent)
 
 .content-mgmt__modal-label {
   font-size: 12px;
-  color: #6a6a6a;
+  color: var(--gui-text-tertiary, #6a6a6a);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .content-mgmt__input {
   padding: 8px 12px;
-  background: #0f0f0f;
-  border: 1px solid #2a2a2a;
+  background: var(--gui-bg-surface, #0f0f0f);
+  border: 1px solid var(--gui-border-default, #2a2a2a);
   border-radius: 8px;
-  color: #e0e0e0;
+  color: var(--gui-text-primary, #e0e0e0);
   font-size: 13px;
   outline: none;
   transition: border-color 150ms ease;
 }
 
 .content-mgmt__input:focus {
-  border-color: #e94560;
+  border-color: var(--gui-error, #e94560);
 }
 
 .content-mgmt__input::placeholder {
-  color: #4a4a4a;
+  color: var(--gui-text-disabled, #4a4a4a);
 }
 
 .content-mgmt__textarea {
   width: 100%;
   padding: 8px 12px;
-  background: #0f0f0f;
-  border: 1px solid #2a2a2a;
+  background: var(--gui-bg-surface, #0f0f0f);
+  border: 1px solid var(--gui-border-default, #2a2a2a);
   border-radius: 8px;
-  color: #e0e0e0;
+  color: var(--gui-text-primary, #e0e0e0);
   font-size: 13px;
   resize: vertical;
   outline: none;
@@ -770,10 +770,10 @@ onMounted(fetchContent)
 }
 
 .content-mgmt__textarea:focus {
-  border-color: #e94560;
+  border-color: var(--gui-error, #e94560);
 }
 
 .content-mgmt__textarea::placeholder {
-  color: #4a4a4a;
+  color: var(--gui-text-disabled, #4a4a4a);
 }
 </style>

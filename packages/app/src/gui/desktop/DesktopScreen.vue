@@ -761,9 +761,7 @@ onUnmounted(() => {
   height: 72px;
   border-radius: var(--gui-radius-xl, 14px);
   color: var(--gui-text-inverse, #ffffff);
-  box-shadow:
-    var(--gui-shadow-ios-card, 0 2px 12px rgba(0, 0, 0, 0.4)),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  box-shadow: var(--gui-shadow-ios-card, 0 2px 12px rgba(0, 0, 0, 0.4));
   transition: all 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
   overflow: hidden;
 }
@@ -781,6 +779,22 @@ onUnmounted(() => {
   );
   border-radius: inherit;
   pointer-events: none;
+}
+
+.light .desktop-screen__icon-bg {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(0, 0, 0, 0.04);
+}
+
+.light .desktop-screen__icon-bg::before {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.5) 0%,
+    transparent 60%
+  );
+}
+
+.light .desktop-screen__icon-bg svg {
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1));
 }
 
 .desktop-screen__icon-bg svg {
@@ -809,19 +823,24 @@ onUnmounted(() => {
   color: var(--gui-text-inverse, #ffffff);
   letter-spacing: -1px;
   line-height: 1;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .desktop-screen__icon:hover .desktop-screen__icon-bg {
-  box-shadow:
-    var(--gui-shadow-lg, 0 16px 40px rgba(0, 0, 0, 0.6)),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  box-shadow: var(--gui-shadow-lg, 0 16px 40px rgba(0, 0, 0, 0.6));
   transform: scale(1.1);
+}
+
+.light .desktop-screen__icon:hover .desktop-screen__icon-bg {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
 .desktop-screen__icon:active .desktop-screen__icon-bg {
   transform: scale(0.95);
   box-shadow: var(--gui-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.3));
+}
+
+.light .desktop-screen__icon:active .desktop-screen__icon-bg {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .desktop-screen__icon-label {
@@ -830,25 +849,33 @@ onUnmounted(() => {
   font-weight: var(--gui-font-weight-medium, 500);
   color: var(--gui-text-primary, #ffffff);
   text-align: center;
-  text-shadow:
-    0 2px 8px rgba(0, 0, 0, 0.8),
-    0 1px 3px rgba(0, 0, 0, 0.6);
   letter-spacing: 0.02em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  background: rgba(0, 0, 0, 0.4);
+  background: var(--gui-backdrop-bg, rgba(0, 0, 0, 0.4));
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   padding: 4px 10px;
   border-radius: var(--gui-radius-base, 8px);
-  border: 0.5px solid rgba(255, 255, 255, 0.08);
+  border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.08));
+}
+
+.light .desktop-screen__icon-label {
+  background: var(--gui-glass-bg, rgba(255, 255, 255, 0.8));
+  border-color: var(--gui-border-default, rgba(0, 0, 0, 0.1));
+  color: var(--gui-text-primary, #000000);
   transition: all var(--gui-transition-base, 200ms ease);
 }
 
 .desktop-screen__icon:hover .desktop-screen__icon-label {
-  background: rgba(0, 0, 0, 0.6);
-  border-color: rgba(255, 255, 255, 0.12);
+  background: var(--gui-backdrop-bg, rgba(0, 0, 0, 0.6));
+  border-color: var(--gui-border-default, rgba(255, 255, 255, 0.12));
+}
+
+.light .desktop-screen__icon:hover .desktop-screen__icon-label {
+  background: var(--gui-glass-bg-strong, rgba(255, 255, 255, 0.92));
+  border-color: var(--gui-border-default, rgba(0, 0, 0, 0.1));
 }
 
 /* Responsive adjustments */

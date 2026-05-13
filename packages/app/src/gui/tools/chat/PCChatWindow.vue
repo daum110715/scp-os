@@ -47,7 +47,7 @@
           </div>
           <template v-else>
             <!-- DEBUG: rooms count -->
-            <div v-if="rooms.length === 0" style="padding: 16px; color: #ff3b30; font-size: 12px;">
+            <div v-if="rooms.length === 0" style="padding: 16px; color: var(--gui-error, #ff3b30); font-size: 12px;">
               DEBUG: rooms.length = {{ rooms.length }}<br>
               query = "{{ roomSearchQuery }}"<br>
               filtered = {{ filteredRooms.length }}
@@ -123,7 +123,7 @@
           </div>
 
           <div ref="messagesRef" class="pc-chat__messages">
-            <div v-if="messages.length > 0 || loading" style="padding: 4px 8px; font-size: 10px; color: #666; background: rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <div v-if="messages.length > 0 || loading" style="padding: 4px 8px; font-size: 10px; color: #666; background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.05)); border-bottom: 1px solid rgba(255,255,255,0.1);">
               DEBUG: 房间={{ currentRoomId }} 消息数={{ messages.length }} 最后ID={{ messages[messages.length-1]?.id || '?' }}
             </div>
             <div v-if="messages.length === 0 && !loading" class="pc-chat__empty">
@@ -985,7 +985,7 @@ async function saveNickname() {
   border-radius: 8px;
   border: none;
   background: var(--chat-accent, #007aff);
-  color: #ffffff;
+  color: var(--gui-text-primary, #ffffff);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1089,6 +1089,10 @@ async function saveNickname() {
   background: rgba(255, 255, 255, 0.2);
 }
 
+.light .pc-chat__room-item--active .pc-chat__room-avatar {
+  background: rgba(0, 0, 0, 0.1);
+}
+
 .pc-chat__room-body {
   flex: 1;
   min-width: 0;
@@ -1114,7 +1118,7 @@ async function saveNickname() {
 }
 
 .pc-chat__room-item--active .pc-chat__room-name {
-  color: #ffffff;
+  color: var(--gui-text-primary, #ffffff);
 }
 
 .pc-chat__room-time {
@@ -1124,7 +1128,7 @@ async function saveNickname() {
 }
 
 .pc-chat__room-item--active .pc-chat__room-time {
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--gui-text-secondary, rgba(255, 255, 255, 0.7));
 }
 
 .pc-chat__room-bottom {
@@ -1144,7 +1148,7 @@ async function saveNickname() {
 }
 
 .pc-chat__room-item--active .pc-chat__room-preview {
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--gui-text-primary, rgba(255, 255, 255, 0.8));
 }
 
 .pc-chat__room-sender {
@@ -1157,7 +1161,7 @@ async function saveNickname() {
   padding: 0 5px;
   border-radius: 9px;
   background: var(--chat-error, #ff3b30);
-  color: #ffffff;
+  color: var(--gui-text-primary, #ffffff);
   font-size: 11px;
   font-weight: 600;
   display: flex;
@@ -1190,7 +1194,7 @@ async function saveNickname() {
   opacity: 1;
 }
 .pc-chat__room-settings:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--gui-bg-surface-active, rgba(255, 255, 255, 0.1));
 }
 
 .pc-chat__room-loading {
@@ -1338,7 +1342,7 @@ async function saveNickname() {
 
 .chat-bubble--self .chat-bubble__content {
   background: var(--chat-accent, #007aff);
-  color: #ffffff;
+  color: var(--gui-text-primary, #ffffff);
   border-bottom-right-radius: 4px;
 }
 
@@ -1407,7 +1411,7 @@ async function saveNickname() {
 .pc-chat__rate-warning {
   padding: 8px 12px;
   background: var(--chat-error, #ff3b30);
-  color: #ffffff;
+  color: var(--gui-text-primary, #ffffff);
   font-size: 12px;
   text-align: center;
 }
@@ -1419,8 +1423,8 @@ async function saveNickname() {
   gap: 6px;
   padding: 4px 12px;
   font-size: 11px;
-  background: rgba(255, 255, 255, 0.03);
-  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.03));
+  border-top: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.04));
 }
 
 .pc-chat__ws-dot {
@@ -1447,7 +1451,7 @@ async function saveNickname() {
 }
 
 .pc-chat__ws-text {
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--gui-text-tertiary, rgba(255, 255, 255, 0.4));
   font-family: 'SF Mono', 'JetBrains Mono', monospace;
 }
 
@@ -1555,7 +1559,7 @@ async function saveNickname() {
   border-radius: 50%;
   border: none;
   background: var(--chat-accent, #007aff);
-  color: #ffffff;
+  color: var(--gui-text-primary, #ffffff);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1580,8 +1584,8 @@ async function saveNickname() {
 .pc-chat__spinner {
   width: 16px;
   height: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #ffffff;
+  border: 2px solid var(--gui-border-strong, rgba(255, 255, 255, 0.3));
+  border-top-color: var(--gui-text-primary, #ffffff);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -1596,7 +1600,7 @@ async function saveNickname() {
 .pc-chat__dialog-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--gui-backdrop-bg, rgba(0, 0, 0, 0.5));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1693,7 +1697,7 @@ async function saveNickname() {
 }
 
 .pc-chat__dialog-danger-btn:hover {
-  background: rgba(255, 59, 48, 0.1);
+  background: var(--gui-error-bg, rgba(255, 59, 48, 0.1));
 }
 
 .pc-chat__dialog-actions {
@@ -1737,15 +1741,15 @@ async function saveNickname() {
 
 .pc-chat__dialog-success {
   font-size: 12px;
-  color: #34c759;
+  color: var(--gui-success, #34c759);
   margin-bottom: 8px;
 }
 
 .pc-chat__dialog-spinner {
   width: 16px;
   height: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #ffffff;
+  border: 2px solid var(--gui-border-strong, rgba(255, 255, 255, 0.3));
+  border-top-color: var(--gui-text-primary, #ffffff);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   margin: 0 auto;

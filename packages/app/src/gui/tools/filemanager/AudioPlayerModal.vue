@@ -161,7 +161,7 @@ function close() {
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--gui-backdrop-bg, rgba(0, 0, 0, 0.5));
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
@@ -242,7 +242,7 @@ function close() {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;
+  color: var(--gui-text-primary, #ffffff);
   animation: spin-slow 20s linear infinite;
 }
 
