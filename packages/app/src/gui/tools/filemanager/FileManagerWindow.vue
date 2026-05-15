@@ -458,7 +458,7 @@ interface Props {
   windowInstance: WindowInstance
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 
 const { t } = useI18n()
 setFileManagerI18n({ t })
@@ -466,6 +466,12 @@ const fmStore = useFileManagerStore()
 const wmStore = useWindowManagerStore()
 const searchText = ref('')
 const fileInputRef = ref<HTMLInputElement | null>(null)
+
+// Navigate to initial path if provided
+const initialPath = props.windowInstance?.config?.data?.initialPath
+if (initialPath) {
+  fmStore.navigateTo(initialPath)
+}
 
 // Dialog state
 const dialogVisible = ref(false)

@@ -185,6 +185,37 @@
                   <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z" />
                 </svg>
               </template>
+              <template v-else-if="app.isDirectory">
+                <svg
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M4 20h16a2 2 0 002-2V8a2 2 0 00-2-2h-7.93a2 2 0 01-1.66-.9l-.82-1.2A2 2 0 007.93 3H4a2 2 0 00-2 2v13c0 1.1.9 2 2 2Z"
+                  />
+                </svg>
+              </template>
+              <template v-else-if="app.isFile">
+                <svg
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                </svg>
+              </template>
               <template v-else>
                 <svg
                   width="28"
@@ -235,6 +266,15 @@
       :items="contextMenu.items"
       @select="onContextMenuSelect"
     />
+
+    <!-- Input Dialog -->
+    <DialogModal
+      v-model:visible="dialogVisible"
+      type="input"
+      :title="dialogTitle"
+      :placeholder="dialogPlaceholder"
+      @confirm="onDialogConfirm"
+    />
   </div>
 </template>
 
@@ -245,6 +285,7 @@ import { wallpaperService } from '../../utils/wallpaperService'
 import PCTaskbar, { type PCTaskbarItem } from '../components/PCTaskbar.vue'
 import PCStartMenu, { type StartMenuApp } from '../components/PCStartMenu.vue'
 import PCCContextMenu from '../components/ui/PCCContextMenu.vue'
+import DialogModal from '../tools/filemanager/DialogModal.vue'
 import { useDraggable } from '../composables/useDraggable'
 import { useI18n } from '../composables/useI18n'
 import type { ToolType, ContextMenuItem } from '../types'
@@ -264,6 +305,10 @@ export interface DesktopApp {
   x?: number
   y?: number
   shortcutFile?: string // path to .desktop file
+  filePath?: string // path to regular file/folder
+  isFile?: boolean
+  isDirectory?: boolean
+  data?: Record<string, unknown> // extra data passed to window
 }
 
 const { t } = useI18n()
@@ -276,21 +321,51 @@ function loadDesktopApps() {
   const loaded: DesktopApp[] = []
 
   for (const node of nodes) {
-    if (node.type !== 'file' || !node.name.endsWith('.desktop')) continue
-    const content = filesystem.readFile(`${desktopPath}/${node.name}`)
-    if (!content) continue
-    const shortcut = parseDesktopFile(content)
-    if (!shortcut) continue
+    const fullPath = `${desktopPath}/${node.name}`
 
-    loaded.push({
-      id: shortcut.tool,
-      label: shortcut.name,
-      tool: shortcut.tool,
-      color: 'var(--gui-accent)',
-      x: shortcut.x,
-      y: shortcut.y,
-      shortcutFile: `${desktopPath}/${node.name}`,
-    })
+    if (node.type === 'file' && node.name.endsWith('.desktop')) {
+      // .desktop shortcut file
+      const content = filesystem.readFile(fullPath)
+      if (!content) continue
+      const shortcut = parseDesktopFile(content)
+      if (!shortcut) continue
+
+      loaded.push({
+        id: shortcut.tool,
+        label: shortcut.name,
+        tool: shortcut.tool,
+        color: 'var(--gui-accent)',
+        x: shortcut.x,
+        y: shortcut.y,
+        shortcutFile: fullPath,
+      })
+    } else if (node.type === 'directory') {
+      // Directory
+      loaded.push({
+        id: `dir-${node.name}`,
+        label: node.name,
+        tool: 'filemanager',
+        color: 'var(--gui-accent)',
+        x: 0,
+        y: 0,
+        filePath: fullPath,
+        isDirectory: true,
+        data: { initialPath: fullPath },
+      })
+    } else if (node.type === 'file') {
+      // Regular file
+      loaded.push({
+        id: `file-${node.name}`,
+        label: node.name,
+        tool: 'editor',
+        color: 'var(--gui-accent)',
+        x: 0,
+        y: 0,
+        filePath: fullPath,
+        isFile: true,
+        data: { filePath: fullPath },
+      })
+    }
   }
 
   apps.splice(0, apps.length, ...loaded)
@@ -412,6 +487,12 @@ const contextMenu = ref({
   selectedApp: null as DesktopApp | null,
 })
 
+// Dialog state
+const dialogVisible = ref(false)
+const dialogTitle = ref('')
+const dialogPlaceholder = ref('')
+const dialogMode = ref<'folder' | 'file'>('folder')
+
 const emit = defineEmits<{
   launch: [app: DesktopApp]
   'start-click': []
@@ -529,8 +610,10 @@ const handleDesktopContextMenu = (event: MouseEvent) => {
         label: t('fm.newFolder'),
         icon: 'folder',
         action: () => {
-          logger.info('Create new folder')
-          // Implement new folder creation
+          dialogMode.value = 'folder'
+          dialogTitle.value = t('fm.newFolder')
+          dialogPlaceholder.value = t('fm.newFolder')
+          dialogVisible.value = true
         },
       },
       {
@@ -538,8 +621,10 @@ const handleDesktopContextMenu = (event: MouseEvent) => {
         label: t('pc.newTextFile'),
         icon: 'file-text',
         action: () => {
-          logger.info('Create new text file')
-          // Implement new text file creation
+          dialogMode.value = 'file'
+          dialogTitle.value = t('pc.newTextFile')
+          dialogPlaceholder.value = t('pc.newTextFile')
+          dialogVisible.value = true
         },
       },
       { id: 'divider-2', label: '', divider: true },
@@ -643,6 +728,27 @@ const handleAppContextMenu = (event: MouseEvent, app: DesktopApp) => {
 const onContextMenuSelect = (item: ContextMenuItem) => {
   logger.info('Context menu selected:', item.id)
   // Additional handling if needed
+}
+
+// Handle dialog confirm
+const onDialogConfirm = (value: string | true) => {
+  const name = typeof value === 'string' ? value.trim() : ''
+  if (!name) return
+  const desktopPath = '/home/scp/desktop'
+
+  if (dialogMode.value === 'folder') {
+    const existing = filesystem.listDirectory(desktopPath).some((n) => n.name === name)
+    if (existing) return
+    filesystem.createDirectory(`${desktopPath}/${name}`)
+  } else {
+    const fileName = name.endsWith('.txt') ? name : `${name}.txt`
+    const existing = filesystem.listDirectory(desktopPath).some((n) => n.name === fileName)
+    if (existing) return
+    filesystem.writeFile(`${desktopPath}/${fileName}`, '')
+  }
+
+  loadDesktopApps()
+  arrangeApps()
 }
 
 // Close start menu when clicking outside
