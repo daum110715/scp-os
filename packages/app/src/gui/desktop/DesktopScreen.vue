@@ -369,6 +369,28 @@ function loadDesktopApps() {
   }
 
   apps.splice(0, apps.length, ...loaded)
+
+  // Translate known system app labels from legacy English names
+  const enToKey: Record<string, string> = {
+    Terminal: 'app.terminal',
+    Files: 'app.files',
+    'File Manager': 'app.fileManager',
+    Chat: 'app.chat',
+    Dash: 'app.dash',
+    Feedback: 'app.feedback',
+    Docs: 'app.docs',
+    'Docs Reader': 'app.docs',
+    Settings: 'app.settings',
+    Editor: 'app.editor',
+    'Text Editor': 'app.editor',
+  }
+  for (const app of apps) {
+    const key = enToKey[app.label]
+    if (key) {
+      const translated = t(key)
+      if (translated && translated !== key) app.label = translated
+    }
+  }
 }
 
 function saveDesktopShortcut(app: DesktopApp) {

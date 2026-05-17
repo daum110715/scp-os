@@ -131,7 +131,7 @@ export class FileSystem {
                       size: 70,
                       mtime: Date.now(),
                       content:
-                        '[Desktop Entry]\nName=Terminal\nType=Application\nTool=terminal\nIcon=terminal\nX=50\nY=50',
+                        '[Desktop Entry]\nName=终端\nType=Application\nTool=terminal\nIcon=terminal\nX=50\nY=50',
                     },
                     'files.desktop': {
                       name: 'files.desktop',
@@ -146,7 +146,7 @@ export class FileSystem {
                       size: 62,
                       mtime: Date.now(),
                       content:
-                        '[Desktop Entry]\nName=Files\nType=Application\nTool=filemanager\nIcon=folder\nX=180\nY=50',
+                        '[Desktop Entry]\nName=文件\nType=Application\nTool=filemanager\nIcon=folder\nX=180\nY=50',
                     },
                     'chat.desktop': {
                       name: 'chat.desktop',
@@ -161,7 +161,7 @@ export class FileSystem {
                       size: 58,
                       mtime: Date.now(),
                       content:
-                        '[Desktop Entry]\nName=Chat\nType=Application\nTool=chat\nIcon=chat\nX=310\nY=50',
+                        '[Desktop Entry]\nName=聊天\nType=Application\nTool=chat\nIcon=chat\nX=310\nY=50',
                     },
                     'dash.desktop': {
                       name: 'dash.desktop',
@@ -176,7 +176,7 @@ export class FileSystem {
                       size: 58,
                       mtime: Date.now(),
                       content:
-                        '[Desktop Entry]\nName=Dash\nType=Application\nTool=dash\nIcon=grid\nX=50\nY=180',
+                        '[Desktop Entry]\nName=仪表盘\nType=Application\nTool=dash\nIcon=grid\nX=50\nY=180',
                     },
                     'feedback.desktop': {
                       name: 'feedback.desktop',
@@ -191,7 +191,7 @@ export class FileSystem {
                       size: 70,
                       mtime: Date.now(),
                       content:
-                        '[Desktop Entry]\nName=Feedback\nType=Application\nTool=feedback\nIcon=feedback\nX=180\nY=180',
+                        '[Desktop Entry]\nName=反馈\nType=Application\nTool=feedback\nIcon=feedback\nX=180\nY=180',
                     },
                     'docs.desktop': {
                       name: 'docs.desktop',
@@ -206,7 +206,7 @@ export class FileSystem {
                       size: 58,
                       mtime: Date.now(),
                       content:
-                        '[Desktop Entry]\nName=Docs\nType=Application\nTool=docs\nIcon=document\nX=310\nY=180',
+                        '[Desktop Entry]\nName=文档\nType=Application\nTool=docs\nIcon=document\nX=310\nY=180',
                     },
                     'settings.desktop': {
                       name: 'settings.desktop',
@@ -221,7 +221,7 @@ export class FileSystem {
                       size: 72,
                       mtime: Date.now(),
                       content:
-                        '[Desktop Entry]\nName=Settings\nType=Application\nTool=settings\nIcon=settings\nX=50\nY=310',
+                        '[Desktop Entry]\nName=设置\nType=Application\nTool=settings\nIcon=settings\nX=50\nY=310',
                     },
                     'editor.desktop': {
                       name: 'editor.desktop',
@@ -236,7 +236,7 @@ export class FileSystem {
                       size: 62,
                       mtime: Date.now(),
                       content:
-                        '[Desktop Entry]\nName=Editor\nType=Application\nTool=editor\nIcon=edit\nX=310\nY=310',
+                        '[Desktop Entry]\nName=编辑器\nType=Application\nTool=editor\nIcon=edit\nX=310\nY=310',
                     },
                   },
                 },
