@@ -1,5 +1,5 @@
 import type { Env } from './types'
-import { all, run } from './db'
+import { all, first, run } from './db'
 
 interface SocketMeta {
   userId: string
@@ -145,6 +145,121 @@ export class ChatRoomDO {
           }),
           roomId,
         )
+        break
+      }
+      case 'edit_message': {
+        const messageId = Number(msg.data?.message_id)
+        const newContent = String(msg.data?.content || '').trim()
+        if (!messageId || !newContent || newContent.length > 1000) {
+          server.send(
+            JSON.stringify({
+              type: 'error',
+              data: { code: 'VALIDATION_ERROR', message: 'Invalid edit' },
+            }),
+          )
+          return
+        }
+        try {
+          const row = await first<{ user_id: string }>(
+            this.env.SCP_DB,
+            'SELECT user_id FROM chat_messages WHERE id = ? AND room_id = ?',
+            [messageId, roomId],
+          )
+          if (!row) {
+            server.send(
+              JSON.stringify({
+                type: 'error',
+                data: { code: 'NOT_FOUND', message: 'Message not found' },
+              }),
+            )
+            return
+          }
+          if (row.user_id !== userId) {
+            server.send(
+              JSON.stringify({
+                type: 'error',
+                data: { code: 'FORBIDDEN', message: 'Cannot edit others message' },
+              }),
+            )
+            return
+          }
+          await run(
+            this.env.SCP_DB,
+            'UPDATE chat_messages SET content = ? WHERE id = ? AND room_id = ?',
+            [newContent, messageId, roomId],
+          )
+          this.broadcast(
+            JSON.stringify({
+              type: 'message_edited',
+              data: { id: messageId, content: newContent, user_id: userId, room_id: roomId },
+            }),
+            roomId,
+          )
+        } catch {
+          server.send(
+            JSON.stringify({
+              type: 'error',
+              data: { code: 'DB_ERROR', message: 'Failed to edit message' },
+            }),
+          )
+        }
+        break
+      }
+      case 'delete_message': {
+        const messageId = Number(msg.data?.message_id)
+        if (!messageId) {
+          server.send(
+            JSON.stringify({
+              type: 'error',
+              data: { code: 'VALIDATION_ERROR', message: 'Invalid delete' },
+            }),
+          )
+          return
+        }
+        try {
+          const row = await first<{ user_id: string }>(
+            this.env.SCP_DB,
+            'SELECT user_id FROM chat_messages WHERE id = ? AND room_id = ?',
+            [messageId, roomId],
+          )
+          if (!row) {
+            server.send(
+              JSON.stringify({
+                type: 'error',
+                data: { code: 'NOT_FOUND', message: 'Message not found' },
+              }),
+            )
+            return
+          }
+          if (row.user_id !== userId) {
+            server.send(
+              JSON.stringify({
+                type: 'error',
+                data: { code: 'FORBIDDEN', message: 'Cannot delete others message' },
+              }),
+            )
+            return
+          }
+          await run(
+            this.env.SCP_DB,
+            'DELETE FROM chat_messages WHERE id = ? AND room_id = ?',
+            [messageId, roomId],
+          )
+          this.broadcast(
+            JSON.stringify({
+              type: 'message_deleted',
+              data: { id: messageId, user_id: userId, room_id: roomId },
+            }),
+            roomId,
+          )
+        } catch {
+          server.send(
+            JSON.stringify({
+              type: 'error',
+              data: { code: 'DB_ERROR', message: 'Failed to delete message' },
+            }),
+          )
+        }
         break
       }
     }

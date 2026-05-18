@@ -174,12 +174,14 @@
                 'chat-bubble--sending': msg.sending,
                 'chat-bubble--error': msg.error,
               }"
+              @contextmenu.prevent="onMessageRightClick($event, msg)"
             >
               <div class="chat-bubble__header">
                 <span class="chat-bubble__username">{{ msg.username }}</span>
                 <span class="chat-bubble__time"
-                  >{{ formatTime(msg.created_at) }} #{{ msg.id || '?' }}</span
-                >
+                  >{{ formatTime(msg.created_at) }} #{{ msg.id || '?' }}
+                  <span v-if="msg.edited" class="chat-bubble__edited">{{ t('chat.edited') }}</span>
+                </span>
               </div>
               <div class="chat-bubble__content">{{ msg.content }}</div>
               <div v-if="msg.sending" class="chat-bubble__status">
@@ -216,6 +218,10 @@
           </div>
 
           <div class="pc-chat__input-bar">
+            <div v-if="editingMessageId" class="pc-chat__edit-hint">
+              <span>{{ t('chat.editing') }}</span>
+              <button class="pc-chat__edit-cancel" @click="cancelEdit">{{ t('common.cancel') }}</button>
+            </div>
             <textarea
               ref="inputRef"
               v-model="inputContent"
@@ -223,13 +229,14 @@
               :placeholder="t('chat.placeholder')"
               :disabled="sending || rateLimited"
               rows="1"
-              @keydown.enter.exact.prevent="sendMessage"
+              @keydown.enter.exact.prevent="sendOrEditMessage"
+              @keydown.esc="cancelEdit"
               @input="autoResizeInput"
             />
             <button
               class="pc-chat__send-btn"
               :disabled="!inputContent.trim() || sending || rateLimited"
-              @click="sendMessage"
+              @click="sendOrEditMessage"
             >
               <svg v-if="!sending" width="20" height="20" viewBox="0 0 20 20" fill="none">
                 <path d="M3 10L17 3L10 17L9 11L3 10Z" fill="currentColor" />
@@ -260,6 +267,36 @@
           <p>{{ t('chat.selectRoom') }}</p>
         </div>
       </div>
+
+      <!-- Context Menu -->
+      <Transition name="gui-ios-fade">
+        <div
+          v-if="showContextMenu"
+          class="pc-chat__context-overlay"
+          @click.self="showContextMenu = false"
+          @contextmenu.prevent
+        >
+          <div
+            class="pc-chat__context-menu"
+            :style="{ left: contextMenuX + 'px', top: contextMenuY + 'px' }"
+          >
+            <button class="pc-chat__context-item" @click="startEdit(contextMenuMsg)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+              </svg>
+              {{ t('chat.edit') }}
+            </button>
+            <button class="pc-chat__context-item pc-chat__context-item--danger" @click="startDelete(contextMenuMsg)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6" />
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+              </svg>
+              {{ t('chat.delete') }}
+            </button>
+          </div>
+        </div>
+      </Transition>
 
       <!-- Create Room Dialog -->
       <Transition name="gui-ios-fade">
@@ -476,6 +513,7 @@ interface ChatMessage {
   error?: string
   room_id?: number
   retryCount?: number
+  edited?: boolean
 }
 
 interface ChatRoom {
@@ -514,6 +552,11 @@ const sending = ref(false)
 const rateLimitWarning = ref('')
 const rateLimited = ref(false)
 const loadingRooms = ref(false)
+const editingMessageId = ref<number | null>(null)
+const showContextMenu = ref(false)
+const contextMenuX = ref(0)
+const contextMenuY = ref(0)
+const contextMenuMsg = ref<ChatMessage | null>(null)
 const creatingRoom = ref(false)
 const savingSettings = ref(false)
 const deletingRoom = ref(false)
@@ -593,6 +636,16 @@ const ws = useChatWebSocket({
     if (currentRoom.value) {
       currentRoom.value.member_count = data.count
     }
+  },
+  onMessageEdited: (data: any) => {
+    const idx = messages.findIndex((m) => m.id === data.id)
+    if (idx !== -1) {
+      messages.splice(idx, 1, { ...messages[idx], content: data.content, edited: true })
+    }
+  },
+  onMessageDeleted: (data: any) => {
+    const idx = messages.findIndex((m) => m.id === data.id)
+    if (idx !== -1) messages.splice(idx, 1)
   },
   onError: (error: any) => {
     if (error === 'RATE_LIMIT') {
@@ -782,6 +835,14 @@ async function loadHistoryFromAPI(roomId: number) {
   }
 }
 
+function sendOrEditMessage() {
+  if (editingMessageId.value) {
+    confirmEdit()
+  } else {
+    sendMessage()
+  }
+}
+
 async function sendMessage() {
   const content = inputContent.value.trim()
   if (!content || sending.value || rateLimited.value) return
@@ -822,6 +883,45 @@ async function sendMessage() {
     }
   }
   sending.value = false
+}
+
+function onMessageRightClick(event: MouseEvent, msg: ChatMessage) {
+  if (!msg.isSelf || msg.sending || !msg.id) return
+  contextMenuMsg.value = msg
+  contextMenuX.value = event.clientX
+  contextMenuY.value = event.clientY
+  showContextMenu.value = true
+}
+
+function startEdit(msg: ChatMessage | null) {
+  showContextMenu.value = false
+  if (!msg || !msg.id) return
+  editingMessageId.value = msg.id
+  inputContent.value = msg.content
+  nextTick(() => inputRef.value?.focus())
+}
+
+function cancelEdit() {
+  editingMessageId.value = null
+  inputContent.value = ''
+}
+
+function confirmEdit() {
+  if (!editingMessageId.value) return
+  const content = inputContent.value.trim()
+  if (!content) return
+  const sent = ws.editMessage(editingMessageId.value, content)
+  if (sent) {
+    editingMessageId.value = null
+    inputContent.value = ''
+  }
+}
+
+function startDelete(msg: ChatMessage | null) {
+  showContextMenu.value = false
+  if (!msg || !msg.id) return
+  if (!confirm(t('chat.confirmDelete'))) return
+  ws.deleteMessage(msg.id)
 }
 
 async function retryMessage(msg: ChatMessage) {
@@ -1823,6 +1923,87 @@ async function saveNickname() {
   margin: 0 auto;
 }
 
+.pc-chat__edit-hint {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 8px;
+  font-size: 11px;
+  color: var(--chat-accent, #007aff);
+  background: var(--chat-bg, #1c1c1e);
+  border-radius: 6px;
+  margin-bottom: 4px;
+  width: 100%;
+}
+
+.pc-chat__edit-cancel {
+  background: none;
+  border: none;
+  color: var(--chat-text-secondary, #8e8e93);
+  font-size: 11px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.pc-chat__edit-cancel:hover {
+  color: var(--chat-text-primary, #ffffff);
+  background: var(--chat-surface-hover, #3a3a3c);
+}
+
+.chat-bubble__edited {
+  margin-left: 6px;
+  font-size: 10px;
+  color: var(--chat-text-tertiary, #636366);
+  font-style: italic;
+}
+
+.pc-chat__context-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+}
+
+.pc-chat__context-menu {
+  position: absolute;
+  min-width: 140px;
+  background: var(--chat-surface, #2c2c2e);
+  border-radius: 10px;
+  border: 0.5px solid var(--chat-border, #38383a);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pc-chat__context-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  color: var(--chat-text-primary, #ffffff);
+  font-size: 13px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.1s;
+}
+
+.pc-chat__context-item:hover {
+  background: var(--chat-surface-hover, #3a3a3c);
+}
+
+.pc-chat__context-item--danger {
+  color: var(--chat-error, #ff3b30);
+}
+
+.pc-chat__context-item--danger:hover {
+  background: var(--gui-error-bg, rgba(255, 59, 48, 0.1));
+}
+
 /* ── Transitions ──────────────────────────────────────────────────── */
 .gui-ios-fade-enter-active,
 .gui-ios-fade-leave-active {
@@ -1911,5 +2092,23 @@ async function saveNickname() {
 }
 .light .pc-chat__action-btn:hover {
   background: rgba(0, 0, 0, 0.06);
+}
+.light .pc-chat__edit-hint {
+  background: var(--chat-bg, #f2f2f7);
+}
+.light .pc-chat__edit-cancel:hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--chat-text-primary, #000000);
+}
+.light .pc-chat__context-menu {
+  background: var(--chat-surface, #ffffff);
+  border-color: var(--chat-border, #e5e5ea);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+.light .pc-chat__context-item {
+  color: var(--chat-text-primary, #000000);
+}
+.light .pc-chat__context-item:hover {
+  background: var(--chat-surface-hover, rgba(0, 0, 0, 0.06));
 }
 </style>

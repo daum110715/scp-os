@@ -15,6 +15,7 @@ export interface WSChatMessage {
   sending?: boolean
   error?: string
   retryCount?: number
+  edited?: boolean
 }
 
 export interface WSUser {
@@ -36,6 +37,9 @@ interface WSIncomingMessage {
     | 'room_info'
     | 'user_joined'
     | 'user_left'
+    | 'message_edited'
+    | 'message_deleted'
+    | 'user_renamed'
   data?: any
 }
 
@@ -52,6 +56,8 @@ interface UseChatWebSocketOptions {
   onUsersUpdate?: (users: WSUser[], count: number) => void
   onUserJoined?: (data: { user_id: string; username: string; count: number }) => void
   onUserLeft?: (data: { user_id: string; username: string; count: number }) => void
+  onMessageEdited?: (data: { id: number; content: string; user_id: string; room_id: number }) => void
+  onMessageDeleted?: (data: { id: number; user_id: string; room_id: number }) => void
   onError?: (error: string) => void
 }
 
@@ -70,6 +76,8 @@ export function useChatWebSocket(options: UseChatWebSocketOptions) {
     onUsersUpdate,
     onUserJoined,
     onUserLeft,
+    onMessageEdited,
+    onMessageDeleted,
     onError,
   } = options
 
@@ -223,6 +231,52 @@ export function useChatWebSocket(options: UseChatWebSocketOptions) {
     } catch {}
   }
 
+  function editMessage(messageId: number, content: string): boolean {
+    if (!ws || ws.readyState !== WebSocket.OPEN) {
+      lastError.value = t('chat.notConnected')
+      return false
+    }
+    if (!content.trim()) {
+      lastError.value = t('chat.emptyMessage')
+      return false
+    }
+    if (content.length > 1000) {
+      lastError.value = t('chat.messageTooLong')
+      return false
+    }
+    try {
+      ws.send(
+        JSON.stringify({
+          type: 'edit_message',
+          data: { message_id: messageId, content: content.trim() },
+        })
+      )
+      return true
+    } catch {
+      lastError.value = t('chat.sendFailed')
+      return false
+    }
+  }
+
+  function deleteMessage(messageId: number): boolean {
+    if (!ws || ws.readyState !== WebSocket.OPEN) {
+      lastError.value = t('chat.notConnected')
+      return false
+    }
+    try {
+      ws.send(
+        JSON.stringify({
+          type: 'delete_message',
+          data: { message_id: messageId },
+        })
+      )
+      return true
+    } catch {
+      lastError.value = t('chat.sendFailed')
+      return false
+    }
+  }
+
   function setCredentials(newUserId: string, newUsername: string): void {
     currentUserId = newUserId
     currentUsername = newUsername
@@ -258,6 +312,17 @@ export function useChatWebSocket(options: UseChatWebSocketOptions) {
 
       case 'user_left':
         onUserLeft?.(msg.data)
+        break
+
+      case 'message_edited':
+        onMessageEdited?.(msg.data)
+        break
+
+      case 'message_deleted':
+        onMessageDeleted?.(msg.data)
+        break
+
+      case 'user_renamed':
         break
 
       case 'heartbeat':
@@ -345,6 +410,8 @@ export function useChatWebSocket(options: UseChatWebSocketOptions) {
     disconnect,
     switchRoom,
     sendMessage,
+    editMessage,
+    deleteMessage,
     updateUsername,
     setCredentials,
   }

@@ -147,12 +147,17 @@
               'chat-bubble--sending': msg.sending,
               'chat-bubble--error': msg.error,
             }"
+            @touchstart="onMessageTouchStart($event, msg)"
+            @touchend="onMessageTouchEnd"
+            @touchmove="onMessageTouchEnd"
+            @contextmenu.prevent
           >
             <div class="chat-bubble__header">
               <span class="chat-bubble__username">{{ msg.username }}</span>
               <span class="chat-bubble__time"
-                >{{ formatTime(msg.created_at) }} #{{ msg.id || '?' }}</span
-              >
+                >{{ formatTime(msg.created_at) }} #{{ msg.id || '?' }}
+                <span v-if="msg.edited" class="chat-bubble__edited">{{ t('chat.edited') }}</span>
+              </span>
             </div>
             <div class="chat-bubble__content">{{ msg.content }}</div>
             <div v-if="msg.sending" class="chat-bubble__status">
@@ -197,6 +202,10 @@
         </div>
 
         <div class="mobile-chat__input-bar">
+          <div v-if="editingMessageId" class="mobile-chat__edit-hint">
+            <span>{{ t('chat.editing') }}</span>
+            <button class="mobile-chat__edit-cancel" @click="cancelEdit">{{ t('common.cancel') }}</button>
+          </div>
           <textarea
             ref="inputRef"
             v-model="inputContent"
@@ -204,13 +213,13 @@
             :placeholder="t('chat.placeholder')"
             :disabled="sending || rateLimited"
             rows="1"
-            @keydown.enter.exact.prevent="sendMessage"
+            @keydown.enter.exact.prevent="sendOrEditMessage"
             @input="autoResizeInput"
           />
           <button
             class="mobile-chat__send-btn"
             :disabled="!inputContent.trim() || sending || rateLimited"
-            @click="sendMessage"
+            @click="sendOrEditMessage"
           >
             <svg v-if="!sending" width="20" height="20" viewBox="0 0 20 20" fill="none">
               <path d="M3 10L17 3L10 17L9 11L3 10Z" fill="currentColor" />
@@ -315,6 +324,36 @@
           </div>
         </div>
       </Transition>
+
+      <!-- Action Sheet -->
+      <Transition name="mobile-fade">
+        <div
+          v-if="showActionSheet"
+          class="mobile-chat__action-overlay"
+          @click.self="showActionSheet = false"
+        >
+          <div class="mobile-chat__action-sheet">
+            <button class="mobile-chat__action-item" @click="startEdit(actionSheetMsg)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+              </svg>
+              {{ t('chat.edit') }}
+            </button>
+            <button class="mobile-chat__action-item mobile-chat__action-item--danger" @click="startDelete(actionSheetMsg)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6" />
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+              </svg>
+              {{ t('chat.delete') }}
+            </button>
+            <div class="mobile-chat__action-divider" />
+            <button class="mobile-chat__action-item" @click="showActionSheet = false">
+              {{ t('common.cancel') }}
+            </button>
+          </div>
+        </div>
+      </Transition>
     </div>
   </MobileWindow>
 </template>
@@ -345,6 +384,7 @@ interface ChatMessage {
   error?: string
   room_id?: number
   retryCount?: number
+  edited?: boolean
 }
 
 interface ChatRoom {
@@ -385,6 +425,10 @@ const rateLimitWarning = ref('')
 const rateLimited = ref(false)
 const loadingRooms = ref(false)
 const creatingRoom = ref(false)
+const editingMessageId = ref<number | null>(null)
+const showActionSheet = ref(false)
+const actionSheetMsg = ref<ChatMessage | null>(null)
+let longPressTimer: number | null = null
 const showNicknameDialog = ref(false)
 const newNickname = ref('')
 const savingNickname = ref(false)
@@ -455,6 +499,16 @@ const ws = useChatWebSocket({
     if (currentRoom.value) {
       currentRoom.value.member_count = data.count
     }
+  },
+  onMessageEdited: (data: any) => {
+    const idx = messages.findIndex((m) => m.id === data.id)
+    if (idx !== -1) {
+      messages.splice(idx, 1, { ...messages[idx], content: data.content, edited: true })
+    }
+  },
+  onMessageDeleted: (data: any) => {
+    const idx = messages.findIndex((m) => m.id === data.id)
+    if (idx !== -1) messages.splice(idx, 1)
   },
   onError: (error: any) => {
     if (error === 'RATE_LIMIT') {
@@ -633,6 +687,62 @@ function autoResizeInput() {
     inputRef.value.style.height = 'auto'
     inputRef.value.style.height = Math.min(inputRef.value.scrollHeight, 100) + 'px'
   }
+}
+
+function sendOrEditMessage() {
+  if (editingMessageId.value) {
+    confirmEdit()
+  } else {
+    sendMessage()
+  }
+}
+
+function onMessageTouchStart(_event: TouchEvent, msg: ChatMessage) {
+  if (!msg.isSelf || msg.sending || !msg.id) return
+  if (longPressTimer) clearTimeout(longPressTimer)
+  longPressTimer = window.setTimeout(() => {
+    actionSheetMsg.value = msg
+    showActionSheet.value = true
+    longPressTimer = null
+  }, 500)
+}
+
+function onMessageTouchEnd() {
+  if (longPressTimer) {
+    clearTimeout(longPressTimer)
+    longPressTimer = null
+  }
+}
+
+function startEdit(msg: ChatMessage | null) {
+  showActionSheet.value = false
+  if (!msg || !msg.id) return
+  editingMessageId.value = msg.id
+  inputContent.value = msg.content
+  nextTick(() => inputRef.value?.focus())
+}
+
+function cancelEdit() {
+  editingMessageId.value = null
+  inputContent.value = ''
+}
+
+function confirmEdit() {
+  if (!editingMessageId.value) return
+  const content = inputContent.value.trim()
+  if (!content) return
+  const sent = ws.editMessage(editingMessageId.value, content)
+  if (sent) {
+    editingMessageId.value = null
+    inputContent.value = ''
+  }
+}
+
+function startDelete(msg: ChatMessage | null) {
+  showActionSheet.value = false
+  if (!msg || !msg.id) return
+  if (!confirm(t('chat.confirmDelete'))) return
+  ws.deleteMessage(msg.id)
 }
 
 async function sendMessage() {
@@ -1285,6 +1395,91 @@ async function saveNickname() {
   }
 }
 
+.mobile-chat__edit-hint {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 8px;
+  font-size: 11px;
+  color: var(--chat-accent, #007aff);
+  background: var(--chat-bg, #1c1c1e);
+  border-radius: 6px;
+  margin-bottom: 4px;
+  width: 100%;
+}
+
+.mobile-chat__edit-cancel {
+  background: none;
+  border: none;
+  color: var(--chat-text-secondary, #8e8e93);
+  font-size: 11px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.mobile-chat__edit-cancel:active {
+  color: var(--chat-text-primary, #ffffff);
+  background: var(--chat-surface-hover, #3a3a3c);
+}
+
+.chat-bubble__edited {
+  margin-left: 6px;
+  font-size: 10px;
+  color: var(--chat-text-tertiary, #636366);
+  font-style: italic;
+}
+
+.mobile-chat__action-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--gui-backdrop-bg, rgba(0, 0, 0, 0.5));
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0 12px 24px;
+}
+
+.mobile-chat__action-sheet {
+  width: 100%;
+  max-width: 400px;
+  background: var(--chat-surface, #2c2c2e);
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.mobile-chat__action-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px;
+  border: none;
+  background: transparent;
+  color: var(--chat-text-primary, #ffffff);
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.mobile-chat__action-item:active {
+  background: var(--chat-surface-hover, #3a3a3c);
+}
+
+.mobile-chat__action-item--danger {
+  color: var(--chat-error, #ff3b30);
+}
+
+.mobile-chat__action-divider {
+  height: 0.5px;
+  background: var(--chat-border, #38383a);
+}
+
 /* ── Dialogs ───────────────────────────────────────────────────────── */
 .mobile-chat__dialog-overlay {
   position: absolute;
@@ -1436,5 +1631,25 @@ async function saveNickname() {
 }
 .light .mobile-chat__action-btn:active {
   background: rgba(0, 0, 0, 0.06);
+}
+.light .mobile-chat__edit-hint {
+  background: var(--chat-bg, #f2f2f7);
+}
+.light .mobile-chat__edit-cancel:active {
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--chat-text-primary, #000000);
+}
+.light .mobile-chat__action-sheet {
+  background: var(--chat-surface, #ffffff);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+.light .mobile-chat__action-item {
+  color: var(--chat-text-primary, #000000);
+}
+.light .mobile-chat__action-item:active {
+  background: var(--chat-surface-hover, rgba(0, 0, 0, 0.06));
+}
+.light .mobile-chat__action-divider {
+  background: var(--chat-border, #e5e5ea);
 }
 </style>
