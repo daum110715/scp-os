@@ -51,6 +51,14 @@
             :title="t('fm.upload')"
             @click="fileInputRef?.click()"
           />
+          <SCPButton
+            variant="ghost"
+            size="sm"
+            icon="refresh"
+            :title="t('fm.syncCloud') || 'Sync from cloud'"
+            :loading="fmStore.cloudSyncing"
+            @click="syncFromCloud"
+          />
           <div class="file-manager__toolbar-divider" />
           <SCPButton
             :variant="fmStore.viewMode === 'grid' ? 'primary' : 'ghost'"
@@ -806,6 +814,53 @@ async function onFileUpload(event: Event): Promise<void> {
   if (cloudFail > 0) messages.push(`云端失败 ${cloudFail} 个`)
   if (messages.length > 0) {
     alert(messages.join('，'))
+  }
+}
+
+async function syncFromCloud(): Promise<void> {
+  if (!authStore.userId || fmStore.cloudSyncing) return
+  fmStore.cloudSyncing = true
+  try {
+    const response = await authStore.authFetch(`${config.api.workerUrl}/files`)
+    if (!response.ok) {
+      alert(t('fm.syncFailed') || 'Cloud sync failed')
+      return
+    }
+    const result = await response.json()
+    const cloudFiles = result.data || []
+    let success = 0
+    let fail = 0
+    for (const file of cloudFiles) {
+      try {
+        const downloadRes = await authStore.authFetch(
+          `${config.api.workerUrl}/files/${encodeURIComponent(file.key)}`
+        )
+        if (!downloadRes.ok) {
+          fail++
+          continue
+        }
+        const content = await downloadRes.text()
+        const path = `/home/scp/downloads/${file.key}`
+        filesystem.createFile(path, content)
+        success++
+      } catch {
+        fail++
+      }
+    }
+    fmStore.loadDirectory()
+    const messages: string[] = []
+    if (success > 0) messages.push(`同步成功 ${success} 个文件`)
+    if (fail > 0) messages.push(`同步失败 ${fail} 个`)
+    if (messages.length > 0) {
+      alert(messages.join('，'))
+    } else {
+      alert(t('fm.syncNoFiles') || 'No cloud files to sync')
+    }
+  } catch (err) {
+    console.error('[FileManager] Cloud sync error:', err)
+    alert(t('fm.syncFailed') || 'Cloud sync failed')
+  } finally {
+    fmStore.cloudSyncing = false
   }
 }
 

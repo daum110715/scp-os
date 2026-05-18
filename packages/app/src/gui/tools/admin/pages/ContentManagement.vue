@@ -252,14 +252,15 @@ const tabs = computed<ContentTab[]>(() => [
     label: t('admin.content.tabGoi'),
     columns: [
       { key: 'id', label: 'ID', width: '70px' },
-      { key: 'name', label: t('admin.content.colName') },
-      { key: 'acronym', label: t('admin.content.colAcronym') },
+      { key: 'title', label: t('admin.content.colTitle') },
+      { key: 'link', label: t('admin.content.colLink') },
+      { key: 'rating', label: t('admin.content.colRating') },
       { key: 'created_at', label: t('admin.content.colCreated') },
       { key: 'actions', label: t('admin.content.colActions'), width: '140px' },
     ],
     editFields: [
-      { key: 'name', label: t('admin.content.colName') },
-      { key: 'acronym', label: t('admin.content.colAcronym') },
+      { key: 'title', label: t('admin.content.colTitle') },
+      { key: 'link', label: t('admin.content.colLink') },
     ],
   },
   {

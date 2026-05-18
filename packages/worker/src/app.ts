@@ -415,8 +415,11 @@ function registerNotifications(app: Hono<AppEnv>): void {
     if (userId instanceof Response) return userId
     const unread = c.req.query('unread') === 'true'
     const where = unread ? 'recipient_user_id = ? AND is_read = 0' : 'recipient_user_id = ?'
-    const rows = await all(c.env.SCP_DB, `SELECT * FROM notifications WHERE ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`, [userId, intValue(c.req.query('limit'), 50), intValue(c.req.query('offset'), 0)])
-    return json({ success: true, data: rows, count: rows.length })
+    const params: unknown[] = [userId]
+    const rows = await all(c.env.SCP_DB, `SELECT * FROM notifications WHERE ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`, [...params, intValue(c.req.query('limit'), 50), intValue(c.req.query('offset'), 0)])
+    const total = await count(c.env.SCP_DB, 'notifications', where, params)
+    const unreadCount = await count(c.env.SCP_DB, 'notifications', 'recipient_user_id = ? AND is_read = 0', [userId])
+    return json({ success: true, data: rows, count: rows.length, total, unreadCount })
   })
   app.post('/notifications/mark-read', async (c) => {
     const userId = await requiredUser(c)
