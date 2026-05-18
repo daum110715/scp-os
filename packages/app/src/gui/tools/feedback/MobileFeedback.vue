@@ -390,8 +390,8 @@ function normalizeFeedback(raw: Record<string, unknown>): FeedbackItem {
   }
 }
 
-async function loadFeedbacks() {
-  isLoading.value = true
+async function loadFeedbacks(silent = false) {
+  if (!silent) isLoading.value = true
   try {
     const response = await fetch(
       `${API_BASE}/feedback/list-with-votes?limit=${limit}&offset=${offset.value}&user_id=${encodeURIComponent(userId)}`
@@ -411,7 +411,7 @@ async function loadFeedbacks() {
   } catch (error) {
     logger.error('[Feedback] Failed to load:', error as Error)
   } finally {
-    isLoading.value = false
+    if (!silent) isLoading.value = false
   }
 }
 
@@ -471,6 +471,7 @@ async function voteFeedback(item: FeedbackItem, voteType: 'up' | 'down') {
         }
         feedback.userVote = voteType
       }
+      await loadFeedbacks(true)
     } else {
       alert(t('fb.voteFailed', { msg: data.error || 'Unknown error' }))
     }
@@ -547,6 +548,7 @@ async function submitComment(feedbackId: number) {
         feedback.commentsCount = (feedback.commentsCount || 0) + 1
         commentForms.value[feedbackId] = ''
       }
+      await loadFeedbacks(true)
     } else {
       alert(t('fb.commentFailed', { msg: data.error || 'Unknown error' }))
     }
