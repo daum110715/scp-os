@@ -288,9 +288,14 @@ function registerFeedback(app: Hono<AppEnv>): void {
     if (!body?.feedback_id || !content) return json({ code: 'VALIDATION_ERROR', message: 'Missing required fields' }, 400)
     const exists = await first(c.env.SCP_DB, 'SELECT id FROM feedbacks WHERE id = ? AND status = ?', [body.feedback_id, 'published'])
     if (!exists) return json({ success: false, error: 'Feedback not found' }, 404)
-    const inserted = await run(c.env.SCP_DB, 'INSERT INTO feedback_comments (feedback_id, user_id, nickname, content) VALUES (?, ?, ?, ?)', [body.feedback_id, userId, cleanText(body.nickname || 'Anonymous', 30), content])
+    const nickname = cleanText(body.nickname || 'Anonymous', 30)
+    const inserted = await run(c.env.SCP_DB, 'INSERT INTO feedback_comments (feedback_id, user_id, nickname, content) VALUES (?, ?, ?, ?)', [body.feedback_id, userId, nickname, content])
     await run(c.env.SCP_DB, 'UPDATE feedbacks SET commentsCount = commentsCount + 1 WHERE id = ?', [body.feedback_id])
     const comment = await first(c.env.SCP_DB, 'SELECT * FROM feedback_comments WHERE id = ?', [inserted.meta?.last_row_id])
+    const feedback = await first<{ user_id: string; title: string }>(c.env.SCP_DB, 'SELECT user_id, title FROM feedbacks WHERE id = ?', [body.feedback_id])
+    if (feedback) {
+      await createNotification(c.env.SCP_DB, feedback.user_id, userId, nickname, 'feedback_comment', `New comment on "${feedback.title}"`, content, String(body.feedback_id), 'feedback')
+    }
     return json({ success: true, data: comment }, 201)
   })
 
@@ -318,6 +323,12 @@ function registerFeedback(app: Hono<AppEnv>): void {
     }
     await run(c.env.SCP_DB, 'INSERT INTO feedback_votes (feedback_id, user_id, vote) VALUES (?, ?, ?)', [body.id, userId, body.vote])
     await run(c.env.SCP_DB, `UPDATE feedbacks SET ${body.vote === 'up' ? 'upvotes' : 'downvotes'} = ${body.vote === 'up' ? 'upvotes' : 'downvotes'} + 1 WHERE id = ?`, [body.id])
+    const feedback = await first<{ user_id: string; title: string }>(c.env.SCP_DB, 'SELECT user_id, title FROM feedbacks WHERE id = ?', [body.id])
+    if (feedback) {
+      const voter = await first<{ nickname: string }>(c.env.SCP_DB, 'SELECT nickname FROM users WHERE user_id = ?', [userId])
+      const type = body.vote === 'up' ? 'feedback_upvote' : 'feedback_downvote'
+      await createNotification(c.env.SCP_DB, feedback.user_id, userId, voter?.nickname || 'Anonymous', type, `New ${body.vote}vote on "${feedback.title}"`, `${voter?.nickname || 'Anonymous'} ${body.vote}voted your feedback`, String(body.id), 'feedback')
+    }
     return json({ success: true, data: { id: body.id, vote: body.vote, action: 'added' } })
   })
 }
@@ -518,13 +529,89 @@ function routeDelete(app: Hono<AppEnv>, paths: string[], handler: RouteHandler):
 }
 
 function registerFiles(app: Hono<AppEnv>): void {
-  const gone = () => json({ code: 'GONE', message: 'Cloud file storage is disabled. Files are stored locally.' }, 410)
-  app.post('/files/upload', gone)
-  app.get('/files', gone)
-  app.get('/files/quota', gone)
-  app.get('/files/:key', gone)
-  app.put('/files/:key', gone)
-  app.delete('/files/:key', gone)
+  app.post('/files/upload', async (c) => {
+    const userId = await requiredUser(c)
+    if (userId instanceof Response) return userId
+    const formData = await c.req.formData()
+    const file = formData.get('file') as File | null
+    const path = (formData.get('path') as string) || ''
+    if (!file) return json({ code: 'VALIDATION_ERROR', message: 'No file provided' }, 400)
+    const safePath = path.replace(/^\/+/, '') || file.name
+    const key = `users/${userId}/files/${safePath}`
+    const prefix = `users/${userId}/files/`
+    const listResult = await c.env.SCP_FILES.list({ prefix, limit: 1000 })
+    const usedSize = listResult.objects.reduce((sum, obj) => sum + obj.size, 0)
+    const maxSize = 100 * 1024 * 1024
+    if (usedSize + file.size > maxSize) {
+      return json({ success: false, error: 'Storage quota exceeded (max 100MB)' }, 413)
+    }
+    await c.env.SCP_FILES.put(key, file.stream(), {
+      httpMetadata: { contentType: file.type || 'application/octet-stream' },
+      customMetadata: { userId, path: safePath, originalName: file.name, uploadedAt: new Date().toISOString() },
+    })
+    return json({ success: true, data: { key: safePath, size: file.size, path: safePath } })
+  })
+
+  app.get('/files', async (c) => {
+    const userId = await requiredUser(c)
+    if (userId instanceof Response) return userId
+    const prefix = `users/${userId}/files/`
+    const listResult = await c.env.SCP_FILES.list({ prefix, limit: 1000 })
+    const files = listResult.objects.map((obj) => ({
+      key: obj.key.replace(prefix, ''),
+      size: obj.size,
+      uploadedAt: obj.customMetadata?.uploadedAt || obj.uploaded?.toISOString(),
+      contentType: obj.httpMetadata?.contentType || 'application/octet-stream',
+    }))
+    return json({ success: true, data: files, count: files.length })
+  })
+
+  app.get('/files/quota', async (c) => {
+    const userId = await requiredUser(c)
+    if (userId instanceof Response) return userId
+    const prefix = `users/${userId}/files/`
+    const listResult = await c.env.SCP_FILES.list({ prefix, limit: 1000 })
+    const used = listResult.objects.reduce((sum, obj) => sum + obj.size, 0)
+    const max = 100 * 1024 * 1024
+    return json({ success: true, data: { used, max, percent: Math.round((used / max) * 100), count: listResult.objects.length } })
+  })
+
+  app.get('/files/:key', async (c) => {
+    const userId = await requiredUser(c)
+    if (userId instanceof Response) return userId
+    const key = `users/${userId}/files/${c.req.param('key')}`
+    const obj = await c.env.SCP_FILES.get(key)
+    if (!obj) return json({ code: 'NOT_FOUND', message: 'File not found' }, 404)
+    return new Response(obj.body, {
+      headers: {
+        'Content-Type': obj.httpMetadata?.contentType || 'application/octet-stream',
+        'Content-Length': String(obj.size),
+      },
+    })
+  })
+
+  app.put('/files/:key', async (c) => {
+    const userId = await requiredUser(c)
+    if (userId instanceof Response) return userId
+    const oldKey = `users/${userId}/files/${c.req.param('key')}`
+    const body = await readJson<{ path?: string }>(c.req.raw)
+    const newPath = body?.path?.replace(/^\/+/, '')
+    if (!newPath) return json({ code: 'VALIDATION_ERROR', message: 'Missing path' }, 400)
+    const newKey = `users/${userId}/files/${newPath}`
+    const obj = await c.env.SCP_FILES.get(oldKey)
+    if (!obj) return json({ code: 'NOT_FOUND', message: 'File not found' }, 404)
+    await c.env.SCP_FILES.put(newKey, obj.body, { httpMetadata: obj.httpMetadata, customMetadata: obj.customMetadata })
+    await c.env.SCP_FILES.delete(oldKey)
+    return json({ success: true, data: { key: newPath } })
+  })
+
+  app.delete('/files/:key', async (c) => {
+    const userId = await requiredUser(c)
+    if (userId instanceof Response) return userId
+    const key = `users/${userId}/files/${c.req.param('key')}`
+    await c.env.SCP_FILES.delete(key)
+    return json({ success: true })
+  })
 }
 
 async function adminMiddleware(c: Ctx, next: () => Promise<void>): Promise<Response | void> {
@@ -668,6 +755,24 @@ function listDocTable(app: Hono<AppEnv>, path: string, table: string, order: str
 
 function defaultNotificationPreferences(userId: string): Record<string, unknown> {
   return { user_id: userId, feedback_comment: 1, feedback_upvote: 1, feedback_downvote: 1, chat_message: 1 }
+}
+
+async function createNotification(
+  db: D1Database,
+  recipientUserId: string,
+  actorUserId: string,
+  actorNickname: string,
+  type: 'feedback_comment' | 'feedback_upvote' | 'feedback_downvote' | 'chat_message',
+  title: string,
+  body: string,
+  referenceId: string,
+  referenceType: string,
+): Promise<void> {
+  if (recipientUserId === actorUserId) return
+  const prefs = await first<{ [key: string]: number }>(db, 'SELECT * FROM notification_preferences WHERE user_id = ?', [recipientUserId])
+  const enabled = prefs?.[type] ?? 1
+  if (!enabled) return
+  await run(db, 'INSERT INTO notifications (recipient_user_id, actor_user_id, actor_nickname, type, title, body, reference_id, reference_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [recipientUserId, actorUserId, actorNickname, type, title, body, referenceId, referenceType])
 }
 
 async function adminList(c: Ctx, table: string, columns?: string[], order = 'id DESC'): Promise<Response> {

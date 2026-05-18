@@ -453,6 +453,8 @@ import type { IconName } from '../../icons'
 import type { ToolType } from '../../types'
 import { filesystem } from '../../../utils/filesystem'
 import { parseDesktopFile } from '../../../utils/desktopShortcut'
+import { useAuthStore } from '../../../stores/authStore'
+import { config } from '../../../config'
 
 interface Props {
   windowInstance: WindowInstance
@@ -464,6 +466,7 @@ const { t } = useI18n()
 setFileManagerI18n({ t })
 const fmStore = useFileManagerStore()
 const wmStore = useWindowManagerStore()
+const authStore = useAuthStore()
 const searchText = ref('')
 const fileInputRef = ref<HTMLInputElement | null>(null)
 
@@ -748,8 +751,10 @@ async function onFileUpload(event: Event): Promise<void> {
   const files = input.files
   if (!files || files.length === 0) return
 
-  let successCount = 0
-  let failCount = 0
+  let localSuccess = 0
+  let localFail = 0
+  let cloudSuccess = 0
+  let cloudFail = 0
 
   for (const file of files) {
     const path =
@@ -762,18 +767,45 @@ async function onFileUpload(event: Event): Promise<void> {
       } else {
         filesystem.createFile(path, content)
       }
-      successCount++
+      localSuccess++
+
+      if (authStore.userId) {
+        try {
+          const formData = new FormData()
+          formData.append('file', file)
+          formData.append('path', path)
+          const response = await authStore.authFetch(`${config.api.workerUrl}/files/upload`, {
+            method: 'POST',
+            body: formData,
+          })
+          if (response.ok) {
+            cloudSuccess++
+          } else {
+            const data = await response.json().catch(() => ({}))
+            console.error('[FileManager] Cloud upload failed:', data.error || response.statusText)
+            cloudFail++
+          }
+        } catch (err) {
+          console.error('[FileManager] Cloud upload error:', err)
+          cloudFail++
+        }
+      }
     } catch (error) {
       console.error('[FileManager] Failed to store file locally:', error)
-      failCount++
+      localFail++
     }
   }
 
   fmStore.loadDirectory()
   input.value = ''
 
-  if (failCount > 0) {
-    alert(`Stored ${successCount} file(s) locally, ${failCount} failed.`)
+  const messages: string[] = []
+  if (localSuccess > 0) messages.push(`本地 ${localSuccess} 个文件`)
+  if (localFail > 0) messages.push(`本地失败 ${localFail} 个`)
+  if (cloudSuccess > 0) messages.push(`云端 ${cloudSuccess} 个文件`)
+  if (cloudFail > 0) messages.push(`云端失败 ${cloudFail} 个`)
+  if (messages.length > 0) {
+    alert(messages.join('，'))
   }
 }
 
